@@ -1,0 +1,92 @@
+@use '../styles/variables' as *;
+
+.page-shell {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 32px 20px;
+}
+
+.auth-card {
+  width: min(100%, 760px);
+  background: $bg-panel;
+  border: 1px solid $border;
+  border-radius: 20px;
+  box-shadow: 0 26px 60px rgba(0, 0, 0, 0.28);
+  padding: 32px;
+}
+
+.auth-header {
+  margin-bottom: 24px;
+}
+
+.auth-header-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.auth-header h1 {
+  margin: 0;
+  font-size: clamp(2rem, 4vw, 2.8rem);
+}
+
+.auth-header p {
+  margin: 8px 0 0;
+  color: $text-soft;
+}
+
+.login-form {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 18px;
+}
+
+label {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  color: #e7f1ff;
+  font-size: 0.95rem;
+  font-weight: 600;
+}
+
+input,
+select {
+  width: 100%;
+  border: 1px solid rgba(154, 188, 220, 0.36);
+  border-radius: 10px;
+  background: rgba(11, 25, 39, 0.76);
+  color: #f4f9ff;
+  padding: 12px 14px;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+input::placeholder {
+  color: #8da8bf;
+}
+
+input:focus,
+select:focus {
+  outline: none;
+  border-color: $primary;
+  box-shadow: 0 0 0 4px rgba(90, 183, 255, 0.14);
+}
+
+@media (max-width: 640px) {
+  .auth-card {
+    padding: 22px 18px;
+  }
+
+  .form-grid {
+    grid-template-columns: 1fr;
+  }
+}
