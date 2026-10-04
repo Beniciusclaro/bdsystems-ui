@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { RegisterForm } from '../components/RegisterForm';
+import { RegisterForm } from '../components/register/RegisterForm';
 import { saveAuthToken } from '../lib/session';
 import { registerUser } from '../services/authService';
 import type { UserRequest } from '../types/auth';

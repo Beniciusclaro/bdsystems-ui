@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Sidebar } from '../components/Sidebar';
-import { StatCard } from '../components/StatCard';
+import { Sidebar } from '../components/sidebar/Sidebar';
+import { StatCard } from '../components/statcard/StatCard';
 import { clearAuthToken, getAuthToken } from '../lib/session';
 import './DashboardPage.scss';
 

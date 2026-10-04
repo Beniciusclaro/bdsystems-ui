@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import type { UserRequest } from '../types/auth';
+import type { UserRequest } from '../../types/auth';
 import './RegisterForm.scss';
 
 interface RegisterFormProps {

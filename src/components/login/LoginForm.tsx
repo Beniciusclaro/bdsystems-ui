@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import type { LoginRequest } from '../types/auth';
+import type { LoginRequest } from '../../types/auth';
 import './LoginForm.scss';
 
 interface LoginProps {

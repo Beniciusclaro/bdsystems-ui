@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { LoginForm } from '../components/LoginForm';
+import { LoginForm } from '../components/login/LoginForm';
 import { saveAuthToken } from '../lib/session';
 import { loginUser } from '../services/authService';
 import type { LoginRequest } from '../types/auth';

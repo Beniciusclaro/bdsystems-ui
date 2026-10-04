@@ -7,7 +7,7 @@ function resolveApiBaseUrl(): string {
     return configured.replace(/\/$/, '');
   }
 
-  return 'http://localhost:8080';
+  return '';
 }
 
 const API_BASE_URL = resolveApiBaseUrl();
