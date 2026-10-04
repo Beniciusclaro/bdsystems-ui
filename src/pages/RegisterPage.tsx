@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { BrandLogo } from '../components/brand/BrandLogo';
 import { RegisterForm } from '../components/register/RegisterForm';
 import { saveAuthToken } from '../lib/session';
 import { registerUser } from '../services/authService';
@@ -52,11 +53,12 @@ export function RegisterPage({ onBack }: RegisterPageProps) {
   };
 
   return (
-    <main className="page-shell">
+      <main className="page-shell register-page">
       <section className="auth-card">
         <div className="auth-header">
+            <BrandLogo />
           <div className="auth-header-row">
-            <p className="eyebrow">Builder UI</p>
+              <p className="eyebrow">Cadastro da empresa</p>
             <button type="button" className="text-button" onClick={handleBack}>
               ← Voltar
             </button>
@@ -65,8 +67,8 @@ export function RegisterPage({ onBack }: RegisterPageProps) {
           <p>Cadastre sua empresa e comece a gerenciar obras e equipes.</p>
         </div>
 
-        {error ? <div className="message error">{error}</div> : null}
-        {success ? <div className="message success">{success}</div> : null}
+        {error ? <div className="message error" role="alert">{error}</div> : null}
+        {success ? <div className="message success" role="status">{success}</div> : null}
 
         <RegisterForm isSubmitting={isSubmitting} onSubmit={handleRegister} />
       </section>

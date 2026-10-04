@@ -61,6 +61,7 @@ export function RegisterForm({ isSubmitting, onSubmit }: RegisterFormProps) {
           Nome completo
           <input
             name="name"
+            autoComplete="name"
             value={form.name}
             onChange={handleChange}
             placeholder="Ex: Benicius Alves"
@@ -73,6 +74,7 @@ export function RegisterForm({ isSubmitting, onSubmit }: RegisterFormProps) {
           <input
             type="email"
             name="email"
+            autoComplete="email"
             value={form.email}
             onChange={handleChange}
             placeholder="usuario@empresa.com"
@@ -85,6 +87,7 @@ export function RegisterForm({ isSubmitting, onSubmit }: RegisterFormProps) {
           <input
             type="password"
             name="password"
+            autoComplete="new-password"
             value={form.password}
             onChange={handleChange}
             placeholder="Mínimo 6 caracteres"
@@ -95,9 +98,9 @@ export function RegisterForm({ isSubmitting, onSubmit }: RegisterFormProps) {
         <label>
           Papel
           <select name="role" value={form.role} onChange={handleChange}>
-            <option value="ADMIN">ADMIN</option>
-            <option value="MANAGER">MANAGER</option>
-            <option value="USER">USER</option>
+            <option value="ADMIN">Administrador</option>
+            <option value="MANAGER">Gestor</option>
+            <option value="USER">Usuário</option>
           </select>
         </label>
 
@@ -105,6 +108,7 @@ export function RegisterForm({ isSubmitting, onSubmit }: RegisterFormProps) {
           Nome da empresa
           <input
             name="companyName"
+            autoComplete="organization"
             value={form.companyName}
             onChange={handleChange}
             placeholder="BD Systems"
@@ -116,6 +120,7 @@ export function RegisterForm({ isSubmitting, onSubmit }: RegisterFormProps) {
           Rua
           <input
             name="street"
+            autoComplete="address-line1"
             value={form.street}
             onChange={handleChange}
             placeholder="Rua Exemplo, 123"
@@ -127,6 +132,7 @@ export function RegisterForm({ isSubmitting, onSubmit }: RegisterFormProps) {
           Cidade
           <input
             name="city"
+            autoComplete="address-level2"
             value={form.city}
             onChange={handleChange}
             placeholder="Porto"
@@ -138,6 +144,7 @@ export function RegisterForm({ isSubmitting, onSubmit }: RegisterFormProps) {
           Estado
           <input
             name="state"
+            autoComplete="address-level1"
             value={form.state}
             onChange={handleChange}
             placeholder="Porto"
@@ -149,6 +156,7 @@ export function RegisterForm({ isSubmitting, onSubmit }: RegisterFormProps) {
           CEP
           <input
             name="zipcode"
+            autoComplete="postal-code"
             value={form.zipcode}
             onChange={handleChange}
             placeholder="4000-123"

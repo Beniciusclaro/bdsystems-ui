@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { BrandLogo } from '../components/brand/BrandLogo';
 import { LoginForm } from '../components/login/LoginForm';
 import { saveAuthToken } from '../lib/session';
 import { loginUser } from '../services/authService';
@@ -51,20 +52,21 @@ export function LoginPage({ onBack }: LoginPageProps) {
     };
 
     return (
-        <main className="page-shell">
+        <main className="page-shell login-page">
           <section className="auth-card">
             <div className="auth-header">
+              <BrandLogo />
               <div className="auth-header-row">
-                <p className="eyebrow">Builder UI</p>
+                <p className="eyebrow">Acesso ao sistema</p>
                 <button type="button" className="text-button" onClick={handleBack}>
                   ← Voltar
                 </button>
               </div>
-              <h1>Login</h1>
+              <h1>Acessar conta</h1>
             </div>
     
-            {error ? <div className="message error">{error}</div> : null}
-            {success ? <div className="message success">{success}</div> : null}
+            {error ? <div className="message error" role="alert">{error}</div> : null}
+            {success ? <div className="message success" role="status">{success}</div> : null}
     
             <LoginForm isSubmitting={isSubmitting} onSubmit={handleLogin} />
           </section>

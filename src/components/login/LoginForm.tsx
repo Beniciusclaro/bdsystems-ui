@@ -43,6 +43,7 @@ export function LoginForm({ isSubmitting, onSubmit }: LoginProps) {
           <input
             type="email"
             name="email"
+            autoComplete="email"
             value={form.email}
             onChange={handleChange}
             required
@@ -53,6 +54,7 @@ export function LoginForm({ isSubmitting, onSubmit }: LoginProps) {
           <input
             type="password"
             name="password"
+            autoComplete="current-password"
             value={form.password}
             onChange={handleChange}
             required

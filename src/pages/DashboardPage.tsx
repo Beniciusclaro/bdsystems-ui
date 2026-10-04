@@ -6,9 +6,9 @@ import { clearAuthToken, getAuthToken } from '../lib/session';
 import './DashboardPage.scss';
 
 const stats = [
-  { label: 'Projetos ativos', value: '128', accent: 'blue' },
-  { label: 'Equipes em obra', value: '24', accent: 'purple' },
-  { label: 'Indicadores', value: '+18%', accent: 'green' },
+  { label: 'Projetos ativos', value: '128' },
+  { label: 'Equipes em obra', value: '24' },
+  { label: 'Indicadores', value: '+18%' },
 ] as const;
 
 const workItems = [
@@ -43,15 +43,17 @@ export function DashboardPage() {
       <section className="dashboard-content">
         <header className="topbar">
           <div>
-            <p className="eyebrow">Painel geral</p>
-            <h1>Dashboard</h1>
+            <p className="dashboard-eyebrow">Painel de operação</p>
+            <h1>Visão geral</h1>
           </div>
-          <button type="button" className="primary-button">Nova obra</button>
+          <button type="button" className="primary-button" disabled title="Funcionalidade não disponível">
+            Nova obra
+          </button>
         </header>
 
         <div className="stats-grid">
           {stats.map((item) => (
-            <StatCard key={item.label} label={item.label} value={item.value} accent={item.accent} />
+            <StatCard key={item.label} label={item.label} value={item.value} />
           ))}
         </div>
 
@@ -77,7 +79,7 @@ export function DashboardPage() {
 
           <section className="panel-card">
             <div className="panel-header">
-              <h2>Atividades</h2>
+              <h2>Atividade recente</h2>
             </div>
 
             <ul className="activity-list">

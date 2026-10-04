@@ -1,4 +1,5 @@
 import './Sidebar.scss';
+import { BrandLogo } from '../brand/BrandLogo';
 
 interface SidebarProps {
   onLogout: () => void;
@@ -6,21 +7,17 @@ interface SidebarProps {
 
 export function Sidebar({ onLogout }: SidebarProps) {
   return (
-    <aside className="sidebar">
+    <aside className="sidebar" aria-label="Navegação do sistema">
       <div className="sidebar-brand">
-        <span className="sidebar-brand-mark">B</span>
-        <div>
-          <p className="eyebrow">Builder UI</p>
-          <strong>Builder OS</strong>
-        </div>
+        <BrandLogo compact />
       </div>
 
-      <nav className="sidebar-nav">
-        <button type="button" className="nav-item active">Dashboard</button>
-        <button type="button" className="nav-item">Empresas</button>
-        <button type="button" className="nav-item">Projetos</button>
-        <button type="button" className="nav-item">Máquinas</button>
-        <button type="button" className="nav-item">Relatórios</button>
+      <nav className="sidebar-nav" aria-label="Principal">
+        <span className="nav-item active" aria-current="page">Visão geral</span>
+        <button type="button" className="nav-item" disabled>Empresas</button>
+        <button type="button" className="nav-item" disabled>Projetos</button>
+        <button type="button" className="nav-item" disabled>Máquinas</button>
+        <button type="button" className="nav-item" disabled>Relatórios</button>
       </nav>
 
       <button type="button" className="logout-button" onClick={onLogout}>
