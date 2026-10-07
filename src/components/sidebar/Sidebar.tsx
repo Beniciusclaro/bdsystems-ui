@@ -1,5 +1,6 @@
 import './Sidebar.scss';
 import { BrandLogo } from '../brand/BrandLogo';
+import { NavLink } from 'react-router-dom';
 
 interface SidebarProps {
   onLogout: () => void;
@@ -13,7 +14,18 @@ export function Sidebar({ onLogout }: SidebarProps) {
       </div>
 
       <nav className="sidebar-nav" aria-label="Principal">
-        <span className="nav-item active" aria-current="page">Visão geral</span>
+        <NavLink
+          to="/dashboard"
+          className={({ isActive }) => `nav-item${isActive ? ' active' : ''}`}
+        >
+          Visão geral
+        </NavLink>
+        <NavLink
+          to="/employees/new"
+          className={({ isActive }) => `nav-item${isActive ? ' active' : ''}`}
+        >
+          Funcionários
+        </NavLink>
         <button type="button" className="nav-item" disabled>Empresas</button>
         <button type="button" className="nav-item" disabled>Projetos</button>
         <button type="button" className="nav-item" disabled>Máquinas</button>

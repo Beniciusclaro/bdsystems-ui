@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { Sidebar } from '../components/sidebar/Sidebar';
 import { StatCard } from '../components/statcard/StatCard';
 import { clearAuthToken, getAuthToken } from '../lib/session';
@@ -46,9 +46,9 @@ export function DashboardPage() {
             <p className="dashboard-eyebrow">Painel de operação</p>
             <h1>Visão geral</h1>
           </div>
-          <button type="button" className="primary-button" disabled title="Funcionalidade não disponível">
-            Nova obra
-          </button>
+          <Link to="/employees/new" className="primary-button">
+            Novo funcionário
+          </Link>
         </header>
 
         <div className="stats-grid">

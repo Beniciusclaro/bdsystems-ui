@@ -1,0 +1,41 @@
+.employee-form-card {
+  max-width: 1050px;
+}
+
+.employee-form-intro {
+  margin: 0 0 24px;
+  color: var(--color-muted);
+}
+
+.employee-form {
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+}
+
+.employee-form-section {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.employee-form-section h2 {
+  margin: 0;
+  color: var(--color-ink);
+  font-size: 1.05rem;
+}
+
+.employee-form .primary-button {
+  align-self: flex-start;
+  min-width: 220px;
+}
+
+.employee-form .message {
+  margin-bottom: 0;
+}
+
+@media (max-width: 520px) {
+  .employee-form .primary-button {
+    width: 100%;
+  }
+}
