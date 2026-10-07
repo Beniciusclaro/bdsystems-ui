@@ -17,10 +17,11 @@ export interface UserRequest {
   name: string;
   email: string;
   password: string;
-  role: Role;
   companyName: string;
-  address: AddressRequest;
-  company?: CompanyRequest;
+  company: CompanyRequest & {
+    name: string;
+    address: AddressRequest;
+  };
 }
 
 export interface LoginRequest {

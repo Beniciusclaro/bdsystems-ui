@@ -5,3 +5,19 @@
   flex-direction: column;
   gap: 20px;
 }
+
+.register-form .message {
+  margin-bottom: 0;
+}
+
+.register-form input[aria-invalid='true'],
+.register-form input[aria-invalid='true']:focus {
+  border-color: var(--color-danger-ink);
+  box-shadow: 0 0 0 3px var(--color-danger-soft);
+}
+
+.password-error {
+  color: var(--color-danger-ink);
+  font-size: 0.82rem;
+  font-weight: 500;
+}

@@ -36,7 +36,7 @@ export function RegisterPage({ onBack }: RegisterPageProps) {
 
       if (response?.token) {
         saveAuthToken(response.token);
-        navigate('/dashboard');
+        navigate('/login');
         return;
       }
 

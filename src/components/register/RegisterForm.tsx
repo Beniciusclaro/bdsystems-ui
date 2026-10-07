@@ -11,7 +11,7 @@ const initialState = {
   name: '',
   email: '',
   password: '',
-  role: 'ADMIN',
+  confirmPassword: '',
   companyName: '',
   street: '',
   city: '',
@@ -21,22 +21,26 @@ const initialState = {
 
 export function RegisterForm({ isSubmitting, onSubmit }: RegisterFormProps) {
   const [form, setForm] = useState(initialState);
+  const passwordsMatch = form.password === form.confirmPassword;
+  const passwordError =
+    form.confirmPassword && !passwordsMatch
+      ? 'As senhas devem ser iguais.'
+      : null;
 
   const payload = useMemo<UserRequest>(
     () => ({
       name: form.name,
       email: form.email,
       password: form.password,
-      role: form.role,
       companyName: form.companyName,
-      address: {
-        street: form.street,
-        city: form.city,
-        state: form.state,
-        zipcode: form.zipcode,
-      },
       company: {
         name: form.companyName,
+        address: {
+          street: form.street,
+          city: form.city,
+          state: form.state,
+          zipcode: form.zipcode,
+        },
       },
     }),
     [form],
@@ -49,8 +53,13 @@ export function RegisterForm({ isSubmitting, onSubmit }: RegisterFormProps) {
     setForm((current) => ({ ...current, [name]: value }));
   };
 
-  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (event: React.SubmitEvent<HTMLFormElement>) => {
     event.preventDefault();
+
+    if (!passwordsMatch) {
+      return;
+    }
+
     await onSubmit(payload);
   };
 
@@ -94,14 +103,31 @@ export function RegisterForm({ isSubmitting, onSubmit }: RegisterFormProps) {
             required
           />
         </label>
-
+        
         <label>
-          Papel
-          <select name="role" value={form.role} onChange={handleChange}>
-            <option value="ADMIN">Administrador</option>
-            <option value="MANAGER">Gestor</option>
-            <option value="USER">Usuário</option>
-          </select>
+          Confirmar Senha
+          <input
+            type="password"
+            name="confirmPassword"
+            autoComplete="new-password"
+            value={form.confirmPassword}
+            onChange={handleChange}
+            placeholder="Mínimo 6 caracteres"
+            aria-invalid={Boolean(passwordError)}
+            aria-describedby={
+              passwordError ? 'confirm-password-error' : undefined
+            }
+            required
+          />
+          {passwordError ? (
+            <span
+              id="confirm-password-error"
+              className="password-error"
+              role="alert"
+            >
+              {passwordError}
+            </span>
+          ) : null}
         </label>
 
         <label className="full-width">
