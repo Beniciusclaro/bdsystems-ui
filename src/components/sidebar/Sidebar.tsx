@@ -21,7 +21,7 @@ export function Sidebar({ onLogout }: SidebarProps) {
           Visão geral
         </NavLink>
         <NavLink
-          to="/employees/new"
+          to="/employees"
           className={({ isActive }) => `nav-item${isActive ? ' active' : ''}`}
         >
           Funcionários

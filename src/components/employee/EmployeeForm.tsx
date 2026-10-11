@@ -1,12 +1,37 @@
 import { useState } from 'react';
-import type { EmployeeRequest } from '../../types/employee';
+import type {
+  EmployeeRequest,
+  EmployeeResponse,
+  EmployeeStatus,
+} from '../../types/employee';
 
 interface EmployeeFormProps {
   isSubmitting: boolean;
+  initialValues?: EmployeeResponse;
+  submitLabel?: string;
+  submittingLabel?: string;
   onSubmit: (payload: EmployeeRequest) => Promise<void> | void;
 }
 
-const initialForm = {
+interface EmployeeFormState {
+  fullName: string;
+  email: string;
+  phoneNumber: string;
+  documentNumber: string;
+  birthDate: string;
+  street: string;
+  city: string;
+  state: string;
+  zipCode: string;
+  employeeNumber: string;
+  position: string;
+  department: string;
+  admissionDate: string;
+  terminationDate: string;
+  status: EmployeeStatus | '';
+}
+
+const initialForm: EmployeeFormState = {
   fullName: '',
   email: '',
   phoneNumber: '',
@@ -21,12 +46,43 @@ const initialForm = {
   department: '',
   admissionDate: '',
   terminationDate: '',
+  status: 'ACTIVE',
 };
 
-export function EmployeeForm({ isSubmitting, onSubmit }: EmployeeFormProps) {
-  const [form, setForm] = useState(initialForm);
+function toFormState(employee?: EmployeeResponse): EmployeeFormState {
+  if (!employee) {
+    return initialForm;
+  }
 
-  const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+  return {
+    fullName: employee.fullName,
+    email: employee.email,
+    phoneNumber: employee.phoneNumber ?? '',
+    documentNumber: employee.documentNumber ?? '',
+    birthDate: employee.birthDate ?? '',
+    street: employee.address.street,
+    city: employee.address.city,
+    state: employee.address.state,
+    zipCode: employee.address.zipCode,
+    employeeNumber: employee.employeeNumber,
+    position: employee.position,
+    department: employee.department,
+    admissionDate: employee.admissionDate,
+    terminationDate: employee.terminationDate ?? '',
+    status: employee.status ?? '',
+  };
+}
+
+export function EmployeeForm({
+  isSubmitting,
+  initialValues,
+  submitLabel = 'Cadastrar funcionário',
+  submittingLabel = 'Cadastrando...',
+  onSubmit,
+}: EmployeeFormProps) {
+  const [form, setForm] = useState(() => toFormState(initialValues));
+
+  const handleChange = (event: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = event.target;
     setForm((current) => ({ ...current, [name]: value }));
   };
@@ -34,10 +90,14 @@ export function EmployeeForm({ isSubmitting, onSubmit }: EmployeeFormProps) {
   const handleSubmit = async (event: React.SubmitEvent<HTMLFormElement>) => {
     event.preventDefault();
 
+    if (!form.status) {
+      return;
+    }
+
     const payload: EmployeeRequest = {
       fullName: form.fullName,
       email: form.email,
-      ...(form.phoneNumber ? { phoneNumber: form.phoneNumber } : {}),
+      phoneNumber: form.phoneNumber,
       ...(form.documentNumber ? { documentNumber: form.documentNumber } : {}),
       ...(form.birthDate ? { birthDate: form.birthDate } : {}),
       address: {
@@ -51,6 +111,7 @@ export function EmployeeForm({ isSubmitting, onSubmit }: EmployeeFormProps) {
       department: form.department,
       admissionDate: form.admissionDate,
       ...(form.terminationDate ? { terminationDate: form.terminationDate } : {}),
+      status: form.status,
     };
 
     await onSubmit(payload);
@@ -95,6 +156,7 @@ export function EmployeeForm({ isSubmitting, onSubmit }: EmployeeFormProps) {
               value={form.phoneNumber}
               onChange={handleChange}
               maxLength={255}
+              required
             />
           </label>
 
@@ -226,11 +288,21 @@ export function EmployeeForm({ isSubmitting, onSubmit }: EmployeeFormProps) {
               onChange={handleChange}
             />
           </label>
+
+          <label>
+            Status
+            <select name="status" value={form.status} onChange={handleChange} required>
+                  <option value="">Selecione o status</option>
+                  <option value="ACTIVE">Ativo</option>
+              <option value="INACTIVE">Inativo</option>
+              <option value="TERMINATED">Desligado</option>
+            </select>
+          </label>
         </div>
       </section>
 
       <button type="submit" className="primary-button" disabled={isSubmitting}>
-        {isSubmitting ? 'Cadastrando...' : 'Cadastrar funcionário'}
+        {isSubmitting ? submittingLabel : submitLabel}
       </button>
     </form>
   );

@@ -1,6 +1,7 @@
 import './App.scss'
 import { Navigate, Route, Routes } from 'react-router-dom'
 import { DashboardPage } from './pages/DashboardPage'
+import { EmployeeListPage } from './pages/EmployeeListPage'
 import { EmployeeRegistrationPage } from './pages/EmployeeRegistrationPage'
 import { LandingPage } from './pages/LandingPage'
 import { LoginPage } from './pages/LoginPage'
@@ -13,7 +14,10 @@ function App() {
       <Route path="/login" element={<LoginPage />} />
       <Route path="/register" element={<RegisterPage />} />
       <Route path="/dashboard" element={<DashboardPage />} />
-      <Route path="/employees/new" element={<EmployeeRegistrationPage />} />
+      <Route path="/employees" element={<EmployeeListPage />}>
+        <Route path="new" element={<EmployeeRegistrationPage />} />
+        <Route path=":employeeId/edit" element={<EmployeeRegistrationPage />} />
+      </Route>
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   )

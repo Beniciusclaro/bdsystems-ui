@@ -1,5 +1,43 @@
-.employee-form-card {
+.employee-registration-dialog {
+  width: min(100% - 32px, 1050px);
   max-width: 1050px;
+  max-height: min(92vh, 900px);
+  padding: 0;
+  overflow: hidden;
+  border: 1px solid var(--color-border);
+  border-radius: 10px;
+  background: var(--color-canvas);
+  color: var(--color-ink);
+  box-shadow: 0 18px 60px hsl(195 16% 20% / 24%);
+}
+
+.employee-registration-dialog::backdrop {
+  background: hsl(195 16% 15% / 55%);
+  backdrop-filter: blur(2px);
+}
+
+.employee-registration-content {
+  max-height: min(92vh, 900px);
+  padding: 24px;
+  overflow-y: auto;
+}
+
+.employee-registration-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+.employee-registration-header h1 {
+  margin: 0;
+  color: var(--color-ink);
+  font-size: 1.65rem;
+}
+
+.employee-form-card {
+  max-width: none;
 }
 
 .employee-form-intro {
@@ -35,6 +73,21 @@
 }
 
 @media (max-width: 520px) {
+  .employee-registration-dialog {
+    width: calc(100% - 20px);
+    max-height: calc(100dvh - 20px);
+    border-radius: 8px;
+  }
+
+  .employee-registration-content {
+    max-height: calc(100dvh - 20px);
+    padding: 18px 14px;
+  }
+
+  .employee-registration-header h1 {
+    font-size: 1.4rem;
+  }
+
   .employee-form .primary-button {
     width: 100%;
   }
