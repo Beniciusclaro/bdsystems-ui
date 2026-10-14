@@ -14,6 +14,13 @@ const statusLabels: Record<EmployeeStatus, string> = {
   TERMINATED: 'Desligado',
 };
 
+const paymentMethodLabels = {
+  MONTHLY: 'Mensal',
+  WEEKLY: 'Semanal',
+  DAILY: 'Diário',
+  HOURLY: 'Hora',
+} as const;
+
 function getStatusLabel(status: EmployeeStatus | null): string {
   return status ? statusLabels[status] : 'Não informado';
 }
@@ -400,6 +407,8 @@ export function EmployeeListPage() {
               <div><dt>Cargo</dt><dd>{selectedEmployee.position}</dd></div>
               <div><dt>Departamento</dt><dd>{selectedEmployee.department}</dd></div>
               <div><dt>Admissão</dt><dd>{formatDate(selectedEmployee.admissionDate)}</dd></div>
+              <div><dt>Forma de pagamento</dt><dd>{selectedEmployee.paymentMethod ? paymentMethodLabels[selectedEmployee.paymentMethod] : '—'}</dd></div>
+              <div><dt>Valor</dt><dd>{selectedEmployee.paymentAmount == null ? '—' : selectedEmployee.paymentAmount.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</dd></div>
               <div><dt>Desligamento</dt><dd>{formatDate(selectedEmployee.terminationDate)}</dd></div>
               <div className="employee-address-detail">
                 <dt>Endereço</dt>

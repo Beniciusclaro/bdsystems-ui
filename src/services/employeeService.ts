@@ -1,6 +1,7 @@
 import { getAuthHeaders } from '../lib/session';
 import type {
   EmployeePage,
+  EmployeePaymentMethod,
   EmployeeRequest,
   EmployeeResponse,
   EmployeeStatus,
@@ -39,6 +40,15 @@ function isEmployeeStatus(value: unknown): value is EmployeeStatus {
   return value === 'ACTIVE' || value === 'INACTIVE' || value === 'TERMINATED';
 }
 
+function isEmployeePaymentMethod(value: unknown): value is EmployeePaymentMethod {
+  return (
+    value === 'MONTHLY' ||
+    value === 'WEEKLY' ||
+    value === 'DAILY' ||
+    value === 'HOURLY'
+  );
+}
+
 function isEmployee(value: unknown): value is EmployeeResponse {
   if (!isRecord(value) || !isRecord(value.address)) {
     return false;
@@ -60,6 +70,12 @@ function isEmployee(value: unknown): value is EmployeeResponse {
     typeof value.position === 'string' &&
     typeof value.department === 'string' &&
     typeof value.admissionDate === 'string' &&
+    (!('paymentMethod' in value) ||
+      value.paymentMethod === null ||
+      isEmployeePaymentMethod(value.paymentMethod)) &&
+    (!('paymentAmount' in value) ||
+      value.paymentAmount === null ||
+      typeof value.paymentAmount === 'number') &&
     (typeof value.terminationDate === 'string' || value.terminationDate === null) &&
     (value.status === null || isEmployeeStatus(value.status))
   );

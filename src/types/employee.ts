@@ -5,6 +5,8 @@ export interface EmployeeAddressRequest {
   zipCode: string;
 }
 
+export type EmployeePaymentMethod = 'MONTHLY' | 'WEEKLY' | 'DAILY' | 'HOURLY';
+
 export interface EmployeeRequest {
   fullName: string;
   email: string;
@@ -16,11 +18,13 @@ export interface EmployeeRequest {
   position: string;
   department: string;
   admissionDate: string;
+  paymentMethod: EmployeePaymentMethod;
+  paymentAmount: number;
   terminationDate?: string;
   status: EmployeeStatus;
 }
 
-export type EmployeeStatus = 'ACTIVE' | 'INACTIVE' | 'TERMINATED';
+export type EmployeeStatus = 'ACTIVE' | 'INACTIVE' | 'TERMINATED' | 'LEASED';
 
 export interface EmployeeResponse {
   id: string;
@@ -35,6 +39,8 @@ export interface EmployeeResponse {
   position: string;
   department: string;
   admissionDate: string;
+  paymentMethod?: EmployeePaymentMethod | null;
+  paymentAmount?: number | null;
   terminationDate: string | null;
   status: EmployeeStatus | null;
 }
