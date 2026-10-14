@@ -32,7 +32,7 @@
 
 .employee-filters {
   display: grid;
-  grid-template-columns: repeat(3, minmax(130px, 1fr)) auto;
+  grid-template-columns: repeat(3, minmax(130px, 1fr)) auto auto;
   align-items: end;
   gap: 14px;
   padding: 18px 24px;
@@ -48,6 +48,11 @@
   min-height: 42px;
 }
 
+.employee-filters input {
+  min-height: 42px;
+}
+
+.employee-search-filters,
 .employee-clear-filters {
   min-height: 42px;
   white-space: nowrap;
@@ -311,6 +316,115 @@
   background: hsl(195 16% 15% / 48%);
 }
 
+.employee-delete-dialog {
+  width: min(100% - 32px, 440px);
+  max-width: 440px;
+  margin: auto;
+  padding: 32px;
+  border: 1px solid var(--color-border);
+  border-radius: 14px;
+  background: var(--color-surface);
+  color: var(--color-ink);
+  box-shadow: 0 24px 72px hsl(195 16% 20% / 28%);
+}
+
+.employee-delete-dialog::backdrop {
+  background: hsl(195 16% 15% / 58%);
+  backdrop-filter: blur(3px);
+}
+
+.employee-delete-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+.employee-delete-icon {
+  display: grid;
+  width: 56px;
+  height: 56px;
+  margin-bottom: 18px;
+  place-items: center;
+  border-radius: 50%;
+  background: var(--color-danger-soft);
+  color: var(--color-danger-ink);
+}
+
+.employee-delete-icon svg {
+  width: 27px;
+  height: 27px;
+  stroke: currentColor;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 1.8;
+}
+
+.employee-delete-eyebrow {
+  margin: 0 0 5px;
+  color: var(--color-danger-ink);
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.employee-delete-content h2 {
+  margin: 0;
+  font-size: 1.4rem;
+}
+
+.employee-delete-description {
+  margin: 12px 0 0;
+  color: var(--color-muted);
+  font-size: 0.95rem;
+  line-height: 1.6;
+  overflow-wrap: anywhere;
+}
+
+.employee-delete-description strong {
+  color: var(--color-ink);
+}
+
+.employee-delete-error {
+  width: 100%;
+  margin: 18px 0 0;
+  text-align: left;
+}
+
+.employee-delete-actions {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  width: 100%;
+  margin-top: 26px;
+}
+
+.employee-delete-actions button {
+  min-height: 46px;
+}
+
+.employee-delete-confirm {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--color-danger-ink);
+  border-radius: 6px;
+  padding: 12px 16px;
+  background: var(--color-danger-ink);
+  color: #fff;
+  font-weight: 700;
+  transition: filter 0.2s ease, opacity 0.2s ease;
+}
+
+.employee-delete-confirm:hover:not(:disabled) {
+  filter: brightness(0.9);
+}
+
+.employee-delete-confirm:disabled {
+  opacity: 0.65;
+}
+
 .employee-details-header {
   display: flex;
   justify-content: space-between;
@@ -480,6 +594,10 @@
     width: 100%;
   }
 
+  .employee-search-filters {
+    width: 100%;
+  }
+
   .employee-list-message {
     align-items: stretch;
     flex-direction: column;
@@ -510,6 +628,18 @@
 
   .employee-details-dialog {
     padding: 20px 16px;
+  }
+
+  .employee-delete-dialog {
+    padding: 26px 20px;
+  }
+
+  .employee-delete-actions {
+    flex-direction: column-reverse;
+  }
+
+  .employee-delete-actions button {
+    width: 100%;
   }
 
   .employee-details-grid {

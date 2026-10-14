@@ -1,6 +1,7 @@
 import { getAuthHeaders } from '../lib/session';
 import type {
   EmployeePage,
+  EmployeeFilters,
   EmployeePaymentMethod,
   EmployeeRequest,
   EmployeeResponse,
@@ -37,7 +38,12 @@ function isRecord(value: unknown): value is Record<string, unknown> {
 }
 
 function isEmployeeStatus(value: unknown): value is EmployeeStatus {
-  return value === 'ACTIVE' || value === 'INACTIVE' || value === 'TERMINATED';
+  return (
+    value === 'ACTIVE' ||
+    value === 'INACTIVE' ||
+    value === 'TERMINATED' ||
+    value === 'LEASED'
+  );
 }
 
 function isEmployeePaymentMethod(value: unknown): value is EmployeePaymentMethod {
@@ -86,33 +92,47 @@ function parseEmployeePage(value: unknown): EmployeePage {
     !isRecord(value) ||
     !Array.isArray(value.content) ||
     !value.content.every(isEmployee) ||
-    typeof value.totalElements !== 'number' ||
-    typeof value.totalPages !== 'number' ||
-    typeof value.number !== 'number' ||
-    typeof value.size !== 'number' ||
-    typeof value.first !== 'boolean' ||
-    typeof value.last !== 'boolean'
+    !isRecord(value.page) ||
+    typeof value.page.size !== 'number' ||
+    typeof value.page.number !== 'number' ||
+    typeof value.page.totalElements !== 'number' ||
+    typeof value.page.totalPages !== 'number'
   ) {
     throw new Error('A resposta da lista de funcionários está em um formato inválido.');
   }
 
   return {
     content: value.content,
-    totalElements: value.totalElements,
-    totalPages: value.totalPages,
-    number: value.number,
-    size: value.size,
-    first: value.first,
-    last: value.last,
+    page: {
+      size: value.page.size,
+      number: value.page.number,
+      totalElements: value.page.totalElements,
+      totalPages: value.page.totalPages,
+    },
   };
 }
 
-export async function getEmployees(page: number, size: number): Promise<EmployeePage> {
+export async function getEmployees(
+  page: number,
+  size: number,
+  filters: EmployeeFilters = {},
+): Promise<EmployeePage> {
   const query = new URLSearchParams({
     page: String(page),
     size: String(size),
     sort: 'fullName,asc',
   });
+
+  if (filters.status) {
+    query.set('status', filters.status);
+  }
+  if (filters.position) {
+    query.set('position', filters.position);
+  }
+  if (filters.department) {
+    query.set('department', filters.department);
+  }
+
   const response = await fetch(`${API_BASE_URL}/api/employees?${query}`, {
     headers: getAuthHeaders(),
   });
@@ -156,4 +176,20 @@ export async function updateEmployee(
   }
 
   throw new Error(await getErrorMessage(response, 'Não foi possível atualizar o funcionário.'));
+}
+
+export async function deleteEmployee(employeeId: string): Promise<void> {
+  const response = await fetch(
+    `${API_BASE_URL}/api/employees/${encodeURIComponent(employeeId)}`,
+    {
+      method: 'DELETE',
+      headers: getAuthHeaders(),
+    },
+  );
+
+  if (response.ok) {
+    return;
+  }
+
+  throw new Error(await getErrorMessage(response, 'Não foi possível excluir o funcionário.'));
 }

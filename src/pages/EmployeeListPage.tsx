@@ -2,8 +2,8 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { Link, Outlet, useNavigate } from 'react-router-dom';
 import { Sidebar } from '../components/sidebar/Sidebar';
 import { clearAuthToken, getAuthToken } from '../lib/session';
-import { getEmployees } from '../services/employeeService';
-import type { EmployeeResponse, EmployeeStatus } from '../types/employee';
+import { deleteEmployee, getEmployees } from '../services/employeeService';
+import type { EmployeeFilters, EmployeeResponse, EmployeeStatus } from '../types/employee';
 import './EmployeeListPage.scss';
 
 const PAGE_SIZE_OPTIONS = [10, 20, 50];
@@ -12,6 +12,7 @@ const statusLabels: Record<EmployeeStatus, string> = {
   ACTIVE: 'Ativo',
   INACTIVE: 'Inativo',
   TERMINATED: 'Desligado',
+  LEASED: 'Alocado',
 };
 
 const paymentMethodLabels = {
@@ -23,6 +24,10 @@ const paymentMethodLabels = {
 
 function getStatusLabel(status: EmployeeStatus | null): string {
   return status ? statusLabels[status] : 'Não informado';
+}
+
+function isEmployeeStatus(value: string): value is EmployeeStatus {
+  return Object.prototype.hasOwnProperty.call(statusLabels, value);
 }
 
 function formatDate(value: string | null): string {
@@ -42,14 +47,19 @@ export function EmployeeListPage() {
   const [totalPages, setTotalPages] = useState(0);
   const [page, setPage] = useState(0);
   const [pageSize, setPageSize] = useState(PAGE_SIZE_OPTIONS[0]);
-  const [statusFilter, setStatusFilter] = useState('');
+  const [statusFilter, setStatusFilter] = useState<EmployeeStatus | ''>('');
   const [positionFilter, setPositionFilter] = useState('');
   const [departmentFilter, setDepartmentFilter] = useState('');
+  const [appliedFilters, setAppliedFilters] = useState<EmployeeFilters>({});
   const [selectedEmployee, setSelectedEmployee] = useState<EmployeeResponse | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [reloadCount, setReloadCount] = useState(0);
+  const [deletingEmployeeId, setDeletingEmployeeId] = useState<string | null>(null);
+  const [employeeToDelete, setEmployeeToDelete] = useState<EmployeeResponse | null>(null);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
   const dialogRef = useRef<HTMLDialogElement>(null);
+  const deleteDialogRef = useRef<HTMLDialogElement>(null);
 
   useEffect(() => {
     if (!token) {
@@ -59,12 +69,12 @@ export function EmployeeListPage() {
 
     let ignore = false;
 
-    getEmployees(page, pageSize)
+    getEmployees(page, pageSize, appliedFilters)
       .then((result) => {
         if (!ignore) {
           setEmployees(result.content);
-          setTotalElements(result.totalElements);
-          setTotalPages(result.totalPages);
+          setTotalElements(result.page.totalElements);
+          setTotalPages(result.page.totalPages);
         }
       })
       .catch((requestError: unknown) => {
@@ -85,7 +95,7 @@ export function EmployeeListPage() {
     return () => {
       ignore = true;
     };
-  }, [navigate, page, pageSize, reloadCount, token]);
+  }, [appliedFilters, navigate, page, pageSize, reloadCount, token]);
 
   useEffect(() => {
     const dialog = dialogRef.current;
@@ -97,21 +107,20 @@ export function EmployeeListPage() {
     }
   }, [selectedEmployee]);
 
+  useEffect(() => {
+    const dialog = deleteDialogRef.current;
+
+    if (employeeToDelete && dialog && !dialog.open) {
+      dialog.showModal();
+    } else if (!employeeToDelete && dialog?.open) {
+      dialog.close();
+    }
+  }, [employeeToDelete]);
+
   const handleLogout = () => {
     clearAuthToken();
     navigate('/login');
   };
-
-  const filteredEmployees = useMemo(
-    () =>
-      employees.filter(
-        (employee) =>
-          (!statusFilter || employee.status === statusFilter) &&
-          (!positionFilter || employee.position === positionFilter) &&
-          (!departmentFilter || employee.department === departmentFilter),
-      ),
-    [departmentFilter, employees, positionFilter, statusFilter],
-  );
 
   const positions = useMemo(
     () => [...new Set(employees.map((employee) => employee.position))].sort((a, b) => a.localeCompare(b, 'pt')),
@@ -126,6 +135,25 @@ export function EmployeeListPage() {
     setStatusFilter('');
     setPositionFilter('');
     setDepartmentFilter('');
+    setAppliedFilters({});
+    setError(null);
+    setIsLoading(true);
+    setPage(0);
+  };
+
+  const searchEmployees = (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+
+    const filters: EmployeeFilters = {
+      ...(statusFilter ? { status: statusFilter } : {}),
+      ...(positionFilter.trim() ? { position: positionFilter.trim() } : {}),
+      ...(departmentFilter.trim() ? { department: departmentFilter.trim() } : {}),
+    };
+
+    setError(null);
+    setIsLoading(true);
+    setAppliedFilters(filters);
+    setPage(0);
   };
 
   const goToPage = (nextPage: number) => {
@@ -153,6 +181,36 @@ export function EmployeeListPage() {
     setReloadCount((current) => current + 1);
   };
 
+  const handleConfirmDeleteEmployee = async () => {
+    if (!employeeToDelete) {
+      return;
+    }
+
+    const employee = employeeToDelete;
+    setDeleteError(null);
+    setDeletingEmployeeId(employee.id);
+
+    try {
+      await deleteEmployee(employee.id);
+      setEmployeeToDelete(null);
+      setSelectedEmployee(null);
+
+      if (employees.length === 1 && page > 0) {
+        setPage(page - 1);
+      }
+
+      refreshEmployees();
+    } catch (requestError: unknown) {
+      setDeleteError(
+        requestError instanceof Error
+          ? requestError.message
+          : 'Não foi possível excluir o funcionário.',
+      );
+    } finally {
+      setDeletingEmployeeId(null);
+    }
+  };
+
   if (!token) {
     return null;
   }
@@ -178,14 +236,20 @@ export function EmployeeListPage() {
               <h2 id="employee-list-heading">Lista de funcionários</h2>
             </div>
             <span className="employee-page-count" aria-live="polite">
-              {filteredEmployees.length} de {employees.length} nesta página
+              {employees.length} {employees.length === 1 ? 'funcionário' : 'funcionários'} nesta página
             </span>
           </div>
 
-          <div className="employee-filters" aria-label="Filtros de funcionários">
+          <form className="employee-filters" aria-label="Filtros de funcionários" onSubmit={searchEmployees}>
             <label>
               Status
-              <select value={statusFilter} onChange={(event) => setStatusFilter(event.target.value)}>
+              <select
+                value={statusFilter}
+                onChange={(event) => {
+                  const { value } = event.target;
+                  setStatusFilter(isEmployeeStatus(value) ? value : '');
+                }}
+              >
                 <option value="">Todos os status</option>
                 {Object.entries(statusLabels).map(([value, label]) => (
                   <option key={value} value={value}>{label}</option>
@@ -194,29 +258,37 @@ export function EmployeeListPage() {
             </label>
             <label>
               Cargo
-              <select value={positionFilter} onChange={(event) => setPositionFilter(event.target.value)}>
-                <option value="">Todos os cargos</option>
-                {positions.map((position) => (
-                  <option key={position} value={position}>{position}</option>
-                ))}
-              </select>
+              <input
+                type="search"
+                list="employee-position-options"
+                value={positionFilter}
+                onChange={(event) => setPositionFilter(event.target.value)}
+                placeholder="Todos os cargos"
+              />
+              <datalist id="employee-position-options">
+                {positions.map((position) => <option key={position} value={position} />)}
+              </datalist>
             </label>
             <label>
               Departamento
-              <select
+              <input
+                type="search"
+                list="employee-department-options"
                 value={departmentFilter}
                 onChange={(event) => setDepartmentFilter(event.target.value)}
-              >
-                <option value="">Todos os departamentos</option>
-                {departments.map((department) => (
-                  <option key={department} value={department}>{department}</option>
-                ))}
-              </select>
+                placeholder="Todos os departamentos"
+              />
+              <datalist id="employee-department-options">
+                {departments.map((department) => <option key={department} value={department} />)}
+              </datalist>
             </label>
+            <button type="submit" className="primary-button employee-search-filters">
+              Buscar
+            </button>
             <button type="button" className="text-button employee-clear-filters" onClick={clearFilters}>
               Limpar filtros
             </button>
-          </div>
+          </form>
 
           {error ? (
             <div className="message error employee-list-message" role="alert">
@@ -229,18 +301,19 @@ export function EmployeeListPage() {
 
           {isLoading ? (
             <p className="employee-list-state" role="status">Carregando funcionários...</p>
-          ) : error ? null : employees.length === 0 ? (
+          ) : error ? null : employees.length === 0 && totalElements === 0 &&
+            Object.keys(appliedFilters).length === 0 ? (
             <div className="employee-list-state">
               <h3>Nenhum funcionário cadastrado</h3>
               <p>Cadastre um funcionário para começar a montar sua equipe.</p>
               <Link to="/employees/new" className="primary-button">Cadastrar funcionário</Link>
             </div>
-          ) : filteredEmployees.length === 0 ? (
+          ) : employees.length === 0 ? (
             <div className="employee-list-state">
-              <h3>Nenhum resultado nesta página</h3>
-              <p>Altere ou limpe os filtros para ver outros funcionários.</p>
+              <h3>Nenhum funcionário encontrado</h3>
+              <p>Altere os filtros ou limpe a busca para ver outros funcionários.</p>
               <button type="button" className="secondary-button" onClick={clearFilters}>
-                Limpar filtros
+                Limpar busca
               </button>
             </div>
           ) : (
@@ -257,7 +330,7 @@ export function EmployeeListPage() {
                   </tr>
                 </thead>
                 <tbody>
-                  {filteredEmployees.map((employee) => (
+                  {employees.map((employee) => (
                     <tr
                       key={employee.id}
                       tabIndex={0}
@@ -303,9 +376,13 @@ export function EmployeeListPage() {
                           <button
                             type="button"
                             className="employee-row-action employee-row-action-delete"
-                            aria-label={`Excluir ${employee.fullName} (indisponível)`}
-                            title="Exclusão ainda não disponível na API"
-                            disabled
+                            aria-label={`Excluir ${employee.fullName}`}
+                            title={`Excluir ${employee.fullName}`}
+                            onClick={() => {
+                              setDeleteError(null);
+                              setEmployeeToDelete(employee);
+                            }}
+                            disabled={deletingEmployeeId === employee.id}
                           >
                             <svg aria-hidden="true" viewBox="0 0 24 24" fill="none">
                               <path d="M3 6h18" />
@@ -418,11 +495,72 @@ export function EmployeeListPage() {
                 </dd>
               </div>
             </dl>
-
-            <p className="employee-action-note">
-              A exclusão estará disponível quando a API oferecer essa operação.
-            </p>
           </>
+        ) : null}
+      </dialog>
+
+      <dialog
+        ref={deleteDialogRef}
+        className="employee-delete-dialog"
+        aria-labelledby="employee-delete-heading"
+        aria-describedby="employee-delete-description"
+        onClose={() => {
+          setEmployeeToDelete(null);
+          setDeleteError(null);
+        }}
+        onCancel={(event) => {
+          if (deletingEmployeeId) {
+            event.preventDefault();
+          }
+        }}
+        onClick={(event) => {
+          if (event.target === event.currentTarget && !deletingEmployeeId) {
+            setEmployeeToDelete(null);
+          }
+        }}
+      >
+        {employeeToDelete ? (
+          <div className="employee-delete-content">
+            <div className="employee-delete-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none">
+                <path d="M12 8v5" />
+                <path d="M12 17h.01" />
+                <path d="M10.3 3.9 2.7 17a2 2 0 0 0 1.7 3h15.2a2 2 0 0 0 1.7-3l-7.6-13.1a2 2 0 0 0-3.4 0Z" />
+              </svg>
+            </div>
+            <p className="employee-delete-eyebrow">Confirmar exclusão</p>
+            <h2 id="employee-delete-heading">Excluir funcionário?</h2>
+            <p id="employee-delete-description" className="employee-delete-description">
+              Você está prestes a excluir <strong>{employeeToDelete.fullName}</strong>.
+              Essa ação é permanente e não pode ser desfeita.
+            </p>
+
+            {deleteError ? (
+              <p className="message error employee-delete-error" role="alert">
+                {deleteError}
+              </p>
+            ) : null}
+
+            <div className="employee-delete-actions">
+              <button
+                type="button"
+                className="secondary-button"
+                onClick={() => setEmployeeToDelete(null)}
+                disabled={Boolean(deletingEmployeeId)}
+                autoFocus
+              >
+                Cancelar
+              </button>
+              <button
+                type="button"
+                className="employee-delete-confirm"
+                onClick={() => void handleConfirmDeleteEmployee()}
+                disabled={Boolean(deletingEmployeeId)}
+              >
+                {deletingEmployeeId ? 'Excluindo...' : 'Excluir funcionário'}
+              </button>
+            </div>
+          </div>
         ) : null}
       </dialog>
     </main>

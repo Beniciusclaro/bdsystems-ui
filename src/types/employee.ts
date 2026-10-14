@@ -26,6 +26,12 @@ export interface EmployeeRequest {
 
 export type EmployeeStatus = 'ACTIVE' | 'INACTIVE' | 'TERMINATED' | 'LEASED';
 
+export interface EmployeeFilters {
+  status?: EmployeeStatus;
+  position?: string;
+  department?: string;
+}
+
 export interface EmployeeResponse {
   id: string;
   fullName: string;
@@ -47,10 +53,10 @@ export interface EmployeeResponse {
 
 export interface EmployeePage {
   content: EmployeeResponse[];
-  totalElements: number;
-  totalPages: number;
-  number: number;
-  size: number;
-  first: boolean;
-  last: boolean;
+  page: {
+    size: number;
+    number: number;
+    totalElements: number;
+    totalPages: number;
+  };
 }
