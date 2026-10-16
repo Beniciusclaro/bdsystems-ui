@@ -1,0 +1,36 @@
+.ui-details-dialog {
+  width: min(100% - 32px, 620px);
+  max-width: 620px;
+}
+
+.ui-details-dialog__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 16px;
+  margin-bottom: 22px;
+}
+
+.ui-details-dialog__header .eyebrow {
+  margin-bottom: 4px;
+}
+
+.ui-details-dialog__header h2 {
+  margin: 0;
+  overflow-wrap: anywhere;
+  font-size: 1.45rem;
+}
+
+.ui-details-dialog__close {
+  display: grid;
+  flex: 0 0 40px;
+  width: 40px;
+  height: 40px;
+  place-items: center;
+  border: 1px solid var(--color-border);
+  border-radius: 6px;
+  background: var(--color-surface);
+  color: var(--color-ink);
+  font-size: 1.5rem;
+  line-height: 1;
+}

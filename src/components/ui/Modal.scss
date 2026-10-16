@@ -1,0 +1,27 @@
+.ui-modal {
+  width: min(100% - 32px, 560px);
+  max-width: 560px;
+  max-height: min(90vh, 760px);
+  margin: auto;
+  padding: 24px;
+  overflow-y: auto;
+  border: 1px solid var(--color-border);
+  border-radius: 10px;
+  background: var(--color-surface);
+  color: var(--color-ink);
+  box-shadow: 0 18px 60px hsl(195 16% 20% / 24%);
+}
+
+.ui-modal::backdrop {
+  background: hsl(195 16% 15% / 48%);
+}
+
+.ui-modal--small {
+  width: min(100% - 32px, 440px);
+  max-width: 440px;
+}
+
+.ui-modal--large {
+  width: min(100% - 32px, 760px);
+  max-width: 760px;
+}

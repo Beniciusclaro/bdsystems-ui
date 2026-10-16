@@ -1,0 +1,51 @@
+.ui-content-state {
+  padding: 44px 24px;
+  color: var(--color-muted);
+  text-align: center;
+}
+
+.ui-content-state h3 {
+  margin: 0 0 6px;
+  color: var(--color-ink);
+  font-size: 1rem;
+}
+
+.ui-content-state p {
+  margin: 0 0 18px;
+}
+
+.ui-content-state .primary-button {
+  min-height: 44px;
+}
+
+.ui-content-state--error {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  margin: 18px 24px;
+  border: 1px solid hsl(0 48% 82%);
+  border-radius: 6px;
+  padding: 12px 14px;
+  background: var(--color-danger-soft);
+  color: var(--color-danger-ink);
+  text-align: left;
+}
+
+.ui-content-state--error h3 {
+  margin: 0;
+  color: inherit;
+  font-size: 0.95rem;
+}
+
+.ui-content-state--error p {
+  margin: 0;
+}
+
+@media (max-width: 520px) {
+  .ui-content-state--error {
+    align-items: stretch;
+    flex-direction: column;
+    margin-inline: 16px;
+  }
+}

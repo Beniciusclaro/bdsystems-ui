@@ -1,6 +1,14 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Link, Outlet, useNavigate } from 'react-router-dom';
 import { Sidebar } from '../components/sidebar/Sidebar';
+import { ConfirmDialog } from '../components/ui/ConfirmDialog';
+import { ContentState } from '../components/ui/ContentState';
+import { DataTable } from '../components/ui/DataTable';
+import type { DataTableColumn } from '../components/ui/DataTable';
+import { DetailsDialog } from '../components/ui/DetailsDialog';
+import { IconActionButton, RowActions } from '../components/ui/RowActions';
+import { Pagination } from '../components/ui/Pagination';
+import { StatusBadge } from '../components/ui/StatusBadge';
 import { clearAuthToken, getAuthToken } from '../lib/session';
 import { deleteEmployee, getEmployees } from '../services/employeeService';
 import type { EmployeeFilters, EmployeeResponse, EmployeeStatus } from '../types/employee';
@@ -15,6 +23,13 @@ const statusLabels: Record<EmployeeStatus, string> = {
   LEASED: 'Alocado',
 };
 
+const statusTones: Record<EmployeeStatus, 'success' | 'warning' | 'danger' | 'info'> = {
+  ACTIVE: 'success',
+  INACTIVE: 'warning',
+  TERMINATED: 'danger',
+  LEASED: 'info',
+};
+
 const paymentMethodLabels = {
   MONTHLY: 'Mensal',
   WEEKLY: 'Semanal',
@@ -24,6 +39,10 @@ const paymentMethodLabels = {
 
 function getStatusLabel(status: EmployeeStatus | null): string {
   return status ? statusLabels[status] : 'Não informado';
+}
+
+function getStatusTone(status: EmployeeStatus | null) {
+  return status ? statusTones[status] : 'neutral';
 }
 
 function isEmployeeStatus(value: string): value is EmployeeStatus {
@@ -58,8 +77,6 @@ export function EmployeeListPage() {
   const [deletingEmployeeId, setDeletingEmployeeId] = useState<string | null>(null);
   const [employeeToDelete, setEmployeeToDelete] = useState<EmployeeResponse | null>(null);
   const [deleteError, setDeleteError] = useState<string | null>(null);
-  const dialogRef = useRef<HTMLDialogElement>(null);
-  const deleteDialogRef = useRef<HTMLDialogElement>(null);
 
   useEffect(() => {
     if (!token) {
@@ -96,26 +113,6 @@ export function EmployeeListPage() {
       ignore = true;
     };
   }, [appliedFilters, navigate, page, pageSize, reloadCount, token]);
-
-  useEffect(() => {
-    const dialog = dialogRef.current;
-
-    if (selectedEmployee && dialog && !dialog.open) {
-      dialog.showModal();
-    } else if (!selectedEmployee && dialog?.open) {
-      dialog.close();
-    }
-  }, [selectedEmployee]);
-
-  useEffect(() => {
-    const dialog = deleteDialogRef.current;
-
-    if (employeeToDelete && dialog && !dialog.open) {
-      dialog.showModal();
-    } else if (!employeeToDelete && dialog?.open) {
-      dialog.close();
-    }
-  }, [employeeToDelete]);
 
   const handleLogout = () => {
     clearAuthToken();
@@ -180,6 +177,92 @@ export function EmployeeListPage() {
     setIsLoading(true);
     setReloadCount((current) => current + 1);
   };
+
+  const employeeColumns: DataTableColumn<EmployeeResponse>[] = [
+    {
+      key: 'employee',
+      header: 'Funcionário',
+      mobileLabel: 'Funcionário',
+      renderCell: (employee) => (
+        <>
+          <button
+            type="button"
+            className="employee-name employee-detail-trigger"
+            aria-label={`Ver detalhes de ${employee.fullName}`}
+            onClick={() => setSelectedEmployee(employee)}
+          >
+            {employee.fullName}
+          </button>
+          <span className="employee-meta">{employee.employeeNumber} · {employee.email}</span>
+        </>
+      ),
+    },
+    {
+      key: 'position',
+      header: 'Cargo',
+      mobileLabel: 'Cargo',
+      renderCell: (employee) => employee.position,
+    },
+    {
+      key: 'department',
+      header: 'Departamento',
+      mobileLabel: 'Departamento',
+      renderCell: (employee) => employee.department,
+    },
+    {
+      key: 'admissionDate',
+      header: 'Admissão',
+      mobileLabel: 'Admissão',
+      renderCell: (employee) => formatDate(employee.admissionDate),
+    },
+    {
+      key: 'status',
+      header: 'Status',
+      mobileLabel: 'Status',
+      renderCell: (employee) => (
+        <StatusBadge tone={getStatusTone(employee.status)}>
+          {getStatusLabel(employee.status)}
+        </StatusBadge>
+      ),
+    },
+    {
+      key: 'actions',
+      header: 'Ações',
+      mobileLabel: 'Ações',
+      headerClassName: 'employee-actions-heading',
+      cellClassName: 'employee-actions-cell',
+      renderCell: (employee) => (
+        <RowActions>
+          <IconActionButton
+            label={`Editar ${employee.fullName}`}
+            variant="accent"
+            onClick={() => navigate(`/employees/${employee.id}/edit`)}
+          >
+            <svg aria-hidden="true" viewBox="0 0 24 24" fill="none">
+              <path d="M12 20h9" />
+              <path d="m16.5 3.5 4 4L9 19l-5 1 1-5L16.5 3.5Z" />
+            </svg>
+          </IconActionButton>
+          <IconActionButton
+            label={`Excluir ${employee.fullName}`}
+            variant="danger"
+            onClick={() => {
+              setDeleteError(null);
+              setEmployeeToDelete(employee);
+            }}
+            disabled={deletingEmployeeId === employee.id}
+          >
+            <svg aria-hidden="true" viewBox="0 0 24 24" fill="none">
+              <path d="M3 6h18" />
+              <path d="M8 6V4h8v2" />
+              <path d="m19 6-1 14H6L5 6" />
+              <path d="M10 11v5M14 11v5" />
+            </svg>
+          </IconActionButton>
+        </RowActions>
+      ),
+    },
+  ];
 
   const handleConfirmDeleteEmployee = async () => {
     if (!employeeToDelete) {
@@ -290,151 +373,67 @@ export function EmployeeListPage() {
             </button>
           </form>
 
-          {error ? (
-            <div className="message error employee-list-message" role="alert">
-              <span>{error}</span>
-              <button type="button" className="text-button" onClick={retryLoading}>
-                Tentar novamente
-              </button>
-            </div>
-          ) : null}
-
           {isLoading ? (
-            <p className="employee-list-state" role="status">Carregando funcionários...</p>
-          ) : error ? null : employees.length === 0 && totalElements === 0 &&
+            <ContentState
+              variant="loading"
+              title="Carregando funcionários..."
+              className="employee-list-state"
+            />
+          ) : error ? (
+            <ContentState
+              variant="error"
+              title={error}
+              action={(
+                <button type="button" className="text-button" onClick={retryLoading}>
+                  Tentar novamente
+                </button>
+              )}
+            />
+          ) : employees.length === 0 && totalElements === 0 &&
             Object.keys(appliedFilters).length === 0 ? (
-            <div className="employee-list-state">
-              <h3>Nenhum funcionário cadastrado</h3>
-              <p>Cadastre um funcionário para começar a montar sua equipe.</p>
-              <Link to="/employees/new" className="primary-button">Cadastrar funcionário</Link>
-            </div>
+            <ContentState
+              variant="empty"
+              title="Nenhum funcionário cadastrado"
+              description="Cadastre um funcionário para começar a montar sua equipe."
+              action={<Link to="/employees/new" className="primary-button">Cadastrar funcionário</Link>}
+              className="employee-list-state"
+            />
           ) : employees.length === 0 ? (
-            <div className="employee-list-state">
-              <h3>Nenhum funcionário encontrado</h3>
-              <p>Altere os filtros ou limpe a busca para ver outros funcionários.</p>
-              <button type="button" className="secondary-button" onClick={clearFilters}>
-                Limpar busca
-              </button>
-            </div>
+            <ContentState
+              variant="no-results"
+              title="Nenhum funcionário encontrado"
+              description="Altere os filtros ou limpe a busca para ver outros funcionários."
+              action={(
+                <button type="button" className="secondary-button" onClick={clearFilters}>
+                  Limpar busca
+                </button>
+              )}
+              className="employee-list-state"
+            />
           ) : (
-            <div className="employee-table-wrap">
-              <table className="employee-table">
-                <thead>
-                  <tr>
-                    <th scope="col">Funcionário</th>
-                    <th scope="col">Cargo</th>
-                    <th scope="col">Departamento</th>
-                    <th scope="col">Admissão</th>
-                    <th scope="col">Status</th>
-                    <th scope="col" className="employee-actions-heading">Ações</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {employees.map((employee) => (
-                    <tr
-                      key={employee.id}
-                      tabIndex={0}
-                      aria-label={`Abrir detalhes de ${employee.fullName}`}
-                      onClick={() => setSelectedEmployee(employee)}
-                      onKeyDown={(event) => {
-                        if (event.key === 'Enter' || event.key === ' ') {
-                          event.preventDefault();
-                          setSelectedEmployee(employee);
-                        }
-                      }}
-                    >
-                      <td data-label="Funcionário">
-                        <span className="employee-name">{employee.fullName}</span>
-                        <span className="employee-meta">{employee.employeeNumber} · {employee.email}</span>
-                      </td>
-                      <td data-label="Cargo">{employee.position}</td>
-                      <td data-label="Departamento">{employee.department}</td>
-                      <td data-label="Admissão">{formatDate(employee.admissionDate)}</td>
-                      <td data-label="Status">
-                        <span className={`employee-status employee-status-${employee.status?.toLowerCase() ?? 'unknown'}`}>
-                          {getStatusLabel(employee.status)}
-                        </span>
-                      </td>
-                      <td
-                        data-label="Ações"
-                        className="employee-actions-cell"
-                        onClick={(event) => event.stopPropagation()}
-                      >
-                        <div className="employee-row-actions">
-                          <button
-                            type="button"
-                            className="employee-row-action employee-row-action-edit"
-                            aria-label={`Editar ${employee.fullName}`}
-                            title={`Editar ${employee.fullName}`}
-                            onClick={() => navigate(`/employees/${employee.id}/edit`)}
-                          >
-                            <svg aria-hidden="true" viewBox="0 0 24 24" fill="none">
-                              <path d="M12 20h9" />
-                              <path d="m16.5 3.5 4 4L9 19l-5 1 1-5L16.5 3.5Z" />
-                            </svg>
-                          </button>
-                          <button
-                            type="button"
-                            className="employee-row-action employee-row-action-delete"
-                            aria-label={`Excluir ${employee.fullName}`}
-                            title={`Excluir ${employee.fullName}`}
-                            onClick={() => {
-                              setDeleteError(null);
-                              setEmployeeToDelete(employee);
-                            }}
-                            disabled={deletingEmployeeId === employee.id}
-                          >
-                            <svg aria-hidden="true" viewBox="0 0 24 24" fill="none">
-                              <path d="M3 6h18" />
-                              <path d="M8 6V4h8v2" />
-                              <path d="m19 6-1 14H6L5 6" />
-                              <path d="M10 11v5M14 11v5" />
-                            </svg>
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+            <DataTable
+              rows={employees}
+              columns={employeeColumns}
+              getRowKey={(employee) => employee.id}
+              getRowLabel={(employee) => `Abrir detalhes de ${employee.fullName}`}
+              onRowActivate={setSelectedEmployee}
+              ariaLabel="Lista de funcionários"
+              className="employee-table"
+              wrapperClassName="employee-table-wrap"
+            />
           )}
 
           {!isLoading && !error && employees.length > 0 ? (
-            <div className="employee-list-controls">
-              <label className="employee-page-size">
-                Itens por página
-                <select
-                  value={pageSize}
-                  onChange={(event) => changePageSize(Number(event.target.value))}
-                >
-                  {PAGE_SIZE_OPTIONS.map((size) => (
-                    <option key={size} value={size}>{size}</option>
-                  ))}
-                </select>
-              </label>
-              {totalPages > 1 ? (
-                <nav className="employee-pagination" aria-label="Paginação da lista de funcionários">
-                  <button
-                    type="button"
-                    className="secondary-button"
-                    onClick={() => goToPage(Math.max(0, page - 1))}
-                    disabled={isLoading || page === 0}
-                  >
-                    Anterior
-                  </button>
-                  <span>Página {page + 1} de {totalPages}</span>
-                  <button
-                    type="button"
-                    className="secondary-button"
-                    onClick={() => goToPage(Math.min(totalPages - 1, page + 1))}
-                    disabled={isLoading || page >= totalPages - 1}
-                  >
-                    Próxima
-                  </button>
-                </nav>
-              ) : null}
-            </div>
+            <Pagination
+              currentPage={page}
+              totalPages={totalPages}
+              pageSize={pageSize}
+              pageSizeOptions={PAGE_SIZE_OPTIONS}
+              onPageChange={goToPage}
+              onPageSizeChange={changePageSize}
+              ariaLabel="Paginação da lista de funcionários"
+              className="employee-list-controls"
+            />
           ) : null}
         </section>
       </section>
@@ -446,123 +445,73 @@ export function EmployeeListPage() {
 
       <Outlet context={{ refreshEmployees, employees, isLoading }} />
 
-      <dialog
-        ref={dialogRef}
-        className="employee-details-dialog"
-        aria-labelledby="employee-details-heading"
-        onClose={() => setSelectedEmployee(null)}
-        onClick={(event) => {
-          if (event.target === event.currentTarget) {
+      <DetailsDialog
+        open={Boolean(selectedEmployee)}
+        onOpenChange={(open) => {
+          if (!open) {
             setSelectedEmployee(null);
           }
         }}
+        eyebrow="Detalhes do funcionário"
+        heading={selectedEmployee?.fullName ?? ''}
       >
         {selectedEmployee ? (
-          <>
-            <header className="employee-details-header">
-              <div>
-                <p className="eyebrow">Detalhes do funcionário</p>
-                <h2 id="employee-details-heading">{selectedEmployee.fullName}</h2>
-              </div>
-              <button
-                type="button"
-                className="employee-dialog-close"
-                aria-label="Fechar detalhes"
-                onClick={() => setSelectedEmployee(null)}
-              >
-                ×
-              </button>
-            </header>
-
-            <dl className="employee-details-grid">
-              <div><dt>Matrícula</dt><dd>{selectedEmployee.employeeNumber}</dd></div>
-              <div><dt>Status</dt><dd>{getStatusLabel(selectedEmployee.status)}</dd></div>
-              <div><dt>Email</dt><dd>{selectedEmployee.email}</dd></div>
-              <div><dt>Telefone</dt><dd>{selectedEmployee.phoneNumber || '—'}</dd></div>
-              <div><dt>Documento</dt><dd>{selectedEmployee.documentNumber || '—'}</dd></div>
-              <div><dt>Data de nascimento</dt><dd>{formatDate(selectedEmployee.birthDate)}</dd></div>
-              <div><dt>Cargo</dt><dd>{selectedEmployee.position}</dd></div>
-              <div><dt>Departamento</dt><dd>{selectedEmployee.department}</dd></div>
-              <div><dt>Admissão</dt><dd>{formatDate(selectedEmployee.admissionDate)}</dd></div>
-              <div><dt>Forma de pagamento</dt><dd>{selectedEmployee.paymentMethod ? paymentMethodLabels[selectedEmployee.paymentMethod] : '—'}</dd></div>
-              <div><dt>Valor</dt><dd>{selectedEmployee.paymentAmount == null ? '—' : selectedEmployee.paymentAmount.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</dd></div>
-              <div><dt>Desligamento</dt><dd>{formatDate(selectedEmployee.terminationDate)}</dd></div>
-              <div className="employee-address-detail">
-                <dt>Endereço</dt>
-                <dd>
-                  {selectedEmployee.address.street}, {selectedEmployee.address.city} —{' '}
-                  {selectedEmployee.address.state}, {selectedEmployee.address.zipCode}
-                </dd>
-              </div>
-            </dl>
-          </>
-        ) : null}
-      </dialog>
-
-      <dialog
-        ref={deleteDialogRef}
-        className="employee-delete-dialog"
-        aria-labelledby="employee-delete-heading"
-        aria-describedby="employee-delete-description"
-        onClose={() => {
-          setEmployeeToDelete(null);
-          setDeleteError(null);
-        }}
-        onCancel={(event) => {
-          if (deletingEmployeeId) {
-            event.preventDefault();
-          }
-        }}
-        onClick={(event) => {
-          if (event.target === event.currentTarget && !deletingEmployeeId) {
-            setEmployeeToDelete(null);
-          }
-        }}
-      >
-        {employeeToDelete ? (
-          <div className="employee-delete-content">
-            <div className="employee-delete-icon" aria-hidden="true">
-              <svg viewBox="0 0 24 24" fill="none">
-                <path d="M12 8v5" />
-                <path d="M12 17h.01" />
-                <path d="M10.3 3.9 2.7 17a2 2 0 0 0 1.7 3h15.2a2 2 0 0 0 1.7-3l-7.6-13.1a2 2 0 0 0-3.4 0Z" />
-              </svg>
+          <dl className="employee-details-grid">
+            <div><dt>Matrícula</dt><dd>{selectedEmployee.employeeNumber}</dd></div>
+            <div><dt>Status</dt><dd>{getStatusLabel(selectedEmployee.status)}</dd></div>
+            <div><dt>Email</dt><dd>{selectedEmployee.email}</dd></div>
+            <div><dt>Telefone</dt><dd>{selectedEmployee.phoneNumber || '—'}</dd></div>
+            <div><dt>Documento</dt><dd>{selectedEmployee.documentNumber || '—'}</dd></div>
+            <div><dt>Data de nascimento</dt><dd>{formatDate(selectedEmployee.birthDate)}</dd></div>
+            <div><dt>Cargo</dt><dd>{selectedEmployee.position}</dd></div>
+            <div><dt>Departamento</dt><dd>{selectedEmployee.department}</dd></div>
+            <div><dt>Admissão</dt><dd>{formatDate(selectedEmployee.admissionDate)}</dd></div>
+            <div><dt>Forma de pagamento</dt><dd>{selectedEmployee.paymentMethod ? paymentMethodLabels[selectedEmployee.paymentMethod] : '—'}</dd></div>
+            <div><dt>Valor</dt><dd>{selectedEmployee.paymentAmount == null ? '—' : selectedEmployee.paymentAmount.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</dd></div>
+            <div><dt>Desligamento</dt><dd>{formatDate(selectedEmployee.terminationDate)}</dd></div>
+            <div className="employee-address-detail">
+              <dt>Endereço</dt>
+              <dd>
+                {selectedEmployee.address.street}, {selectedEmployee.address.city} —{' '}
+                {selectedEmployee.address.state}, {selectedEmployee.address.zipCode}
+              </dd>
             </div>
-            <p className="employee-delete-eyebrow">Confirmar exclusão</p>
-            <h2 id="employee-delete-heading">Excluir funcionário?</h2>
-            <p id="employee-delete-description" className="employee-delete-description">
+          </dl>
+        ) : null}
+      </DetailsDialog>
+
+      {employeeToDelete ? (
+        <ConfirmDialog
+          open
+          onOpenChange={(open) => {
+            if (!open && !deletingEmployeeId) {
+              setEmployeeToDelete(null);
+              setDeleteError(null);
+            }
+          }}
+          eyebrow="Confirmar exclusão"
+          title="Excluir funcionário?"
+          description={(
+            <>
               Você está prestes a excluir <strong>{employeeToDelete.fullName}</strong>.
               Essa ação é permanente e não pode ser desfeita.
-            </p>
-
-            {deleteError ? (
-              <p className="message error employee-delete-error" role="alert">
-                {deleteError}
-              </p>
-            ) : null}
-
-            <div className="employee-delete-actions">
-              <button
-                type="button"
-                className="secondary-button"
-                onClick={() => setEmployeeToDelete(null)}
-                disabled={Boolean(deletingEmployeeId)}
-                autoFocus
-              >
-                Cancelar
-              </button>
-              <button
-                type="button"
-                className="employee-delete-confirm"
-                onClick={() => void handleConfirmDeleteEmployee()}
-                disabled={Boolean(deletingEmployeeId)}
-              >
-                {deletingEmployeeId ? 'Excluindo...' : 'Excluir funcionário'}
-              </button>
-            </div>
+            </>
+          )}
+          error={deleteError}
+          isConfirming={Boolean(deletingEmployeeId)}
+          confirmLabel="Excluir funcionário"
+          confirmingLabel="Excluindo..."
+          onConfirm={handleConfirmDeleteEmployee}
+        >
+          <div className="employee-delete-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none">
+              <path d="M12 8v5" />
+              <path d="M12 17h.01" />
+              <path d="M10.3 3.9 2.7 17a2 2 0 0 0 1.7 3h15.2a2 2 0 0 0 1.7-3l-7.6-13.1a2 2 0 0 0-3.4 0Z" />
+            </svg>
           </div>
-        ) : null}
-      </dialog>
+        </ConfirmDialog>
+      ) : null}
     </main>
   );
 }

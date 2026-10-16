@@ -1,0 +1,107 @@
+.ui-data-table-wrap {
+  overflow-x: auto;
+}
+
+.ui-data-table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+}
+
+.ui-data-table th {
+  padding: 12px 18px;
+  background: hsl(174 35% 98%);
+  color: var(--color-muted);
+  font-size: 0.76rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.035em;
+  white-space: nowrap;
+}
+
+.ui-data-table td {
+  padding: 15px 18px;
+  border-top: 1px solid var(--color-border);
+  color: var(--color-ink);
+  font-size: 0.9rem;
+}
+
+.ui-data-table tbody tr {
+  transition: background-color 0.15s ease;
+}
+
+.ui-data-table tbody tr:hover,
+.ui-data-table tbody tr:focus-visible {
+  background-color: var(--color-accent-soft);
+}
+
+.ui-data-table tbody tr[tabindex="0"] {
+  cursor: pointer;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ui-data-table tbody tr {
+    transition: none;
+  }
+}
+
+@media (max-width: 720px) {
+  .ui-data-table {
+    display: block;
+    padding: 12px;
+  }
+
+  .ui-data-table thead {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+  }
+
+  .ui-data-table tbody,
+  .ui-data-table tr {
+    display: block;
+  }
+
+  .ui-data-table tbody tr {
+    margin-bottom: 10px;
+    padding: 4px 14px;
+    border: 1px solid var(--color-border);
+    border-radius: 7px;
+  }
+
+  .ui-data-table td {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 9px 0;
+    border-top: 0;
+    text-align: right;
+  }
+
+  .ui-data-table td + td {
+    border-top: 1px solid var(--color-border);
+  }
+
+  .ui-data-table td::before {
+    flex: 0 0 auto;
+    color: var(--color-muted);
+    content: attr(data-label);
+    font-size: 0.78rem;
+    font-weight: 600;
+    text-align: left;
+  }
+
+  .ui-data-table td:first-child {
+    display: block;
+    text-align: left;
+  }
+
+  .ui-data-table td:first-child::before {
+    display: block;
+    margin-bottom: 5px;
+  }
+}
