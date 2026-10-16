@@ -1,0 +1,109 @@
+.supplier-registration-dialog {
+  width: min(calc(100vw - 32px), 900px);
+  max-width: 900px;
+  max-height: min(92vh, 900px);
+  padding: 0;
+  overflow: hidden;
+  border: 1px solid var(--color-border);
+  border-radius: 10px;
+  background: var(--color-canvas);
+  color: var(--color-ink);
+  box-shadow: 0 18px 60px hsl(195 16% 20% / 24%);
+}
+
+.supplier-registration-dialog::backdrop {
+  background: hsl(195 16% 15% / 55%);
+  backdrop-filter: blur(2px);
+}
+
+.supplier-registration-content {
+  max-height: min(92vh, 900px);
+  padding: 24px;
+  overflow-y: auto;
+}
+
+.supplier-registration-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+.supplier-registration-header h1 {
+  margin: 0;
+  color: var(--color-ink);
+  font-size: 1.65rem;
+}
+
+.supplier-dialog-close {
+  width: 40px;
+  height: 40px;
+  border: 1px solid var(--color-border);
+  border-radius: 50%;
+  background: var(--color-surface);
+  color: var(--color-ink);
+  font-size: 1.5rem;
+  line-height: 1;
+}
+
+.supplier-form-intro {
+  margin: 0 0 24px;
+  color: var(--color-muted);
+}
+
+.supplier-form {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.supplier-form-section {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.supplier-form-section h2 {
+  margin: 0;
+  color: var(--color-ink);
+  font-size: 1.05rem;
+}
+
+.supplier-field-label {
+  display: inline-flex;
+  gap: 5px;
+  align-items: baseline;
+}
+
+.supplier-form .primary-button {
+  align-self: flex-start;
+  min-width: 220px;
+}
+
+.supplier-optional {
+  color: var(--color-muted);
+  font-size: 0.82rem;
+  font-weight: 400;
+}
+
+@media (max-width: 640px) {
+  .supplier-registration-dialog {
+    width: calc(100vw - 20px);
+    max-height: calc(100dvh - 20px);
+    border-radius: 8px;
+  }
+
+  .supplier-registration-content {
+    max-height: calc(100dvh - 20px);
+    padding: 18px 14px;
+  }
+
+  .supplier-registration-header h1 {
+    font-size: 1.4rem;
+  }
+
+  .supplier-form .primary-button {
+    width: 100%;
+  }
+}

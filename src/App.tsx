@@ -6,6 +6,8 @@ import { EmployeeRegistrationPage } from './pages/EmployeeRegistrationPage'
 import { LandingPage } from './pages/LandingPage'
 import { LoginPage } from './pages/LoginPage'
 import { RegisterPage } from './pages/RegisterPage'
+import { SupplierListPage } from './pages/SupplierListPage'
+import { SupplierRegistrationPage } from './pages/SupplierRegistrationPage'
 
 function App() {
   return (
@@ -17,6 +19,10 @@ function App() {
       <Route path="/employees" element={<EmployeeListPage />}>
         <Route path="new" element={<EmployeeRegistrationPage />} />
         <Route path=":employeeId/edit" element={<EmployeeRegistrationPage />} />
+      </Route>
+      <Route path="/suppliers" element={<SupplierListPage />}>
+        <Route path="new" element={<SupplierRegistrationPage />} />
+        <Route path=":supplierId/edit" element={<SupplierRegistrationPage />} />
       </Route>
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>

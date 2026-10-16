@@ -26,6 +26,12 @@ export function Sidebar({ onLogout }: SidebarProps) {
         >
           Funcionários
         </NavLink>
+        <NavLink
+          to="/suppliers"
+          className={({ isActive }) => `nav-item${isActive ? ' active' : ''}`}
+        >
+          Fornecedores
+        </NavLink>
         <button type="button" className="nav-item" disabled>Empresas</button>
         <button type="button" className="nav-item" disabled>Projetos</button>
         <button type="button" className="nav-item" disabled>Máquinas</button>
