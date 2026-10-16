@@ -107,6 +107,21 @@ export async function getSuppliers(page: number, size: number): Promise<Supplier
   return parseSupplierPage(await response.json());
 }
 
+export async function getAllSuppliers(): Promise<SupplierResponse[]> {
+  const suppliers: SupplierResponse[] = [];
+  let page = 0;
+  let totalPages = 1;
+
+  while (page < totalPages) {
+    const result = await getSuppliers(page, 100);
+    suppliers.push(...result.content);
+    totalPages = result.page.totalPages;
+    page += 1;
+  }
+
+  return suppliers;
+}
+
 export async function createSupplier(payload: SupplierRequest): Promise<void> {
   const response = await fetch(`${API_BASE_URL}/api/suppliers`, {
     method: 'POST',

@@ -8,6 +8,8 @@ import { LoginPage } from './pages/LoginPage'
 import { RegisterPage } from './pages/RegisterPage'
 import { SupplierListPage } from './pages/SupplierListPage'
 import { SupplierRegistrationPage } from './pages/SupplierRegistrationPage'
+import { ToolListPage } from './pages/ToolListPage'
+import { ToolRegistrationPage } from './pages/ToolRegistrationPage'
 
 function App() {
   return (
@@ -23,6 +25,10 @@ function App() {
       <Route path="/suppliers" element={<SupplierListPage />}>
         <Route path="new" element={<SupplierRegistrationPage />} />
         <Route path=":supplierId/edit" element={<SupplierRegistrationPage />} />
+      </Route>
+      <Route path="/tools" element={<ToolListPage />}>
+        <Route path="new" element={<ToolRegistrationPage />} />
+        <Route path=":toolId/edit" element={<ToolRegistrationPage />} />
       </Route>
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
