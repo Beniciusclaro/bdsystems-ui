@@ -1,20 +1,24 @@
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { Link, Outlet, useNavigate } from 'react-router-dom';
 import { Sidebar } from '../components/sidebar/Sidebar';
 import { ConfirmDialog } from '../components/ui/ConfirmDialog';
 import { ContentState } from '../components/ui/ContentState';
 import { DataTable } from '../components/ui/DataTable';
 import type { DataTableColumn } from '../components/ui/DataTable';
+import { ToolRentalDetailsDialog } from '../components/tool/ToolRentalDetailsDialog';
+import { DetailsDialog } from '../components/ui/DetailsDialog';
 import { IconActionButton, RowActions } from '../components/ui/RowActions';
 import { Pagination } from '../components/ui/Pagination';
 import { StatusBadge } from '../components/ui/StatusBadge';
 import { clearAuthToken, getAuthToken } from '../lib/session';
+import { getAllSuppliers } from '../services/supplierService';
 import {
   activateTool,
   deactivateTool,
   getTools,
 } from '../services/toolService';
-import { getAllToolRentals } from '../services/toolRentalService';
+import { getAllToolRentals, getToolRentals } from '../services/toolRentalService';
+import type { SupplierResponse } from '../types/supplier';
 import type { ToolFilters, ToolResponse } from '../types/tool';
 import type { ToolRentalResponse } from '../types/toolRental';
 import './ToolListPage.scss';
@@ -38,12 +42,21 @@ export function ToolListPage() {
   const [reloadCount, setReloadCount] = useState(0);
   const [changingStatusId, setChangingStatusId] = useState<string | null>(null);
   const [toolToDeactivate, setToolToDeactivate] = useState<ToolResponse | null>(null);
+  const [selectedTool, setSelectedTool] = useState<ToolResponse | null>(null);
+  const [selectedToolRentals, setSelectedToolRentals] = useState<ToolRentalResponse[] | null>(null);
+  const [selectedToolRentalError, setSelectedToolRentalError] = useState<string | null>(null);
+  const [isLoadingSelectedToolRentals, setIsLoadingSelectedToolRentals] = useState(false);
+  const [selectedToolRentalReloadCount, setSelectedToolRentalReloadCount] = useState(0);
+  const [suppliers, setSuppliers] = useState<SupplierResponse[] | null>(null);
+  const [isLoadingSuppliers, setIsLoadingSuppliers] = useState(false);
+  const [supplierError, setSupplierError] = useState<string | null>(null);
   const [deactivateError, setDeactivateError] = useState<string | null>(null);
   const [showRentalData, setShowRentalData] = useState(false);
   const [rentalData, setRentalData] = useState<ToolRentalResponse[] | null>(null);
   const [isLoadingRentals, setIsLoadingRentals] = useState(false);
   const [rentalError, setRentalError] = useState<string | null>(null);
   const pendingRentalsRef = useRef<Promise<ToolRentalResponse[]> | null>(null);
+  const pendingSuppliersRef = useRef<Promise<SupplierResponse[]> | null>(null);
 
   useEffect(() => {
     if (!token) {
@@ -118,6 +131,72 @@ export function ToolListPage() {
       ignore = true;
     };
   }, [rentalData, showRentalData, tools.length]);
+
+  useEffect(() => {
+    if (!selectedTool) {
+      return;
+    }
+
+    let ignore = false;
+
+    getToolRentals(selectedTool.id)
+      .then((result) => {
+        if (!ignore) {
+          setSelectedToolRentals(result);
+        }
+      })
+      .catch((requestError: unknown) => {
+        if (!ignore) {
+          setSelectedToolRentalError(
+            requestError instanceof Error
+              ? requestError.message
+              : 'Não foi possível carregar os registos de aluguer desta ferramenta.',
+          );
+        }
+      })
+      .finally(() => {
+        if (!ignore) {
+          setIsLoadingSelectedToolRentals(false);
+        }
+      });
+
+    return () => {
+      ignore = true;
+    };
+  }, [selectedTool, selectedToolRentalReloadCount]);
+
+  const loadSuppliers = useCallback(async () => {
+    if (suppliers !== null) {
+      return;
+    }
+
+    setSupplierError(null);
+    setIsLoadingSuppliers(true);
+    const request = pendingSuppliersRef.current ?? getAllSuppliers();
+    pendingSuppliersRef.current = request;
+
+    try {
+      setSuppliers(await request);
+    } catch (requestError: unknown) {
+      setSupplierError(
+        requestError instanceof Error
+          ? requestError.message
+          : 'Não foi possível carregar os fornecedores.',
+      );
+    } finally {
+      if (pendingSuppliersRef.current === request) {
+        pendingSuppliersRef.current = null;
+      }
+      setIsLoadingSuppliers(false);
+    }
+  }, [suppliers]);
+
+  const refreshSelectedToolRentals = () => {
+    setSelectedToolRentalError(null);
+    setIsLoadingSelectedToolRentals(true);
+    setSelectedToolRentalReloadCount((current) => current + 1);
+    refreshRentalData();
+  };
 
   const refreshTools = () => {
     setError(null);
@@ -424,6 +503,14 @@ export function ToolListPage() {
               rows={tools}
               columns={toolColumns}
               getRowKey={(tool) => tool.id}
+              getRowLabel={(tool) => `Abrir detalhes de ${tool.name}`}
+              onRowActivate={(tool) => {
+                setSelectedTool(tool);
+                setSelectedToolRentals(null);
+                setSelectedToolRentalError(null);
+                setIsLoadingSelectedToolRentals(true);
+                void loadSuppliers();
+              }}
               ariaLabel="Lista de ferramentas"
               className="tool-table"
               wrapperClassName="tool-table-wrap"
@@ -446,6 +533,48 @@ export function ToolListPage() {
       </section>
 
       <Outlet context={{ refreshTools, refreshRentalData, tools, isLoading }} />
+
+      <DetailsDialog
+        open={Boolean(selectedTool)}
+        onOpenChange={(open) => {
+          if (!open) {
+            setSelectedTool(null);
+          }
+        }}
+        eyebrow="Detalhes da ferramenta"
+        heading={selectedTool?.name ?? ''}
+      >
+        {selectedTool ? (
+          <dl className="tool-details-grid">
+            <div>
+              <dt>Código</dt>
+              <dd>{selectedTool.code}</dd>
+            </div>
+            <div>
+              <dt>Estado</dt>
+              <dd>{selectedTool.active ? 'Ativa' : 'Inativa'}</dd>
+            </div>
+          </dl>
+        ) : null}
+        {selectedTool ? (
+          <ToolRentalDetailsDialog
+            embedded
+            readOnly
+            tool={selectedTool}
+            open
+            rentals={selectedToolRentals ?? []}
+            isLoadingRentals={isLoadingSelectedToolRentals}
+            rentalError={selectedToolRentalError}
+            onRetryRentals={refreshSelectedToolRentals}
+            suppliers={suppliers}
+            isLoadingSuppliers={isLoadingSuppliers}
+            supplierError={supplierError}
+            onLoadSuppliers={() => void loadSuppliers()}
+            onRentalDataChanged={refreshSelectedToolRentals}
+            onOpenChange={() => {}}
+          />
+        ) : null}
+      </DetailsDialog>
 
       {toolToDeactivate ? (
         <ConfirmDialog

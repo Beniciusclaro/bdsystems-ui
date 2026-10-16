@@ -20,6 +20,7 @@ import type {
 
 interface ToolRentalDetailsDialogProps {
   embedded?: boolean;
+  readOnly?: boolean;
   tool: ToolResponse | null;
   open: boolean;
   rentals: ToolRentalResponse[];
@@ -60,6 +61,7 @@ function getSupplierDisplayName(supplier: SupplierResponse): string {
 
 export function ToolRentalDetailsDialog({
   embedded = false,
+  readOnly = false,
   tool,
   open,
   rentals,
@@ -156,7 +158,7 @@ export function ToolRentalDetailsDialog({
     }
   };
 
-  const rentalColumns: DataTableColumn<ToolRentalResponse>[] = [
+  const rentalInformationColumns: DataTableColumn<ToolRentalResponse>[] = [
     {
       key: 'supplier',
       header: 'Fornecedor',
@@ -174,7 +176,7 @@ export function ToolRentalDetailsDialog({
       key: 'price',
       header: 'Preço',
       mobileLabel: 'Preço',
-      renderCell: (rental) => (
+      renderCell: (rental: ToolRentalResponse) => (
         `${formatPrice(rental.price)} / ${rentalPeriodLabels[rental.rentalPeriod].toLowerCase()}`
       ),
     },
@@ -188,13 +190,17 @@ export function ToolRentalDetailsDialog({
         </span>
       ),
     },
+  ];
+
+  const rentalColumns: DataTableColumn<ToolRentalResponse>[] = [
+    ...rentalInformationColumns,
     {
       key: 'actions',
       header: 'Ações',
       mobileLabel: 'Ações',
       headerClassName: 'tool-actions-heading',
       cellClassName: 'tool-actions-cell',
-      renderCell: (rental) => (
+      renderCell: (rental: ToolRentalResponse) => (
         <RowActions>
           <IconActionButton
             label="Editar registo de aluguer"
@@ -226,7 +232,29 @@ export function ToolRentalDetailsDialog({
     },
   ];
 
-  const content = (
+  const readOnlyContent = tool ? (
+    isLoadingRentals ? (
+      <ContentState variant="loading" title="Carregando registos de aluguer..." />
+    ) : rentalError ? (
+      <ContentState variant="error" title={rentalError} />
+    ) : rentals.length === 0 ? (
+      <ContentState
+        variant="empty"
+        title="Nenhum registo de aluguer"
+        description="Esta ferramenta ainda não tem alugueres associados."
+      />
+    ) : (
+      <DataTable
+        rows={rentals}
+        columns={rentalInformationColumns}
+        getRowKey={(rental) => rental.id}
+        ariaLabel={`Registos de aluguer de ${tool.name}`}
+        className="tool-rental-table"
+      />
+    )
+  ) : null;
+
+  const managementContent = (
     <>
       {mutationSuccess ? (
           <p className="message success tool-rental-feedback" role="status">
@@ -275,11 +303,11 @@ export function ToolRentalDetailsDialog({
           <ContentState
             variant="error"
             title={rentalError}
-            action={(
+            action={!readOnly ? (
               <button type="button" className="text-button" onClick={onRetryRentals}>
                 Tentar novamente
               </button>
-            )}
+            ) : undefined}
           />
         ) : tool && rentals.length === 0 ? (
           <div className="tool-rental-empty">
@@ -288,19 +316,19 @@ export function ToolRentalDetailsDialog({
               title="Nenhum registo de aluguer"
               description="Esta ferramenta ainda não tem alugueres associados."
             />
-            {tool.active ? (
+            {!readOnly && tool.active ? (
               <button type="button" className="primary-button" onClick={() => openForm('create')}>
                 Criar registo de aluguer
               </button>
-            ) : (
+            ) : !readOnly && !tool.active ? (
               <p className="tool-field-hint">Ative a ferramenta antes de criar um registo de aluguer.</p>
-            )}
+            ) : null}
           </div>
         ) : tool ? (
           <div className="tool-rental-details">
-            {isLoadingSuppliers ? (
+            {isLoadingSuppliers && !readOnly ? (
               <ContentState variant="loading" title="Carregando fornecedores..." />
-            ) : supplierError ? (
+            ) : supplierError && !readOnly ? (
               <ContentState
                 variant="error"
                 title={supplierError}
@@ -319,7 +347,7 @@ export function ToolRentalDetailsDialog({
                   ariaLabel={`Registos de aluguer de ${tool.name}`}
                   className="tool-rental-table"
                 />
-                {tool.active ? (
+                {!readOnly && tool.active ? (
                   <button
                     type="button"
                     className="primary-button tool-add-rental"
@@ -334,6 +362,7 @@ export function ToolRentalDetailsDialog({
         ) : null}
     </>
   );
+  const content = readOnly ? readOnlyContent : managementContent;
 
   return (
     <>

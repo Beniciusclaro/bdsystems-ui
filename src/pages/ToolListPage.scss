@@ -160,6 +160,27 @@
   color: var(--color-muted);
 }
 
+.tool-details-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 18px 20px;
+  margin: 0;
+}
+
+.tool-details-grid dt {
+  margin-bottom: 4px;
+  color: var(--color-muted);
+  font-size: 0.78rem;
+  font-weight: 600;
+}
+
+.tool-details-grid dd {
+  margin: 0;
+  overflow-wrap: anywhere;
+  font-size: 0.92rem;
+  font-weight: 600;
+}
+
 .tool-registration-dialog .message,
 .tool-rental-details .message {
   margin-bottom: 0;
@@ -191,6 +212,10 @@
 }
 
 @media (max-width: 520px) {
+  .tool-details-grid {
+    grid-template-columns: 1fr;
+  }
+
   .tool-list-heading {
     flex-direction: column;
     gap: 8px;
