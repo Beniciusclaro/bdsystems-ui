@@ -1,75 +1,30 @@
-# React + TypeScript + Vite
+# bdsystems-ui
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Frontend em React, TypeScript, Vite e SCSS.
 
-Currently, two official plugins are available:
+## Desenvolvimento
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
-
-## React Compiler
-
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
-
-## Expanding the ESLint configuration
-
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
-
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-
+```bash
+npm install
+npm run dev
+npm run lint
+npm run test
+npm run build
 ```
 
-You can also install [eslint-plugin-react-x](https://npmx.dev/package/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://npmx.dev/package/eslint-plugin-react-dom) for React-specific lint rules:
+Configure `VITE_API_BASE_URL` quando a API não estiver no mesmo host. Sem essa variável, o Vite encaminha `/api` para `http://localhost:8080` durante o desenvolvimento.
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+## Organização do código
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+- `src/app/`: rotas, proteção de acesso e layout da área autenticada.
+- `src/features/<domínio>/`: páginas, componentes, serviços e tipos específicos. Os domínios atuais são `auth`, `dashboard`, `employees`, `suppliers`, `tools`, `rentals` e `marketing`.
+- `src/shared/components/ui/`: elementos de interface sem regras de domínio, como `DataTable<T>`, `Modal`, `RegistrationDialog`, `PageHeader`, `Panel` e `FormField`.
+- `src/shared/hooks/`: comportamento reutilizável. `usePaginatedResource<T, F>` controla busca paginada, filtros aplicados, atualização e estados de carregamento/erro.
+- `src/shared/api/`: cliente HTTP, mensagens de erro e validação da estrutura de páginas da API. Cada serviço de domínio valida seus próprios registros.
+- `src/shared/styles/`: estilos globais e tokens. O SCSS específico fica junto da página ou componente.
 
-```
+Para criar uma funcionalidade, comece pelos tipos e pelo serviço do domínio. Monte a página a partir dos componentes de `shared`, deixando as colunas, os filtros, as mensagens e as ações de negócio na pasta da funcionalidade. Só extraia um novo componente compartilhado depois de identificar um contrato útil em mais de um fluxo. Use generics quando precisarem manter a relação entre os dados e os callbacks, como em `DataTable<T>`.
+
+As rotas atuais de cadastro abrem diálogos sobre as listagens. Fornecedores e ferramentas têm consulta por ID na API e podem ser carregados ao abrir um link direto para edição. A API de funcionários ainda não oferece `GET /api/employees/{id}`; nesse caso, a edição continua dependendo do funcionário estar na página carregada da lista.
+
+Os testes usam Vitest e Testing Library. Cubra o comportamento público de componentes compartilhados e os fluxos que combinam lista, serviço e diálogo. O build invoca TypeScript e Vite com `node` para funcionar com o executável local do TypeScript neste ambiente.

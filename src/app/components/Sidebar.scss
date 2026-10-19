@@ -1,0 +1,129 @@
+.sidebar {
+  min-height: 100vh;
+  background: var(--dashboard-surface);
+  border-right: 1px solid var(--dashboard-border);
+  display: flex;
+  flex-direction: column;
+  padding: 28px 18px 20px;
+}
+
+.sidebar-brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 0 8px 30px;
+}
+
+.sidebar-brand strong {
+  display: block;
+  color: var(--dashboard-ink);
+  font-size: 1rem;
+  font-weight: 700;
+}
+
+.sidebar-brand-mark {
+  color: var(--dashboard-accent);
+  font-size: 1.45rem;
+  font-weight: 800;
+  line-height: 1;
+}
+
+.sidebar-brand-label {
+  display: block;
+  margin-bottom: 3px;
+  color: var(--dashboard-muted);
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.sidebar-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.nav-item {
+  width: 100%;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--dashboard-muted);
+  text-align: left;
+  text-decoration: none;
+  padding: 11px 12px;
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.nav-item.active {
+  background: var(--dashboard-accent-soft);
+  color: var(--dashboard-accent);
+}
+
+.nav-item:disabled {
+  color: hsl(195 8% 62%);
+  cursor: not-allowed;
+}
+
+.logout-button {
+  margin-top: auto;
+  border: 1px solid var(--dashboard-border);
+  border-radius: 6px;
+  background: var(--dashboard-surface);
+  color: var(--dashboard-ink);
+  padding: 10px 12px;
+  font-weight: 600;
+  text-align: left;
+}
+
+@media (max-width: 1000px) {
+  .sidebar {
+    min-height: 0;
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 16px;
+    padding: 12px 22px;
+    border-right: 0;
+    border-bottom: 1px solid var(--dashboard-border);
+  }
+
+  .sidebar-brand {
+    padding: 0;
+  }
+
+  .sidebar-nav {
+    flex-direction: row;
+    gap: 4px;
+    margin: 0;
+    overflow-x: auto;
+  }
+
+  .nav-item {
+    width: auto;
+    white-space: nowrap;
+  }
+
+  .logout-button {
+    margin: 0;
+  }
+}
+
+@media (max-width: 720px) {
+  .sidebar {
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 10px 16px;
+  }
+
+  .sidebar-nav {
+    grid-column: 1 / -1;
+    grid-row: 2;
+  }
+}
+
+@media (max-width: 520px) {
+  .sidebar {
+    padding-inline: 16px;
+  }
+}

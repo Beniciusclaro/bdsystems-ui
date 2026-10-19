@@ -1,0 +1,65 @@
+.supplier-registration-dialog {
+  --registration-width: 900px;
+  --registration-height: 900px;
+}
+
+.supplier-form-intro {
+  margin: 0 0 24px;
+  color: var(--color-muted);
+}
+
+.supplier-form {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.supplier-form-section {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.supplier-form-section h2 {
+  margin: 0;
+  color: var(--color-ink);
+  font-size: 1.05rem;
+}
+
+.supplier-field-label {
+  display: inline-flex;
+  gap: 5px;
+  align-items: baseline;
+}
+
+.supplier-form .primary-button {
+  align-self: flex-start;
+  min-width: 220px;
+}
+
+.supplier-optional {
+  color: var(--color-muted);
+  font-size: 0.82rem;
+  font-weight: 400;
+}
+
+@media (max-width: 640px) {
+  .supplier-registration-dialog {
+    width: calc(100vw - 20px);
+    max-height: calc(100dvh - 20px);
+    border-radius: 8px;
+  }
+
+  .supplier-registration-content {
+    max-height: calc(100dvh - 20px);
+    padding: 18px 14px;
+  }
+
+  .supplier-registration-header h1 {
+    font-size: 1.4rem;
+  }
+
+  .supplier-form .primary-button {
+    width: 100%;
+  }
+}

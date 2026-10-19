@@ -1,0 +1,108 @@
+.employee-registration-dialog {
+  --registration-width: 1050px;
+  --registration-height: 900px;
+}
+
+.employee-form-card {
+  max-width: none;
+}
+
+.employee-form-intro {
+  margin: 0 0 24px;
+  color: var(--color-muted);
+}
+
+.employee-form {
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+}
+
+.employee-form-tabs {
+  display: flex;
+  gap: 8px;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.employee-form-tab {
+  flex: 1;
+  min-height: 44px;
+  padding: 10px 14px;
+  border: 0;
+  border-bottom: 3px solid transparent;
+  background: transparent;
+  color: var(--color-muted);
+  font-weight: 600;
+  text-align: center;
+  cursor: pointer;
+}
+
+.employee-form-tab[aria-selected='true'] {
+  border-bottom-color: var(--color-action);
+  color: var(--color-action);
+}
+
+.employee-form-tab:hover {
+  color: var(--color-ink);
+}
+
+.employee-form-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.employee-form-panel[hidden] {
+  display: none;
+}
+
+.employee-form-section {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.employee-form-section h2 {
+  margin: 0;
+  color: var(--color-ink);
+  font-size: 1.05rem;
+}
+
+.employee-form .primary-button {
+  align-self: flex-start;
+  min-width: 220px;
+}
+
+.employee-form .message {
+  margin-bottom: 0;
+}
+
+@media (max-width: 520px) {
+  .employee-registration-dialog {
+    width: calc(100% - 20px);
+    max-height: calc(100dvh - 20px);
+    border-radius: 8px;
+  }
+
+  .employee-registration-content {
+    max-height: calc(100dvh - 20px);
+    padding: 18px 14px;
+  }
+
+  .employee-registration-header h1 {
+    font-size: 1.4rem;
+  }
+
+  .employee-form .primary-button {
+    width: 100%;
+  }
+
+  .employee-form-tabs {
+    gap: 0;
+  }
+
+  .employee-form-tab {
+    padding: 10px 6px;
+    font-size: 0.9rem;
+  }
+}

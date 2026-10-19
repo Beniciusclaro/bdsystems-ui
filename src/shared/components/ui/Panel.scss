@@ -1,0 +1,13 @@
+.panel-card {
+  min-width: 0;
+  padding: 20px;
+  background: var(--dashboard-surface);
+  border: 1px solid var(--dashboard-border);
+  border-radius: 6px;
+}
+
+@media (max-width: 520px) {
+  .panel-card {
+    padding: 16px;
+  }
+}

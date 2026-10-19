@@ -1,0 +1,60 @@
+.ui-modal.ui-registration-dialog {
+  width: min(calc(100% - 32px), var(--registration-width, 760px));
+  max-width: var(--registration-width, 760px);
+  max-height: min(92vh, var(--registration-height, 900px));
+  padding: 0;
+  overflow: hidden;
+  background: var(--color-canvas);
+}
+
+.ui-registration-dialog::backdrop {
+  background: hsl(195 16% 15% / 55%);
+  backdrop-filter: blur(2px);
+}
+
+.ui-registration-dialog__content {
+  max-height: min(92vh, var(--registration-height, 900px));
+  padding: 24px;
+  overflow-y: auto;
+}
+
+.ui-registration-dialog__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+.ui-registration-dialog__header h1 {
+  margin: 0;
+  color: var(--color-ink);
+  font-size: 1.65rem;
+}
+
+.ui-registration-dialog__close {
+  display: grid;
+  width: 40px;
+  height: 40px;
+  flex: 0 0 auto;
+  place-items: center;
+  border: 1px solid var(--color-border);
+  border-radius: 50%;
+  background: var(--color-surface);
+  color: var(--color-ink);
+  font-size: 1.5rem;
+  line-height: 1;
+}
+
+@media (max-width: 640px) {
+  .ui-modal.ui-registration-dialog {
+    width: calc(100vw - 20px);
+    max-height: calc(100dvh - 20px);
+    border-radius: 8px;
+  }
+
+  .ui-registration-dialog__content {
+    max-height: calc(100dvh - 20px);
+    padding: 18px;
+  }
+}

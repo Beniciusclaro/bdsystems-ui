@@ -1,0 +1,126 @@
+.tool-registration-dialog {
+  --registration-width: 760px;
+  --registration-height: 760px;
+}
+
+.tool-form-card {
+  max-width: none;
+}
+
+.tool-form-intro {
+  margin: 0 0 22px;
+  color: var(--color-muted);
+}
+
+.tool-form {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.tool-form .tool-rental-checkbox {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 10px;
+}
+
+.tool-form .tool-rental-checkbox input {
+  width: 20px;
+  min-height: 20px;
+  height: 20px;
+  margin: 0;
+  accent-color: var(--color-action);
+}
+
+.tool-rental-draft {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  min-width: 0;
+  margin: 0;
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  padding: 16px;
+}
+
+.tool-rental-draft legend {
+  padding: 0 6px;
+  color: var(--color-ink);
+  font-weight: 600;
+}
+
+.tool-rental-embedded {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin-top: 24px;
+  border-top: 1px solid var(--color-border);
+  padding-top: 22px;
+}
+
+.tool-rental-embedded__header h2 {
+  margin: 0;
+  color: var(--color-ink);
+  font-size: 1.08rem;
+}
+
+.tool-rental-embedded .tool-rental-details {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.tool-rental-embedded .tool-rental-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 12px;
+  text-align: left;
+}
+
+.tool-rental-embedded .tool-add-rental {
+  align-self: flex-start;
+}
+
+.tool-rental-embedded .tool-rental-feedback {
+  margin-bottom: 0;
+}
+
+.tool-field-hint {
+  color: var(--color-muted);
+  font-size: 0.8rem;
+  font-weight: 400;
+}
+
+.tool-form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+@media (max-width: 520px) {
+  .tool-registration-dialog {
+    width: calc(100% - 20px);
+    max-height: calc(100dvh - 20px);
+    border-radius: 8px;
+  }
+
+  .tool-registration-content {
+    max-height: calc(100dvh - 20px);
+    padding: 18px 14px;
+  }
+
+  .tool-registration-header h1 {
+    font-size: 1.4rem;
+  }
+
+  .tool-form .primary-button,
+  .tool-form-actions > button {
+    width: 100%;
+  }
+
+  .tool-form-actions {
+    flex-direction: column-reverse;
+  }
+}

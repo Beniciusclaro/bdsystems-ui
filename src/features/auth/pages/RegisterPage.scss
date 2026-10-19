@@ -1,0 +1,13 @@
+@use '../../../shared/styles/variables' as *;
+
+.register-page .auth-card {
+  max-width: 760px;
+}
+
+.register-page {
+  background: var(--color-accent);
+}
+
+.register-page .auth-header .brand-logo {
+  margin-bottom: 16px;
+}

@@ -1,0 +1,45 @@
+.topbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 20px;
+  margin: -38px -40px 30px;
+  padding: 26px 40px;
+  background: var(--color-accent);
+}
+
+.topbar h1 {
+  margin: 0;
+  color: #fff;
+  font-size: 1.9rem;
+  line-height: 1.2;
+}
+
+.dashboard-eyebrow {
+  margin: 0 0 6px;
+  color: hsl(180 70% 96%);
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+@media (max-width: 1000px) {
+  .topbar {
+    margin: 0 -24px 26px;
+    padding: 24px;
+  }
+}
+
+@media (max-width: 520px) {
+  .topbar {
+    align-items: stretch;
+    flex-direction: column;
+    margin: 0 -16px 22px;
+    padding: 22px 16px;
+    margin-bottom: 22px;
+  }
+
+  .topbar h1 {
+    font-size: 1.65rem;
+  }
+}

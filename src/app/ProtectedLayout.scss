@@ -1,0 +1,42 @@
+.dashboard-page {
+  --dashboard-canvas: var(--color-canvas);
+  --dashboard-surface: var(--color-surface);
+  --dashboard-ink: var(--color-ink);
+  --dashboard-muted: var(--color-muted);
+  --dashboard-border: var(--color-border);
+  --dashboard-accent: var(--color-accent);
+  --dashboard-accent-soft: var(--color-accent-soft);
+
+  min-height: 100vh;
+  display: grid;
+  grid-template-columns: 252px minmax(0, 1fr);
+  color: var(--dashboard-ink);
+  background: var(--dashboard-canvas);
+}
+
+.dashboard-content {
+  width: min(100%, 1500px);
+  min-width: 0;
+  margin-inline: auto;
+  padding: 38px 40px 56px;
+}
+
+@media (max-width: 1000px) {
+  .dashboard-page {
+    grid-template-columns: 1fr;
+  }
+
+  .dashboard-content {
+    padding: 0 24px 44px;
+  }
+}
+
+@media (max-width: 520px) {
+  .dashboard-content {
+    padding: 0 16px 36px;
+  }
+
+  .primary-button {
+    width: 100%;
+  }
+}
