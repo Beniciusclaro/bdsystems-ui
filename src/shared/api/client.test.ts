@@ -15,6 +15,7 @@ describe('API client', () => {
     await publicApiFetch('/api/auth/login', { method: 'POST', body: '{}' });
 
     const [privateUrl, privateOptions] = request.mock.calls[0] as [string, RequestInit];
+
     const [publicUrl, publicOptions] = request.mock.calls[1] as [string, RequestInit];
     expect(privateUrl).toMatch(/\/api\/tools$/);
     expect(publicUrl).toMatch(/\/api\/auth\/login$/);

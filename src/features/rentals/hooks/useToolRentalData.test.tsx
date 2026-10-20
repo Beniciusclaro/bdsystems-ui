@@ -20,6 +20,7 @@ beforeEach(() => {
 describe('useToolRentalData', () => {
   it('loads rental summaries only when enabled and details only when opened', async () => {
     const tool = { id: 'tool-1', code: 'F1', name: 'Furadeira', active: true };
+
     const { result } = renderHook(() => useToolRentalData(1));
     expect(getAllToolRentals).not.toHaveBeenCalled();
     expect(getToolRentals).not.toHaveBeenCalled();

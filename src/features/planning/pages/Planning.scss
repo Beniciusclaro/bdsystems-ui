@@ -1,0 +1,130 @@
+.planning-page {
+  display: grid;
+  gap: 1.25rem;
+}
+.planning-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1rem;
+}
+.planning-page .panel-card {
+  display: grid;
+  align-content: start;
+  gap: 1rem;
+}
+.planning-form {
+  display: grid;
+  gap: 0.8rem;
+}
+.planning-form label {
+  display: grid;
+  gap: 0.35rem;
+  font-weight: 700;
+}
+.planning-form input,
+.planning-form select,
+.planning-form textarea {
+  width: 100%;
+  padding: 0.72rem;
+  border: 1px solid var(--border-color, #d8dee8);
+  border-radius: 0.55rem;
+  background: var(--surface, #fff);
+  color: inherit;
+}
+.planning-alert {
+  padding: 0.8rem 1rem;
+  border-radius: 0.5rem;
+  background: #fff1f0;
+  color: #9f241f;
+}
+.planning-records {
+  display: grid;
+  gap: 0.45rem;
+  margin: 0;
+  padding-left: 1.25rem;
+}
+.planning-empty {
+  color: var(--text-muted, #667085);
+}
+.planning-wide {
+  grid-column: 1/-1;
+}
+.composition-lines {
+  display: grid;
+  gap: 0.7rem;
+}
+.composition-line {
+  display: grid;
+  grid-template-columns: 1fr 2fr 1fr 1fr auto;
+  gap: 0.6rem;
+  align-items: end;
+  padding: 0.7rem;
+  background: var(--surface-muted, #f7f8fa);
+  border-radius: 0.6rem;
+}
+.budget-stage {
+  border: 1px solid var(--border-color, #d8dee8);
+  border-radius: 0.7rem;
+  padding: 1rem;
+  display: grid;
+  gap: 0.7rem;
+}
+.budget-item {
+  display: grid;
+  grid-template-columns: 1fr auto auto;
+  gap: 0.75rem;
+  padding: 0.55rem 0;
+  border-top: 1px solid var(--border-color, #e6e9ef);
+}
+.proposal {
+  background: white;
+  color: #172033;
+}
+.proposal-header,
+.proposal-total {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+}
+.proposal table {
+  width: 100%;
+  border-collapse: collapse;
+}
+.proposal th,
+.proposal td {
+  padding: 0.6rem;
+  text-align: left;
+  border-bottom: 1px solid #ddd;
+}
+.proposal .number {
+  text-align: right;
+}
+@media (max-width: 1050px) {
+  .planning-grid {
+    grid-template-columns: 1fr;
+  }
+  .composition-line {
+    grid-template-columns: 1fr 1fr;
+  }
+  .planning-wide {
+    grid-column: auto;
+  }
+}
+@media print {
+  .sidebar,
+  .topbar,
+  .planning-editor,
+  .logout-button {
+    display: none !important;
+  }
+  .app-shell,
+  .app-main {
+    display: block !important;
+  }
+  .proposal {
+    box-shadow: none !important;
+  }
+  .planning-page {
+    padding: 0 !important;
+  }
+}

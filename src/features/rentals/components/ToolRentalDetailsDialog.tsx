@@ -73,12 +73,19 @@ export function ToolRentalDetailsDialog({
   onOpenChange,
 }: ToolRentalDetailsDialogProps) {
   const [formMode, setFormMode] = useState<'create' | 'edit' | null>(null);
+
   const [selectedRental, setSelectedRental] = useState<ToolRentalResponse | null>(null);
+
   const [isSubmitting, setIsSubmitting] = useState(false);
+
   const [mutationError, setMutationError] = useState<string | null>(null);
+
   const [mutationSuccess, setMutationSuccess] = useState<string | null>(null);
+
   const [rentalToDelete, setRentalToDelete] = useState<ToolRentalResponse | null>(null);
+
   const [deleteError, setDeleteError] = useState<string | null>(null);
+
   const [isDeleting, setIsDeleting] = useState(false);
 
   const openForm = (mode: 'create' | 'edit', rental?: ToolRentalResponse) => {
@@ -364,6 +371,7 @@ export function ToolRentalDetailsDialog({
       ) : null}
     </>
   );
+
   const content = readOnly ? readOnlyContent : managementContent;
 
   return (

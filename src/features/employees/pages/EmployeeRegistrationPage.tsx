@@ -14,16 +14,23 @@ interface EmployeeListOutletContext {
 
 export function EmployeeRegistrationPage() {
   const navigate = useNavigate();
+
   const { employeeId } = useParams();
+
   const {
     refreshEmployees,
     employees,
     isLoading: isLoadingEmployees,
   } = useOutletContext<EmployeeListOutletContext>();
+
   const employee = employeeId ? employees.find((item) => item.id === employeeId) : undefined;
+
   const isEditing = Boolean(employeeId);
+
   const [error, setError] = useState<string | null>(null);
+
   const [success, setSuccess] = useState<string | null>(null);
+
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const closeModal = () => {

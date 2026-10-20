@@ -36,16 +36,24 @@ export function MaterialRegistrationPage() {
 }
 function MaterialRegistration({ materialId }: { materialId?: string }) {
   const navigate = useNavigate();
+
   const { refreshMaterials, notify } = useOutletContext<{
     refreshMaterials: () => void;
     notify: (message: string) => void;
   }>();
+
   const [data, setData] = useState<Data | null>(null);
+
   const [loadError, setLoadError] = useState('');
+
   const [error, setError] = useState('');
+
   const [busy, setBusy] = useState(false);
+
   const pending = useRef(false);
+
   const [revision, setRevision] = useState(0);
+
   const [manageCategories, setManageCategories] = useState(false);
   useEffect(() => {
     let current = true;
@@ -82,6 +90,7 @@ function MaterialRegistration({ materialId }: { materialId?: string }) {
   const close = () => {
     if (!pending.current) navigate('/materials', { replace: true });
   };
+
   const submit = async (payload: MaterialRequest) => {
     if (pending.current || !data) return;
     pending.current = true;

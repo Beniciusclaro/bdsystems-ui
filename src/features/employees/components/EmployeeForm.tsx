@@ -108,8 +108,11 @@ export function EmployeeForm({
   onSubmit,
 }: EmployeeFormProps) {
   const [form, setForm] = useState(() => toFormState(initialValues));
+
   const [activeTab, setActiveTab] = useState<EmployeeFormTab>('personal');
+
   const personalTabRef = useRef<HTMLButtonElement>(null);
+
   const professionalTabRef = useRef<HTMLButtonElement>(null);
 
   const handleChange = (event: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {

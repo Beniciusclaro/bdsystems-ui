@@ -13,17 +13,27 @@ interface SupplierListOutletContext {
 
 export function SupplierRegistrationPage() {
   const navigate = useNavigate();
+
   const { supplierId } = useParams();
+
   const { refreshSuppliers, suppliers } = useOutletContext<SupplierListOutletContext>();
+
   const supplierInList = supplierId ? suppliers.find((item) => item.id === supplierId) : undefined;
+
   const [loadedSupplier, setLoadedSupplier] = useState<SupplierResponse | null>(null);
+
   const [loadError, setLoadError] = useState<{ id: string; message: string } | null>(null);
+
   const supplier =
     supplierInList ??
     (loadedSupplier && loadedSupplier.id === supplierId ? loadedSupplier : undefined);
+
   const isEditing = Boolean(supplierId);
+
   const [error, setError] = useState<string | null>(null);
+
   const [success, setSuccess] = useState<string | null>(null);
+
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {

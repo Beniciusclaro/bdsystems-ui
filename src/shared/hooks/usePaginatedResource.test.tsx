@@ -16,6 +16,7 @@ describe('usePaginatedResource', () => {
       .mockResolvedValueOnce(page(['second'], 1))
       .mockRejectedValueOnce(new Error('falha'))
       .mockResolvedValueOnce(page(['filtered'], 0, 1));
+
     const { result } = renderHook(() => usePaginatedResource(load, {} as Filter, 'fallback'));
     await waitFor(() => expect(result.current.rows).toEqual(['first']));
     act(() => result.current.goToPage(1));
@@ -30,14 +31,17 @@ describe('usePaginatedResource', () => {
 
   it('ignores stale responses and clamps the page after the last item is removed', async () => {
     let resolveLater!: (value: ReturnType<typeof page>) => void;
+
     const delayed = new Promise<ReturnType<typeof page>>((resolve) => {
       resolveLater = resolve;
     });
+
     const load = vi
       .fn()
       .mockResolvedValueOnce(page(['first'], 0, 3))
       .mockReturnValueOnce(delayed)
       .mockResolvedValueOnce(page(['latest'], 0, 1));
+
     const { result } = renderHook(() => usePaginatedResource(load, {} as Filter, 'fallback'));
     await waitFor(() => expect(result.current.rows).toEqual(['first']));
     act(() => result.current.goToPage(2));

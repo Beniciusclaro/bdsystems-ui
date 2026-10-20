@@ -15,6 +15,7 @@ vi.mock('../services/materialService', () => ({
 }));
 vi.mock('../../suppliers/services/supplierService', () => ({ getAllSuppliers: vi.fn() }));
 const unit = { id: 'unit', code: 'KG', name: 'Quilograma', symbol: 'kg', active: true };
+
 const material = {
   id: 'material',
   code: 'MAT',

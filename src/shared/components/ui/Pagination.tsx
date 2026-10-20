@@ -27,8 +27,11 @@ export function Pagination({
   className = '',
 }: PaginationProps) {
   const pageSizeId = useId();
+
   const classes = ['ui-pagination', className].filter(Boolean).join(' ');
+
   const isFirstPage = currentPage <= 0;
+
   const isLastPage = currentPage >= totalPages - 1;
 
   return (

@@ -25,31 +25,52 @@ interface ToolListOutletContext {
 
 export function ToolRegistrationPage() {
   const navigate = useNavigate();
+
   const { toolId } = useParams();
+
   const {
     refreshTools,
     refreshRentalData,
     tools,
     isLoading: isLoadingTools,
   } = useOutletContext<ToolListOutletContext>();
+
   const toolInList = toolId ? tools.find((item) => item.id === toolId) : undefined;
+
   const [loadedTool, setLoadedTool] = useState<ToolResponse | null>(null);
+
   const tool = toolInList ?? loadedTool;
+
   const [createdTool, setCreatedTool] = useState<ToolResponse | null>(null);
+
   const isEditing = Boolean(toolId);
+
   const [error, setError] = useState<string | null>(null);
+
   const [success, setSuccess] = useState<string | null>(null);
+
   const [isSubmitting, setIsSubmitting] = useState(false);
+
   const [addRentalAfterSave, setAddRentalAfterSave] = useState(false);
+
   const [rentalDraft, setRentalDraft] = useState<ToolRentalDraft>(EMPTY_TOOL_RENTAL_DRAFT);
+
   const [rentalRecords, setRentalRecords] = useState<ToolRentalResponse[] | null>(null);
+
   const [rentalError, setRentalError] = useState<string | null>(null);
+
   const [suppliers, setSuppliers] = useState<SupplierResponse[] | null>(null);
+
   const [isLoadingSuppliers, setIsLoadingSuppliers] = useState(false);
+
   const [supplierError, setSupplierError] = useState<string | null>(null);
+
   const pendingSuppliersRef = useRef<Promise<SupplierResponse[]> | null>(null);
+
   const rentalTool = isEditing ? tool : createdTool;
+
   const isLoadingRentals = Boolean(rentalTool && rentalRecords === null && !rentalError);
+
   const isLoadingTool = isEditing && !tool && !error;
 
   useEffect(() => {

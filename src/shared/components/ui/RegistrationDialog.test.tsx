@@ -6,6 +6,7 @@ import { RegistrationDialog } from './RegistrationDialog';
 describe('RegistrationDialog', () => {
   it('labels the dialog and asks to close it from the close button and Escape', async () => {
     const onOpenChange = vi.fn();
+
     const user = userEvent.setup();
     render(
       <RegistrationDialog

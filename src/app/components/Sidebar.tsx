@@ -41,18 +41,21 @@ export function Sidebar({ onLogout }: SidebarProps) {
         >
           Materiais
         </NavLink>
-        <button type="button" className="nav-item" disabled>
-          Empresas
-        </button>
-        <button type="button" className="nav-item" disabled>
-          Projetos
-        </button>
-        <button type="button" className="nav-item" disabled>
-          Máquinas
-        </button>
-        <button type="button" className="nav-item" disabled>
-          Relatórios
-        </button>
+        <NavLink
+          to="/planning"
+          className={({ isActive }) => `nav-item${isActive ? ' active' : ''}`}
+        >
+          Clientes e obras
+        </NavLink>
+        <NavLink
+          to="/compositions"
+          className={({ isActive }) => `nav-item${isActive ? ' active' : ''}`}
+        >
+          Composições
+        </NavLink>
+        <NavLink to="/budgets" className={({ isActive }) => `nav-item${isActive ? ' active' : ''}`}>
+          Orçamentos
+        </NavLink>
       </nav>
 
       <button type="button" className="logout-button" onClick={onLogout}>

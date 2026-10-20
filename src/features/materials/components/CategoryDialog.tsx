@@ -13,11 +13,17 @@ export function CategoryDialog({
   onClose: () => void;
 }) {
   const [id, setId] = useState('');
+
   const [name, setName] = useState('');
+
   const [description, setDescription] = useState('');
+
   const [active, setActive] = useState(true);
+
   const [busy, setBusy] = useState(false);
+
   const [error, setError] = useState('');
+
   const [success, setSuccess] = useState('');
   return (
     <DetailsDialog

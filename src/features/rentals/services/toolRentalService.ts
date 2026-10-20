@@ -9,6 +9,7 @@ import type {
 } from '../types/toolRental';
 
 const RENTAL_PAGE_SIZE = 100;
+
 const RENTAL_PERIODS = new Set<string>(['HOUR', 'DAY', 'WEEK', 'MONTH']);
 
 const RENTAL_ERROR_MESSAGES: Partial<Record<number, string>> = {
@@ -57,7 +58,9 @@ function parseToolRentalPage(value: unknown): ToolRentalPage {
 
 export async function getAllToolRentals(): Promise<ToolRentalResponse[]> {
   const rentals: ToolRentalResponse[] = [];
+
   let page = 0;
+
   let totalPages = 1;
 
   while (page < totalPages) {
@@ -66,6 +69,7 @@ export async function getAllToolRentals(): Promise<ToolRentalResponse[]> {
       size: String(RENTAL_PAGE_SIZE),
       sort: 'createdAt,desc',
     });
+
     const response = await apiFetch(`/api/tool-rentals?${query}`);
     if (!response.ok) {
       throw new Error(
@@ -88,7 +92,9 @@ export async function getAllToolRentals(): Promise<ToolRentalResponse[]> {
 
 export async function getToolRentals(toolId: string): Promise<ToolRentalResponse[]> {
   const rentals: ToolRentalResponse[] = [];
+
   let page = 0;
+
   let totalPages = 1;
 
   while (page < totalPages) {
@@ -97,6 +103,7 @@ export async function getToolRentals(toolId: string): Promise<ToolRentalResponse
       size: String(RENTAL_PAGE_SIZE),
       sort: 'createdAt,desc',
     });
+
     const response = await apiFetch(`/api/tools/${encodeURIComponent(toolId)}/rentals?${query}`);
     if (!response.ok) {
       throw new Error(

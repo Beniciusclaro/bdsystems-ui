@@ -26,6 +26,7 @@ const PAGE_SIZE_OPTIONS = [10, 20, 50];
 
 export function EmployeeListPage() {
   const navigate = useNavigate();
+
   const {
     rows: employees,
     totalElements,
@@ -44,12 +45,19 @@ export function EmployeeListPage() {
     {},
     'Não foi possível carregar os funcionários.',
   );
+
   const [statusFilter, setStatusFilter] = useState<EmployeeStatus | ''>('');
+
   const [positionFilter, setPositionFilter] = useState('');
+
   const [departmentFilter, setDepartmentFilter] = useState('');
+
   const [selectedEmployee, setSelectedEmployee] = useState<EmployeeResponse | null>(null);
+
   const [deletingEmployeeId, setDeletingEmployeeId] = useState<string | null>(null);
+
   const [employeeToDelete, setEmployeeToDelete] = useState<EmployeeResponse | null>(null);
+
   const [deleteError, setDeleteError] = useState<string | null>(null);
 
   const positions = useMemo(
@@ -59,6 +67,7 @@ export function EmployeeListPage() {
       ),
     [employees],
   );
+
   const departments = useMemo(
     () =>
       [...new Set(employees.map((employee) => employee.department))].sort((a, b) =>
@@ -84,6 +93,7 @@ export function EmployeeListPage() {
   };
 
   const refreshEmployees = refresh;
+
   const retryLoading = refresh;
 
   const employeeColumns: DataTableColumn<EmployeeResponse>[] = [

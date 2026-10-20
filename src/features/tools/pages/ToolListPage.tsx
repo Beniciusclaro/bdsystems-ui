@@ -20,6 +20,7 @@ const PAGE_SIZE_OPTIONS = [10, 20, 50];
 
 export function ToolListPage() {
   const navigate = useNavigate();
+
   const {
     rows: tools,
     totalElements,
@@ -39,13 +40,21 @@ export function ToolListPage() {
     {},
     'Não foi possível carregar as ferramentas.',
   );
+
   const [queryFilter, setQueryFilter] = useState('');
+
   const [activeFilter, setActiveFilter] = useState('');
+
   const [success, setSuccess] = useState<string | null>(null);
+
   const [changingStatusId, setChangingStatusId] = useState<string | null>(null);
+
   const [toolToDeactivate, setToolToDeactivate] = useState<ToolResponse | null>(null);
+
   const [deactivateError, setDeactivateError] = useState<string | null>(null);
+
   const rental = useToolRentalData(tools.length);
+
   const {
     showRentalData,
     rentalData,
@@ -58,6 +67,7 @@ export function ToolListPage() {
   } = rental;
 
   const refreshTools = refresh;
+
   const searchTools = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setSuccess(null);
@@ -66,12 +76,15 @@ export function ToolListPage() {
       ...(queryFilter.trim() ? { q: queryFilter.trim() } : {}),
     });
   };
+
   const clearFilters = () => {
     setQueryFilter('');
     setActiveFilter('');
     applyFilters({});
   };
+
   const retryLoading = refresh;
+
   const changePage = goToPage;
 
   const changeToolStatus = async (tool: ToolResponse) => {
@@ -183,8 +196,10 @@ export function ToolListPage() {
           >
             {tool.active ? (
               <svg aria-hidden="true" viewBox="0 0 24 24" fill="none">
-                <path d="M7 7h10v10H7z" />
-                <path d="M4 4h16v16H4z" />
+                <path d="M3 6h18" />
+                <path d="M8 6V4h8v2" />
+                <path d="m19 6-1 14H6L5 6" />
+                <path d="M10 10v6M14 10v6" />
               </svg>
             ) : (
               <svg aria-hidden="true" viewBox="0 0 24 24" fill="none">

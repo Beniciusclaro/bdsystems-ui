@@ -34,6 +34,7 @@ export function ConfirmDialog({
   children,
 }: ConfirmDialogProps) {
   const titleId = useId();
+
   const descriptionId = useId();
 
   return (

@@ -19,6 +19,7 @@ export function ContentState({
   className = '',
 }: ContentStateProps) {
   const role = variant === 'error' ? 'alert' : variant === 'loading' ? 'status' : undefined;
+
   const classes = ['ui-content-state', `ui-content-state--${variant}`, className]
     .filter(Boolean)
     .join(' ');

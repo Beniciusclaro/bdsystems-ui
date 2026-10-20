@@ -29,12 +29,15 @@ export function ToolForm({
   onSubmit,
 }: ToolFormProps) {
   const [code, setCode] = useState(initialValues?.code ?? '');
+
   const [name, setName] = useState(initialValues?.name ?? '');
+
   const [validationError, setValidationError] = useState<string | null>(null);
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     const trimmedCode = code.trim();
+
     const trimmedName = name.trim();
 
     if (!trimmedCode || !trimmedName) {

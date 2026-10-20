@@ -13,17 +13,20 @@ import type {
 
 const record = (value: unknown): value is Record<string, unknown> =>
   typeof value === 'object' && value !== null;
+
 const catalog = (value: unknown): value is MaterialCategory =>
   record(value) &&
   typeof value.id === 'string' &&
   typeof value.name === 'string' &&
   typeof value.active === 'boolean';
+
 const unit = (value: unknown): value is UnitOfMeasure =>
   catalog(value) &&
   'symbol' in value &&
   typeof value.symbol === 'string' &&
   'code' in value &&
   typeof value.code === 'string';
+
 const material = (value: unknown): value is Material =>
   catalog(value) &&
   'code' in value &&
@@ -32,6 +35,7 @@ const material = (value: unknown): value is Material =>
   unit(value.unitOfMeasure) &&
   'category' in value &&
   (value.category == null || catalog(value.category));
+
 const association = (value: unknown): value is MaterialSupplier =>
   record(value) &&
   typeof value.id === 'string' &&

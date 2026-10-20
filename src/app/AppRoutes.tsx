@@ -13,6 +13,9 @@ import { SupplierRegistrationPage } from '../features/suppliers/pages/SupplierRe
 import { ToolListPage } from '../features/tools/pages/ToolListPage';
 import { ToolRegistrationPage } from '../features/tools/pages/ToolRegistrationPage';
 import { ProtectedLayout } from './ProtectedLayout';
+import { PlanningCatalogPage } from '../features/planning/pages/PlanningCatalogPage';
+import { CompositionPage } from '../features/planning/pages/CompositionPage';
+import { BudgetPage } from '../features/planning/pages/BudgetPage';
 
 function App() {
   return (
@@ -38,6 +41,9 @@ function App() {
           <Route path="new" element={<ToolRegistrationPage />} />
           <Route path=":toolId/edit" element={<ToolRegistrationPage />} />
         </Route>
+        <Route path="/planning" element={<PlanningCatalogPage />} />
+        <Route path="/compositions" element={<CompositionPage />} />
+        <Route path="/budgets" element={<BudgetPage />} />
       </Route>
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>

@@ -52,9 +52,11 @@ export function ToolRentalForm({
         }
       : EMPTY_TOOL_RENTAL_DRAFT,
   );
+
   const [validationError, setValidationError] = useState<string | null>(null);
 
   const activeSuppliers = suppliers.filter((supplier) => supplier.active);
+
   const updateDraft = (changes: Partial<ToolRentalDraft>) => {
     const nextDraft = { ...draft, ...changes };
     setDraft(nextDraft);

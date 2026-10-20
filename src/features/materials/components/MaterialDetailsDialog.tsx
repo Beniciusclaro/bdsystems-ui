@@ -1,5 +1,4 @@
 import { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
 import { DetailsDialog } from '../../../shared/components/ui/DetailsDialog';
 import { getMaterialSuppliers } from '../services/materialService';
 import type { Material, MaterialSupplier } from '../types/material';
@@ -12,7 +11,9 @@ export function MaterialDetailsDialog({
   onClose: () => void;
 }) {
   const [rows, setRows] = useState<MaterialSupplier[] | null>(null);
+
   const [error, setError] = useState('');
+
   const [revision, setRevision] = useState(0);
   useEffect(() => {
     let current = true;
@@ -76,9 +77,6 @@ export function MaterialDetailsDialog({
             ))}
           </ul>
         )}
-        <Link className="primary-button" to={`/materials/${material.id}/edit`} onClick={onClose}>
-          Editar material
-        </Link>
       </div>
     </DetailsDialog>
   );

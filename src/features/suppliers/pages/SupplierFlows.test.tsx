@@ -65,6 +65,7 @@ describe('supplier flows', () => {
 
   it('searches by UUID and restores the paginated list when cleared', async () => {
     const user = userEvent.setup();
+
     const id = '550e8400-e29b-41d4-a716-446655440000';
     vi.mocked(getSupplier).mockResolvedValue({
       ...supplier,

@@ -32,6 +32,7 @@ export function DataTable<T>({
   wrapperClassName = '',
 }: DataTableProps<T>) {
   const tableClassName = ['ui-data-table', className].filter(Boolean).join(' ');
+
   const wrapperClasses = ['ui-data-table-wrap', wrapperClassName].filter(Boolean).join(' ');
 
   const handleRowClick = (event: MouseEvent<HTMLTableRowElement>, row: T) => {

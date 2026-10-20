@@ -80,6 +80,7 @@ export async function getSuppliers(page: number, size: number): Promise<Supplier
     size: String(size),
     sort: 'legalName,asc',
   });
+
   const response = await apiFetch(`/api/suppliers?${query}`);
 
   if (!response.ok) {
@@ -93,7 +94,9 @@ export async function getSuppliers(page: number, size: number): Promise<Supplier
 
 export async function getAllSuppliers(): Promise<SupplierResponse[]> {
   const suppliers: SupplierResponse[] = [];
+
   let page = 0;
+
   let totalPages = 1;
 
   while (page < totalPages) {

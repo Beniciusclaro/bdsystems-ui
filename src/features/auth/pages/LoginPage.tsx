@@ -13,8 +13,11 @@ interface LoginPageProps {
 
 export function LoginPage({ onBack }: LoginPageProps) {
   const navigate = useNavigate();
+
   const [error, setError] = useState<string | null>(null);
+
   const [success, setSuccess] = useState<string | null>(null);
+
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleBack = () => {

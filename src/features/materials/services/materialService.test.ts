@@ -21,7 +21,9 @@ describe('material API contract', () => {
       active: false,
       sort: 'code,asc',
     });
+
     const [path] = fetchMock.mock.calls[0];
+
     const query = new URL(path, 'http://localhost').searchParams;
     expect(path.startsWith('/api/materials?')).toBe(true);
     expect(Object.fromEntries(query)).toEqual({

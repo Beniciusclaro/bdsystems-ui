@@ -9,13 +9,21 @@ export function usePaginatedResource<T, F>(
   initialPageSize = 10,
 ) {
   const [rows, setRows] = useState<T[]>([]);
+
   const [totalElements, setTotalElements] = useState(0);
+
   const [totalPages, setTotalPages] = useState(0);
+
   const [page, setPage] = useState(0);
+
   const [pageSize, setPageSize] = useState(initialPageSize);
+
   const [filters, setFilters] = useState(initialFilters);
+
   const [isLoading, setIsLoading] = useState(true);
+
   const [error, setError] = useState<string | null>(null);
+
   const [revision, setRevision] = useState(0);
 
   useEffect(() => {
@@ -48,17 +56,20 @@ export function usePaginatedResource<T, F>(
     setPage(0);
     setFilters(nextFilters);
   };
+
   const goToPage = (nextPage: number) => {
     setIsLoading(true);
     setError(null);
     setPage(nextPage);
   };
+
   const changePageSize = (nextSize: number) => {
     setIsLoading(true);
     setError(null);
     setPage(0);
     setPageSize(nextSize);
   };
+
   const refresh = () => {
     setIsLoading(true);
     setError(null);

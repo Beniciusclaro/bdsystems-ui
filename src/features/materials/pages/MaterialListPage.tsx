@@ -15,11 +15,13 @@ import type { Material, MaterialCategory, MaterialFilters } from '../types/mater
 import './MaterialListPage.scss';
 export function MaterialListPage() {
   const navigate = useNavigate();
+
   const resource = usePaginatedResource<Material, MaterialFilters>(
     getMaterials,
     {},
     'Não foi possível carregar os materiais.',
   );
+
   const [draft, setDraft] = useState({
     name: '',
     code: '',
@@ -27,13 +29,21 @@ export function MaterialListPage() {
     active: '',
     sort: 'name,asc',
   });
+
   const [categories, setCategories] = useState<MaterialCategory[]>([]);
+
   const [categoryError, setCategoryError] = useState('');
+
   const [categoryRevision, setCategoryRevision] = useState(0);
+
   const [success, setSuccess] = useState('');
+
   const [selected, setSelected] = useState<Material | null>(null);
+
   const [deactivate, setDeactivate] = useState<Material | null>(null);
+
   const [statusError, setStatusError] = useState('');
+
   const [busy, setBusy] = useState(false);
   useEffect(() => {
     let current = true;
@@ -55,9 +65,11 @@ export function MaterialListPage() {
     setDraft({ name: '', code: '', categoryId: '', active: '', sort: 'name,asc' });
     resource.applyFilters({});
   };
+
   const hasFilters = Object.entries(resource.filters).some(
     ([key, value]) => key !== 'sort' && value !== undefined && value !== '',
   );
+
   const changeStatus = async (material: Material) => {
     if (busy) return;
     setBusy(true);
@@ -76,6 +88,7 @@ export function MaterialListPage() {
       setBusy(false);
     }
   };
+
   const columns: DataTableColumn<Material>[] = [
     { key: 'code', header: 'Código', mobileLabel: 'Código', renderCell: (m) => m.code },
     {
@@ -112,12 +125,6 @@ export function MaterialListPage() {
       mobileLabel: 'Ações',
       renderCell: (m) => (
         <RowActions>
-          <IconActionButton label={`Visualizar ${m.name}`} onClick={() => setSelected(m)}>
-            <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
-              <path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7S2 12 2 12Z" />
-              <circle cx="12" cy="12" r="3" />
-            </svg>
-          </IconActionButton>
           <IconActionButton
             label={`Editar ${m.name}`}
             variant="accent"
@@ -138,9 +145,18 @@ export function MaterialListPage() {
               } else void changeStatus(m);
             }}
           >
-            <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
-              <path d={m.active ? 'M5 5h14v14H5Z' : 'M12 4v16M4 12h16'} />
-            </svg>
+            {m.active ? (
+              <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                <path d="M3 6h18" />
+                <path d="M8 6V4h8v2" />
+                <path d="m19 6-1 14H6L5 6" />
+                <path d="M10 10v6M14 10v6" />
+              </svg>
+            ) : (
+              <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                <path d="M12 4v16M4 12h16" />
+              </svg>
+            )}
           </IconActionButton>
         </RowActions>
       ),

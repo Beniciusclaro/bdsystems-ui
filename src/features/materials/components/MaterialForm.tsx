@@ -32,11 +32,17 @@ export function MaterialForm({
   onManageCategories,
 }: Props) {
   const [code, setCode] = useState(material?.code ?? '');
+
   const [name, setName] = useState(material?.name ?? '');
+
   const [description, setDescription] = useState(material?.description ?? '');
+
   const [categoryId, setCategoryId] = useState(material?.category?.id ?? '');
+
   const [unitId, setUnitId] = useState(material?.unitOfMeasure.id ?? '');
+
   const [active, setActive] = useState(material?.active ?? true);
+
   const [rows, setRows] = useState(() =>
     associations.map((row) => ({
       key: row.id,
@@ -45,7 +51,9 @@ export function MaterialForm({
       price: row.referencePrice == null ? '' : String(row.referencePrice),
     })),
   );
+
   const [errors, setErrors] = useState<Record<string, string>>({});
+
   const updateRow = (key: string, patch: Partial<(typeof rows)[number]>) =>
     setRows((current) => current.map((row) => (row.key === key ? { ...row, ...patch } : row)));
   return (

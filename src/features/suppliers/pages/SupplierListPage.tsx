@@ -47,6 +47,7 @@ async function getSuppliersPage(
 
 export function SupplierListPage() {
   const navigate = useNavigate();
+
   const {
     rows: suppliers,
     totalElements,
@@ -65,19 +66,27 @@ export function SupplierListPage() {
     {},
     'Não foi possível carregar os fornecedores.',
   );
+
   const [searchId, setSearchId] = useState('');
+
   const [searchError, setSearchError] = useState<string | null>(null);
+
   const clearSearch = () => {
     setSearchId('');
     setSearchError(null);
     applyFilters({});
   };
+
   const [selectedSupplier, setSelectedSupplier] = useState<SupplierResponse | null>(null);
+
   const [deletingSupplierId, setDeletingSupplierId] = useState<string | null>(null);
+
   const [supplierToDelete, setSupplierToDelete] = useState<SupplierResponse | null>(null);
+
   const [deleteError, setDeleteError] = useState<string | null>(null);
 
   const refreshSuppliers = refresh;
+
   const retryLoading = refresh;
 
   const supplierColumns: DataTableColumn<SupplierResponse>[] = [

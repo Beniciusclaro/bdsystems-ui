@@ -21,7 +21,9 @@ const initialState = {
 
 export function RegisterForm({ isSubmitting, onSubmit }: RegisterFormProps) {
   const [form, setForm] = useState(initialState);
+
   const passwordsMatch = form.password === form.confirmPassword;
+
   const passwordError =
     form.confirmPassword && !passwordsMatch ? 'As senhas devem ser iguais.' : null;
 

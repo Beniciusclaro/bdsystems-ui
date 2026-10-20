@@ -8,7 +8,9 @@ const rows = [{ id: 'a', name: 'Furadeira' }];
 describe('DataTable', () => {
   it('activates a row by keyboard without activating nested controls', async () => {
     const onRowActivate = vi.fn();
+
     const onAction = vi.fn();
+
     const user = userEvent.setup();
     render(
       <DataTable
