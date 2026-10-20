@@ -1,10 +1,12 @@
 import { MaterialListPage } from '../features/materials/pages/MaterialListPage';
 import { MaterialRegistrationPage } from '../features/materials/pages/MaterialRegistrationPage';
 import './App.scss';
+import { lazy, Suspense } from 'react';
 import { Navigate, Route, Routes } from 'react-router-dom';
-import { DashboardPage } from '../features/dashboard/pages/DashboardPage';
 import { EmployeeListPage } from '../features/employees/pages/EmployeeListPage';
 import { EmployeeRegistrationPage } from '../features/employees/pages/EmployeeRegistrationPage';
+import { ClientListPage } from '../features/clients/pages/ClientListPage';
+import { ClientRegistrationPage } from '../features/clients/pages/ClientRegistrationPage';
 import { LandingPage } from '../features/marketing/pages/LandingPage';
 import { LoginPage } from '../features/auth/pages/LoginPage';
 import { RegisterPage } from '../features/auth/pages/RegisterPage';
@@ -17,6 +19,12 @@ import { PlanningCatalogPage } from '../features/planning/pages/PlanningCatalogP
 import { CompositionPage } from '../features/planning/pages/CompositionPage';
 import { BudgetPage } from '../features/planning/pages/BudgetPage';
 
+const DashboardPage = lazy(() =>
+  import('../features/dashboard/pages/DashboardPage').then((module) => ({
+    default: module.DashboardPage,
+  })),
+);
+
 function App() {
   return (
     <Routes>
@@ -24,10 +32,21 @@ function App() {
       <Route path="/login" element={<LoginPage />} />
       <Route path="/register" element={<RegisterPage />} />
       <Route element={<ProtectedLayout />}>
-        <Route path="/dashboard" element={<DashboardPage />} />
+        <Route
+          path="/dashboard"
+          element={
+            <Suspense fallback={<p className="route-loading">Carregando dashboard...</p>}>
+              <DashboardPage />
+            </Suspense>
+          }
+        />
         <Route path="/employees" element={<EmployeeListPage />}>
           <Route path="new" element={<EmployeeRegistrationPage />} />
           <Route path=":employeeId/edit" element={<EmployeeRegistrationPage />} />
+        </Route>
+        <Route path="/clients" element={<ClientListPage />}>
+          <Route path="new" element={<ClientRegistrationPage />} />
+          <Route path=":clientId/edit" element={<ClientRegistrationPage />} />
         </Route>
         <Route path="/suppliers" element={<SupplierListPage />}>
           <Route path="new" element={<SupplierRegistrationPage />} />

@@ -5,12 +5,11 @@ import {
   getClients,
   getLaborRoles,
   getProjects,
-  saveClient,
   saveLaborRole,
   saveLaborProfile,
   saveProject,
 } from '../services/planningService';
-import type { Client, ClientType, LaborRole, Project } from '../types/planning';
+import type { Client, LaborRole, Project } from '../types/planning';
 import { getEmployees } from '../../employees/services/employeeService';
 import type { EmployeeResponse } from '../../employees/types/employee';
 import './Planning.scss';
@@ -27,18 +26,6 @@ export function PlanningCatalogPage() {
   const [error, setError] = useState('');
 
   const [pending, setPending] = useState(false);
-
-  const [client, setClient] = useState({
-    type: 'INDIVIDUAL' as ClientType,
-    name: '',
-    document: '',
-    email: '',
-    phone: '',
-    street: '',
-    city: '',
-    state: '',
-    zipCode: '',
-  });
 
   const [project, setProject] = useState({
     clientId: '',
@@ -92,24 +79,6 @@ export function PlanningCatalogPage() {
     }
   };
 
-  const submitClient = (e: FormEvent) => {
-    e.preventDefault();
-    void run(async () => {
-      await saveClient({
-        ...client,
-        document: client.document || null,
-        email: client.email || null,
-        phone: client.phone || null,
-        street: client.street || null,
-        city: client.city || null,
-        state: client.state || null,
-        zipCode: client.zipCode || null,
-        active: true,
-      });
-      setClient({ ...client, name: '', document: '', email: '', phone: '' });
-    });
-  };
-
   const submitProject = (e: FormEvent) => {
     e.preventDefault();
     void run(async () => {
@@ -159,7 +128,7 @@ export function PlanningCatalogPage() {
   };
   return (
     <main className="dashboard-content planning-page">
-      <PageHeader eyebrow="Planejamento" title="Cadastros para orçamento" />
+      <PageHeader eyebrow="Planejamento" title="Obras e mão de obra" />
       {error && (
         <p className="planning-alert" role="alert">
           {error}
@@ -167,56 +136,7 @@ export function PlanningCatalogPage() {
       )}
       <div className="planning-grid">
         <Panel>
-          <h2>Clientes</h2>
-          <form className="planning-form" onSubmit={submitClient}>
-            <label>
-              Tipo
-              <select
-                value={client.type}
-                onChange={(e) => setClient({ ...client, type: e.target.value as ClientType })}
-              >
-                <option value="INDIVIDUAL">Pessoa física</option>
-                <option value="COMPANY">Empresa</option>
-              </select>
-            </label>
-            <label>
-              Nome
-              <input
-                required
-                value={client.name}
-                onChange={(e) => setClient({ ...client, name: e.target.value })}
-              />
-            </label>
-            <label>
-              Documento
-              <input
-                value={client.document}
-                onChange={(e) => setClient({ ...client, document: e.target.value })}
-              />
-            </label>
-            <label>
-              E-mail
-              <input
-                type="email"
-                value={client.email}
-                onChange={(e) => setClient({ ...client, email: e.target.value })}
-              />
-            </label>
-            <label>
-              Telefone
-              <input
-                value={client.phone}
-                onChange={(e) => setClient({ ...client, phone: e.target.value })}
-              />
-            </label>
-            <button className="primary-button" disabled={pending}>
-              Cadastrar cliente
-            </button>
-          </form>
-          <RecordList
-            rows={clients.map((c) => `${c.name}${c.document ? ` · ${c.document}` : ''}`)}
-          />
-          <h3>Custo baseado no funcionário</h3>
+          <h2>Custo baseado no funcionário</h2>
           <form className="planning-form" onSubmit={submitProfile}>
             <label>
               Funcionário

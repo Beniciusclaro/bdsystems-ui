@@ -2,6 +2,11 @@
   display: grid;
   gap: 1.25rem;
 }
+
+.planning-page .page-header {
+  margin-bottom: 0.25rem;
+}
+
 .planning-grid {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -12,6 +17,12 @@
   align-content: start;
   gap: 1rem;
 }
+
+.planning-page .panel-card h2,
+.planning-page .panel-card h3 {
+  margin-block: 0;
+}
+
 .planning-form {
   display: grid;
   gap: 0.8rem;
@@ -26,25 +37,56 @@
 .planning-form textarea {
   width: 100%;
   padding: 0.72rem;
-  border: 1px solid var(--border-color, #d8dee8);
-  border-radius: 0.55rem;
-  background: var(--surface, #fff);
-  color: inherit;
+  border: 1px solid var(--color-border);
+  border-radius: 0.65rem;
+  background: var(--color-surface-raised);
+  color: var(--color-ink);
+}
+
+.planning-form input::placeholder,
+.planning-form textarea::placeholder {
+  color: var(--color-muted);
+}
+
+.planning-form button:not(.primary-button),
+.planning-records button,
+.planning-editor > button {
+  min-height: 42px;
+  border: 1px solid var(--color-border);
+  border-radius: 0.65rem;
+  padding: 0.65rem 0.85rem;
+  background: var(--color-surface-muted);
+  color: var(--color-ink);
+  font-weight: 600;
+}
+
+.planning-form button:not(.primary-button):hover:not(:disabled),
+.planning-records button:hover:not(:disabled),
+.planning-editor > button:hover:not(:disabled) {
+  border-color: var(--color-accent);
+  background: var(--color-accent-soft);
 }
 .planning-alert {
   padding: 0.8rem 1rem;
   border-radius: 0.5rem;
-  background: #fff1f0;
-  color: #9f241f;
+  border: 1px solid var(--color-danger-ink);
+  background: var(--color-danger-soft);
+  color: var(--color-danger-ink);
 }
 .planning-records {
   display: grid;
   gap: 0.45rem;
   margin: 0;
-  padding-left: 1.25rem;
+  padding: 0;
+  list-style: none;
+}
+
+.planning-records button {
+  width: 100%;
+  text-align: left;
 }
 .planning-empty {
-  color: var(--text-muted, #667085);
+  color: var(--color-muted);
 }
 .planning-wide {
   grid-column: 1/-1;
@@ -59,11 +101,12 @@
   gap: 0.6rem;
   align-items: end;
   padding: 0.7rem;
-  background: var(--surface-muted, #f7f8fa);
+  border: 1px solid var(--color-border);
+  background: var(--color-surface-muted);
   border-radius: 0.6rem;
 }
 .budget-stage {
-  border: 1px solid var(--border-color, #d8dee8);
+  border: 1px solid var(--color-border);
   border-radius: 0.7rem;
   padding: 1rem;
   display: grid;
@@ -74,7 +117,7 @@
   grid-template-columns: 1fr auto auto;
   gap: 0.75rem;
   padding: 0.55rem 0;
-  border-top: 1px solid var(--border-color, #e6e9ef);
+  border-top: 1px solid var(--color-border);
 }
 .proposal {
   background: white;

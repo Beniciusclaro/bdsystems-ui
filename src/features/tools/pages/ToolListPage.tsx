@@ -218,9 +218,9 @@ export function ToolListPage() {
         eyebrow="Cadastros"
         title="Ferramentas"
         action={
-          <Link to="/tools/new" className="primary-button">
-            Cadastrar ferramenta
-          </Link>
+          <span className="tool-total">
+            {totalElements} {totalElements === 1 ? 'ferramenta' : 'ferramentas'}
+          </span>
         }
       />
 
@@ -238,8 +238,8 @@ export function ToolListPage() {
               Consulte e mantenha o cadastro de ferramentas da sua empresa.
             </p>
           </div>
-          <span className="tool-total">
-            {totalElements} {totalElements === 1 ? 'ferramenta' : 'ferramentas'}
+          <span className="tool-list-page-count" aria-live="polite">
+            {tools.length} {tools.length === 1 ? 'ferramenta' : 'ferramentas'} nesta página
           </span>
         </div>
 
@@ -367,6 +367,10 @@ export function ToolListPage() {
           />
         ) : null}
       </Panel>
+      <Link to="/tools/new" className="list-create-fab">
+        <span aria-hidden="true">+</span>
+        Cadastrar ferramenta
+      </Link>
       <Outlet context={{ refreshTools, refreshRentalData, tools, isLoading }} />
 
       <ToolDetailsDialog rental={rental} />

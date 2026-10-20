@@ -1,0 +1,37 @@
+.client-registration-dialog {
+  --registration-width: 860px;
+  --registration-height: 900px;
+}
+
+.client-form-intro {
+  margin: 0 0 24px;
+  color: var(--color-muted);
+}
+
+.client-form {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.client-form-section {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.client-form-section h2 {
+  margin: 0;
+  font-size: 1.05rem;
+}
+
+.client-form .primary-button {
+  align-self: flex-start;
+  min-width: 220px;
+}
+
+@media (max-width: 640px) {
+  .client-form .primary-button {
+    width: 100%;
+  }
+}

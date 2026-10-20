@@ -55,7 +55,7 @@
   border-top: 1px solid var(--color-border);
   border-bottom: 1px solid var(--color-border);
   padding: 14px 24px;
-  background: hsl(174 35% 98%);
+  background: var(--color-surface-muted);
 }
 
 .tool-rental-toggle > p {
@@ -156,7 +156,7 @@
 }
 
 .tool-rental-form label > input[readonly] {
-  background: hsl(174 20% 96%);
+  background: var(--color-surface-muted);
   color: var(--color-muted);
 }
 

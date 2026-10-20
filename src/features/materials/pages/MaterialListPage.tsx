@@ -168,9 +168,9 @@ export function MaterialListPage() {
         eyebrow="Cadastros"
         title="Materiais"
         action={
-          <Link className="primary-button" to="/materials/new">
-            Novo material
-          </Link>
+          <span className="material-total">
+            {resource.totalElements} {resource.totalElements === 1 ? 'material' : 'materiais'}
+          </span>
         }
       />
       {success && (
@@ -184,7 +184,10 @@ export function MaterialListPage() {
             <h2 id="material-list-heading">Lista de materiais</h2>
             <p>Gerencie os materiais utilizados nos orçamentos das suas obras.</p>
           </div>
-          <span>{resource.totalElements} materiais</span>
+          <span aria-live="polite">
+            {resource.rows.length} {resource.rows.length === 1 ? 'material' : 'materiais'} nesta
+            página
+          </span>
         </div>
         {categoryError && (
           <div className="message error" role="alert">
@@ -325,6 +328,10 @@ export function MaterialListPage() {
           />
         )}
       </Panel>
+      <Link className="list-create-fab" to="/materials/new">
+        <span aria-hidden="true">+</span>
+        Cadastrar material
+      </Link>
       <Outlet context={{ refreshMaterials: resource.refresh, notify: setSuccess }} />
       {selected && (
         <MaterialDetailsDialog
