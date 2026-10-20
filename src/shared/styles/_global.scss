@@ -1,18 +1,28 @@
 @use './variables' as *;
 
 :root {
-  --color-canvas: hsl(174 35% 95%);
-  --color-surface: #fff;
-  --color-ink: hsl(195 16% 20%);
-  --color-muted: hsl(195 10% 42%);
-  --color-border: hsl(165 10% 86%);
+  --color-canvas: hsl(174 28% 96%);
+  --color-surface: hsl(0 0% 100%);
+  --color-surface-muted: hsl(174 22% 96%);
+  --color-surface-raised: hsl(0 0% 100%);
+  --color-ink: hsl(198 24% 17%);
+  --color-muted: hsl(195 11% 43%);
+  --color-border: hsl(174 13% 86%);
   --color-accent: hsl(179 100% 34%);
-  --color-action: hsl(179 100% 25%);
+  --color-action: hsl(179 100% 27%);
   --color-accent-soft: hsl(177 58% 91%);
+  --color-sidebar: hsl(212 34% 15%);
+  --color-sidebar-ink: hsl(180 24% 96%);
+  --color-sidebar-muted: hsl(190 12% 73%);
   --color-success-soft: hsl(148 45% 93%);
   --color-success-ink: hsl(150 47% 26%);
   --color-danger-soft: hsl(0 70% 96%);
   --color-danger-ink: hsl(0 58% 42%);
+  --color-warning-soft: hsl(41 80% 93%);
+  --color-warning-ink: hsl(31 85% 30%);
+  --shadow-sm: 0 2px 8px hsl(195 22% 16% / 7%);
+  --shadow-md: 0 12px 30px hsl(195 22% 16% / 9%);
+  --shadow-lg: 0 24px 70px hsl(210 30% 8% / 22%);
 
   font-family: 'Bariol', 'Segoe UI', sans-serif;
   line-height: 1.5;
@@ -23,6 +33,29 @@
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
+
+:root[data-theme='dark'] {
+  --color-canvas: hsl(216 28% 10%);
+  --color-surface: hsl(215 25% 15%);
+  --color-surface-muted: hsl(215 23% 18%);
+  --color-surface-raised: hsl(215 23% 19%);
+  --color-ink: hsl(180 18% 94%);
+  --color-muted: hsl(190 10% 67%);
+  --color-border: hsl(211 17% 25%);
+  --color-accent: hsl(179 80% 42%);
+  --color-action: hsl(179 83% 43%);
+  --color-accent-soft: hsl(179 65% 20%);
+  --color-sidebar: hsl(216 30% 8%);
+  --color-success-soft: hsl(150 38% 18%);
+  --color-success-ink: hsl(148 55% 68%);
+  --color-danger-soft: hsl(0 42% 20%);
+  --color-danger-ink: hsl(0 78% 73%);
+  --color-warning-soft: hsl(38 50% 20%);
+  --color-warning-ink: hsl(41 82% 69%);
+  --shadow-sm: 0 2px 8px hsl(210 40% 4% / 25%);
+  --shadow-md: 0 12px 30px hsl(210 40% 4% / 30%);
+  --shadow-lg: 0 24px 70px hsl(210 40% 3% / 45%);
 }
 
 * {
@@ -40,11 +73,15 @@ body,
 
 body {
   min-height: 100vh;
+  transition:
+    background-color 0.2s ease,
+    color 0.2s ease;
 }
 
 button,
 input,
-select {
+select,
+textarea {
   font: inherit;
 }
 
@@ -86,7 +123,8 @@ select:focus-visible {
 
 .primary-button,
 .secondary-button {
-  border-radius: 6px;
+  min-height: 44px;
+  border-radius: 10px;
   padding: 11px 16px;
   font-weight: 700;
 }
@@ -128,6 +166,11 @@ select:focus-visible {
   background: $bg-panel;
   border: 1px solid $border;
   color: $text;
+}
+
+.secondary-button:hover:not(:disabled) {
+  border-color: $primary;
+  background: var(--color-surface-muted);
 }
 
 .text-button {
@@ -176,11 +219,12 @@ label {
 }
 
 input,
-select {
+select,
+textarea {
   width: 100%;
   min-height: 44px;
   border: 1px solid $border;
-  border-radius: 6px;
+  border-radius: 10px;
   background: $bg-panel;
   color: $text;
   padding: 10px 12px;
@@ -189,14 +233,68 @@ select {
     box-shadow 0.2s ease;
 }
 
-input::placeholder {
+textarea {
+  min-height: 96px;
+  resize: vertical;
+}
+
+input::placeholder,
+textarea::placeholder {
   color: $text-soft;
 }
 
 input:focus,
-select:focus {
+select:focus,
+textarea:focus {
   border-color: $primary;
   box-shadow: 0 0 0 3px var(--color-accent-soft);
+}
+
+input:disabled,
+select:disabled,
+textarea:disabled,
+input[readonly] {
+  background: var(--color-surface-muted);
+  color: var(--color-muted);
+  opacity: 1;
+}
+
+select option {
+  background: var(--color-surface);
+  color: var(--color-ink);
+}
+
+.list-create-fab {
+  position: fixed;
+  z-index: 18;
+  right: 30px;
+  bottom: 26px;
+  min-height: 54px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  border: 1px solid var(--color-action);
+  border-radius: 999px;
+  padding: 0 20px;
+  background: var(--color-action);
+  box-shadow: var(--shadow-md);
+  color: #fff;
+  font-weight: 700;
+  transition:
+    transform 0.15s ease,
+    filter 0.15s ease;
+}
+
+.list-create-fab:hover {
+  filter: brightness(0.94);
+  transform: translateY(-2px);
+}
+
+.list-create-fab span {
+  font-size: 1.4rem;
+  font-weight: 400;
+  line-height: 1;
 }
 
 .page-shell {
@@ -215,7 +313,21 @@ select:focus {
   padding: 30px;
   background: $bg-panel;
   border: 1px solid $border;
-  border-radius: 8px;
+  border-radius: 20px;
+  box-shadow: var(--shadow-lg);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+  }
 }
 
 .auth-header {
@@ -281,5 +393,21 @@ select:focus {
 
   .form-grid {
     grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 1000px) {
+  .list-create-fab {
+    right: 24px;
+    bottom: 22px;
+  }
+}
+
+@media (max-width: 520px) {
+  .list-create-fab {
+    right: 16px;
+    bottom: 16px;
+    min-height: 50px;
+    padding-inline: 16px;
   }
 }

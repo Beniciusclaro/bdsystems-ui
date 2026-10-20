@@ -23,8 +23,8 @@
 }
 
 .ui-status-badge--warning {
-  background: hsl(41 80% 93%);
-  color: hsl(31 85% 30%);
+  background: var(--color-warning-soft);
+  color: var(--color-warning-ink);
 }
 
 .ui-status-badge--danger {
@@ -38,6 +38,6 @@
 }
 
 .ui-status-badge--neutral {
-  background: hsl(195 10% 92%);
+  background: var(--color-surface-muted);
   color: var(--color-muted);
 }

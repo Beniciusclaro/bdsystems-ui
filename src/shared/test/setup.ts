@@ -5,6 +5,7 @@ import { cleanup } from '@testing-library/react';
 afterEach(() => {
   cleanup();
   sessionStorage.clear();
+  localStorage.clear();
 });
 
 HTMLDialogElement.prototype.showModal = function showModal() {

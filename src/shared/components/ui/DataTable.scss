@@ -1,16 +1,18 @@
 .ui-data-table-wrap {
   overflow-x: auto;
+  border-top: 1px solid var(--color-border);
 }
 
 .ui-data-table {
   width: 100%;
-  border-collapse: collapse;
+  border-collapse: separate;
+  border-spacing: 0;
   text-align: left;
 }
 
 .ui-data-table th {
   padding: 12px 18px;
-  background: hsl(174 35% 98%);
+  background: var(--color-surface-muted);
   color: var(--color-muted);
   font-size: 0.76rem;
   font-weight: 700;
@@ -22,8 +24,13 @@
 .ui-data-table td {
   padding: 15px 18px;
   border-top: 1px solid var(--color-border);
+  border-right: 1px solid color-mix(in srgb, var(--color-border) 55%, transparent);
   color: var(--color-ink);
   font-size: 0.9rem;
+}
+
+.ui-data-table td:last-child {
+  border-right: 0;
 }
 
 .ui-data-table tbody tr {
@@ -32,7 +39,7 @@
 
 .ui-data-table tbody tr:hover,
 .ui-data-table tbody tr:focus-visible {
-  background-color: var(--color-accent-soft);
+  background-color: color-mix(in srgb, var(--color-accent-soft) 68%, var(--color-surface));
 }
 
 .ui-data-table tbody tr[tabindex='0'] {
@@ -79,6 +86,7 @@
     gap: 12px;
     padding: 9px 0;
     border-top: 0;
+    border-right: 0;
     text-align: right;
   }
 

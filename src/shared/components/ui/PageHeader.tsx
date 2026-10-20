@@ -9,9 +9,9 @@ interface PageHeaderProps {
 
 export function PageHeader({ eyebrow, title, action }: PageHeaderProps) {
   return (
-    <header className="topbar">
+    <header className="page-header">
       <div>
-        <p className="dashboard-eyebrow">{eyebrow}</p>
+        <p className="page-header__eyebrow">{eyebrow}</p>
         <h1>{title}</h1>
       </div>
       {action}

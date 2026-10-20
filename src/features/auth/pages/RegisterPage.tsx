@@ -1,11 +1,12 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { BrandLogo } from '../../../shared/components/brand/BrandLogo';
 import { RegisterForm } from '../components/RegisterForm';
 import { saveAuthToken } from '../../../shared/auth/session';
 import { registerUser } from '../services/authService';
 import type { UserRequest } from '../types/auth';
-import './RegisterPage.scss';
+import { CheckCircle2, ClipboardCheck, UsersRound } from 'lucide-react';
+import './AuthPage.scss';
 
 interface RegisterPageProps {
   onBack?: () => void;
@@ -57,31 +58,55 @@ export function RegisterPage({ onBack }: RegisterPageProps) {
 
   return (
     <main className="page-shell register-page">
-      <section className="auth-card">
-        <div className="auth-header">
-          <BrandLogo />
-          <div className="auth-header-row">
-            <p className="eyebrow">Cadastro da empresa</p>
-            <button type="button" className="text-button" onClick={handleBack}>
-              ← Voltar
-            </button>
-          </div>
-          <h1>Criar conta</h1>
-          <p>Cadastre sua empresa e comece a gerenciar obras e equipes.</p>
+      <section className="auth-showcase" aria-label="Apresentação da plataforma">
+        <BrandLogo />
+        <div className="auth-showcase__content">
+          <p className="auth-showcase__eyebrow">Comece a organizar a operação</p>
+          <h1>Uma base sólida para gerir a sua empresa.</h1>
+          <p>Centralize os principais processos e acompanhe a evolução das suas obras.</p>
+          <ul>
+            <li>
+              <UsersRound aria-hidden="true" /> Gestão de equipas e fornecedores
+            </li>
+            <li>
+              <ClipboardCheck aria-hidden="true" /> Planeamento e orçamentos integrados
+            </li>
+            <li>
+              <CheckCircle2 aria-hidden="true" /> Informação organizada e acessível
+            </li>
+          </ul>
         </div>
+      </section>
 
-        {error ? (
-          <div className="message error" role="alert">
-            {error}
+      <section className="auth-form-side">
+        <section className="auth-card">
+          <div className="auth-header">
+            <div className="auth-header-row">
+              <p className="eyebrow">Cadastro da empresa</p>
+              <button type="button" className="text-button" onClick={handleBack}>
+                ← Voltar
+              </button>
+            </div>
+            <h1>Criar conta</h1>
+            <p>Cadastre a sua empresa e comece a gerir obras e equipas.</p>
           </div>
-        ) : null}
-        {success ? (
-          <div className="message success" role="status">
-            {success}
-          </div>
-        ) : null}
 
-        <RegisterForm isSubmitting={isSubmitting} onSubmit={handleRegister} />
+          {error ? (
+            <div className="message error" role="alert">
+              {error}
+            </div>
+          ) : null}
+          {success ? (
+            <div className="message success" role="status">
+              {success}
+            </div>
+          ) : null}
+
+          <RegisterForm isSubmitting={isSubmitting} onSubmit={handleRegister} />
+          <p className="auth-switch">
+            Já tem uma conta? <Link to="/login">Entrar</Link>
+          </p>
+        </section>
       </section>
     </main>
   );

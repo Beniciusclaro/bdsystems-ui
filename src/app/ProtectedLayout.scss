@@ -1,39 +1,57 @@
-.dashboard-page {
-  --dashboard-canvas: var(--color-canvas);
-  --dashboard-surface: var(--color-surface);
-  --dashboard-ink: var(--color-ink);
-  --dashboard-muted: var(--color-muted);
-  --dashboard-border: var(--color-border);
-  --dashboard-accent: var(--color-accent);
-  --dashboard-accent-soft: var(--color-accent-soft);
+.app-shell {
+  --sidebar-width: 260px;
 
   min-height: 100vh;
-  display: grid;
-  grid-template-columns: 252px minmax(0, 1fr);
-  color: var(--dashboard-ink);
-  background: var(--dashboard-canvas);
+  color: var(--color-ink);
+  background: var(--color-canvas);
+}
+
+.app-shell--collapsed {
+  --sidebar-width: 82px;
+}
+
+.app-shell__main {
+  min-width: 0;
+  min-height: 100vh;
+  margin-left: var(--sidebar-width);
+  transition: margin-left 0.22s ease;
 }
 
 .dashboard-content {
-  width: min(100%, 1500px);
+  width: min(100%, 1560px);
   min-width: 0;
   margin-inline: auto;
-  padding: 38px 40px 56px;
+  padding: 30px 32px 56px;
+}
+
+.app-shell__backdrop {
+  position: fixed;
+  z-index: 25;
+  inset: 0;
+  border: 0;
+  background: hsl(210 28% 8% / 58%);
+  backdrop-filter: blur(2px);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .app-shell__main {
+    transition: none;
+  }
 }
 
 @media (max-width: 1000px) {
-  .dashboard-page {
-    grid-template-columns: 1fr;
+  .app-shell__main {
+    margin-left: 0;
   }
 
   .dashboard-content {
-    padding: 0 24px 44px;
+    padding: 26px 24px 44px;
   }
 }
 
-@media (max-width: 520px) {
+@media (max-width: 560px) {
   .dashboard-content {
-    padding: 0 16px 36px;
+    padding: 22px 16px 36px;
   }
 
   .primary-button {

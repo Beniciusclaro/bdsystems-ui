@@ -1,65 +1,62 @@
-import './Sidebar.scss';
-import { BrandLogo } from '../../shared/components/brand/BrandLogo';
+import { PanelLeftClose, PanelLeftOpen, X } from 'lucide-react';
 import { NavLink } from 'react-router-dom';
+import { BrandLogo } from '../../shared/components/brand/BrandLogo';
+import { navigationItems } from '../navigation';
+import './Sidebar.scss';
 
 interface SidebarProps {
-  onLogout: () => void;
+  collapsed: boolean;
+  isDrawerOpen: boolean;
+  onCloseDrawer: () => void;
+  onToggleCollapsed: () => void;
 }
 
-export function Sidebar({ onLogout }: SidebarProps) {
+export function Sidebar({
+  collapsed,
+  isDrawerOpen,
+  onCloseDrawer,
+  onToggleCollapsed,
+}: SidebarProps) {
   return (
-    <aside className="sidebar" aria-label="Navegação do sistema">
+    <aside
+      className={`sidebar${collapsed ? ' sidebar--collapsed' : ''}${isDrawerOpen ? ' sidebar--open' : ''}`}
+      aria-label="Navegação do sistema"
+    >
       <div className="sidebar-brand">
-        <BrandLogo compact />
+        <BrandLogo compact={collapsed} />
+        <button
+          type="button"
+          className="sidebar-close"
+          aria-label="Fechar menu"
+          onClick={onCloseDrawer}
+        >
+          <X aria-hidden="true" />
+        </button>
       </div>
 
       <nav className="sidebar-nav" aria-label="Principal">
-        <NavLink
-          to="/dashboard"
-          className={({ isActive }) => `nav-item${isActive ? ' active' : ''}`}
-        >
-          Visão geral
-        </NavLink>
-        <NavLink
-          to="/employees"
-          className={({ isActive }) => `nav-item${isActive ? ' active' : ''}`}
-        >
-          Funcionários
-        </NavLink>
-        <NavLink
-          to="/suppliers"
-          className={({ isActive }) => `nav-item${isActive ? ' active' : ''}`}
-        >
-          Fornecedores
-        </NavLink>
-        <NavLink to="/tools" className={({ isActive }) => `nav-item${isActive ? ' active' : ''}`}>
-          Ferramentas
-        </NavLink>
-        <NavLink
-          to="/materials"
-          className={({ isActive }) => `nav-item${isActive ? ' active' : ''}`}
-        >
-          Materiais
-        </NavLink>
-        <NavLink
-          to="/planning"
-          className={({ isActive }) => `nav-item${isActive ? ' active' : ''}`}
-        >
-          Clientes e obras
-        </NavLink>
-        <NavLink
-          to="/compositions"
-          className={({ isActive }) => `nav-item${isActive ? ' active' : ''}`}
-        >
-          Composições
-        </NavLink>
-        <NavLink to="/budgets" className={({ isActive }) => `nav-item${isActive ? ' active' : ''}`}>
-          Orçamentos
-        </NavLink>
+        {navigationItems.map(({ path, label, icon: Icon }) => (
+          <NavLink
+            key={path}
+            to={path}
+            title={collapsed ? label : undefined}
+            className={({ isActive }) => `nav-item${isActive ? ' active' : ''}`}
+            onClick={onCloseDrawer}
+          >
+            <Icon aria-hidden="true" />
+            <span>{label}</span>
+          </NavLink>
+        ))}
       </nav>
 
-      <button type="button" className="logout-button" onClick={onLogout}>
-        Sair
+      <button
+        type="button"
+        className="sidebar-collapse"
+        aria-label={collapsed ? 'Expandir menu lateral' : 'Recolher menu lateral'}
+        onClick={onToggleCollapsed}
+      >
+        {collapsed ? <PanelLeftOpen aria-hidden="true" /> : <PanelLeftClose aria-hidden="true" />}
+        <span>Recolher menu</span>
       </button>
     </aside>
   );
