@@ -12,7 +12,13 @@ import { StatusBadge } from '../../../shared/components/ui/StatusBadge';
 import { deleteEmployee, getEmployees } from '../services/employeeService';
 import type { EmployeeFilters, EmployeeResponse, EmployeeStatus } from '../types/employee';
 import { EmployeeDetailsDialog } from '../components/EmployeeDetailsDialog';
-import { formatDate, getStatusLabel, getStatusTone, isEmployeeStatus, statusLabels } from '../presentation';
+import {
+  formatDate,
+  getStatusLabel,
+  getStatusTone,
+  isEmployeeStatus,
+  statusLabels,
+} from '../presentation';
 import { usePaginatedResource } from '../../../shared/hooks/usePaginatedResource';
 import './EmployeeListPage.scss';
 
@@ -47,11 +53,17 @@ export function EmployeeListPage() {
   const [deleteError, setDeleteError] = useState<string | null>(null);
 
   const positions = useMemo(
-    () => [...new Set(employees.map((employee) => employee.position))].sort((a, b) => a.localeCompare(b, 'pt')),
+    () =>
+      [...new Set(employees.map((employee) => employee.position))].sort((a, b) =>
+        a.localeCompare(b, 'pt'),
+      ),
     [employees],
   );
   const departments = useMemo(
-    () => [...new Set(employees.map((employee) => employee.department))].sort((a, b) => a.localeCompare(b, 'pt')),
+    () =>
+      [...new Set(employees.map((employee) => employee.department))].sort((a, b) =>
+        a.localeCompare(b, 'pt'),
+      ),
     [employees],
   );
 
@@ -89,7 +101,9 @@ export function EmployeeListPage() {
           >
             {employee.fullName}
           </button>
-          <span className="employee-meta">{employee.employeeNumber} · {employee.email}</span>
+          <span className="employee-meta">
+            {employee.employeeNumber} · {employee.email}
+          </span>
         </>
       ),
     },
@@ -192,131 +206,159 @@ export function EmployeeListPage() {
 
   return (
     <section className="dashboard-content employee-list-page">
-        <PageHeader eyebrow="Equipe" title="Funcionários" action={<span className="employee-total">{totalElements} {totalElements === 1 ? 'funcionário' : 'funcionários'}</span>} />
+      <PageHeader
+        eyebrow="Equipe"
+        title="Funcionários"
+        action={
+          <span className="employee-total">
+            {totalElements} {totalElements === 1 ? 'funcionário' : 'funcionários'}
+          </span>
+        }
+      />
 
-        <Panel className="employee-list-card" labelledBy="employee-list-heading">
-          <div className="employee-list-heading">
-            <div>
-              <h2 id="employee-list-heading">Lista de funcionários</h2>
-            </div>
-            <span className="employee-page-count" aria-live="polite">
-              {employees.length} {employees.length === 1 ? 'funcionário' : 'funcionários'} nesta página
-            </span>
+      <Panel className="employee-list-card" labelledBy="employee-list-heading">
+        <div className="employee-list-heading">
+          <div>
+            <h2 id="employee-list-heading">Lista de funcionários</h2>
           </div>
+          <span className="employee-page-count" aria-live="polite">
+            {employees.length} {employees.length === 1 ? 'funcionário' : 'funcionários'} nesta
+            página
+          </span>
+        </div>
 
-          <form className="employee-filters" aria-label="Filtros de funcionários" onSubmit={searchEmployees}>
-            <label>
-              Status
-              <select
-                value={statusFilter}
-                onChange={(event) => {
-                  const { value } = event.target;
-                  setStatusFilter(isEmployeeStatus(value) ? value : '');
-                }}
-              >
-                <option value="">Todos os status</option>
-                {Object.entries(statusLabels).map(([value, label]) => (
-                  <option key={value} value={value}>{label}</option>
-                ))}
-              </select>
-            </label>
-            <label>
-              Cargo
-              <input
-                type="search"
-                list="employee-position-options"
-                value={positionFilter}
-                onChange={(event) => setPositionFilter(event.target.value)}
-                placeholder="Todos os cargos"
-              />
-              <datalist id="employee-position-options">
-                {positions.map((position) => <option key={position} value={position} />)}
-              </datalist>
-            </label>
-            <label>
-              Departamento
-              <input
-                type="search"
-                list="employee-department-options"
-                value={departmentFilter}
-                onChange={(event) => setDepartmentFilter(event.target.value)}
-                placeholder="Todos os departamentos"
-              />
-              <datalist id="employee-department-options">
-                {departments.map((department) => <option key={department} value={department} />)}
-              </datalist>
-            </label>
-            <button type="submit" className="primary-button employee-search-filters">
-              Buscar
-            </button>
-            <button type="button" className="text-button employee-clear-filters" onClick={clearFilters}>
-              Limpar filtros
-            </button>
-          </form>
+        <form
+          className="employee-filters"
+          aria-label="Filtros de funcionários"
+          onSubmit={searchEmployees}
+        >
+          <label>
+            Status
+            <select
+              value={statusFilter}
+              onChange={(event) => {
+                const { value } = event.target;
+                setStatusFilter(isEmployeeStatus(value) ? value : '');
+              }}
+            >
+              <option value="">Todos os status</option>
+              {Object.entries(statusLabels).map(([value, label]) => (
+                <option key={value} value={value}>
+                  {label}
+                </option>
+              ))}
+            </select>
+          </label>
+          <label>
+            Cargo
+            <input
+              type="search"
+              list="employee-position-options"
+              value={positionFilter}
+              onChange={(event) => setPositionFilter(event.target.value)}
+              placeholder="Todos os cargos"
+            />
+            <datalist id="employee-position-options">
+              {positions.map((position) => (
+                <option key={position} value={position} />
+              ))}
+            </datalist>
+          </label>
+          <label>
+            Departamento
+            <input
+              type="search"
+              list="employee-department-options"
+              value={departmentFilter}
+              onChange={(event) => setDepartmentFilter(event.target.value)}
+              placeholder="Todos os departamentos"
+            />
+            <datalist id="employee-department-options">
+              {departments.map((department) => (
+                <option key={department} value={department} />
+              ))}
+            </datalist>
+          </label>
+          <button type="submit" className="primary-button employee-search-filters">
+            Buscar
+          </button>
+          <button
+            type="button"
+            className="text-button employee-clear-filters"
+            onClick={clearFilters}
+          >
+            Limpar filtros
+          </button>
+        </form>
 
-          {isLoading ? (
-            <ContentState
-              variant="loading"
-              title="Carregando funcionários..."
-              className="employee-list-state"
-            />
-          ) : error ? (
-            <ContentState
-              variant="error"
-              title={error}
-              action={(
-                <button type="button" className="text-button" onClick={retryLoading}>
-                  Tentar novamente
-                </button>
-              )}
-            />
-          ) : employees.length === 0 && totalElements === 0 &&
-            Object.keys(appliedFilters).length === 0 ? (
-            <ContentState
-              variant="empty"
-              title="Nenhum funcionário cadastrado"
-              description="Cadastre um funcionário para começar a montar sua equipe."
-              action={<Link to="/employees/new" className="primary-button">Cadastrar funcionário</Link>}
-              className="employee-list-state"
-            />
-          ) : employees.length === 0 ? (
-            <ContentState
-              variant="no-results"
-              title="Nenhum funcionário encontrado"
-              description="Altere os filtros ou limpe a busca para ver outros funcionários."
-              action={(
-                <button type="button" className="secondary-button" onClick={clearFilters}>
-                  Limpar busca
-                </button>
-              )}
-              className="employee-list-state"
-            />
-          ) : (
-            <DataTable
-              rows={employees}
-              columns={employeeColumns}
-              getRowKey={(employee) => employee.id}
-              getRowLabel={(employee) => `Abrir detalhes de ${employee.fullName}`}
-              onRowActivate={setSelectedEmployee}
-              ariaLabel="Lista de funcionários"
-              className="employee-table"
-              wrapperClassName="employee-table-wrap"
-            />
-          )}
+        {isLoading ? (
+          <ContentState
+            variant="loading"
+            title="Carregando funcionários..."
+            className="employee-list-state"
+          />
+        ) : error ? (
+          <ContentState
+            variant="error"
+            title={error}
+            action={
+              <button type="button" className="text-button" onClick={retryLoading}>
+                Tentar novamente
+              </button>
+            }
+          />
+        ) : employees.length === 0 &&
+          totalElements === 0 &&
+          Object.keys(appliedFilters).length === 0 ? (
+          <ContentState
+            variant="empty"
+            title="Nenhum funcionário cadastrado"
+            description="Cadastre um funcionário para começar a montar sua equipe."
+            action={
+              <Link to="/employees/new" className="primary-button">
+                Cadastrar funcionário
+              </Link>
+            }
+            className="employee-list-state"
+          />
+        ) : employees.length === 0 ? (
+          <ContentState
+            variant="no-results"
+            title="Nenhum funcionário encontrado"
+            description="Altere os filtros ou limpe a busca para ver outros funcionários."
+            action={
+              <button type="button" className="secondary-button" onClick={clearFilters}>
+                Limpar busca
+              </button>
+            }
+            className="employee-list-state"
+          />
+        ) : (
+          <DataTable
+            rows={employees}
+            columns={employeeColumns}
+            getRowKey={(employee) => employee.id}
+            getRowLabel={(employee) => `Abrir detalhes de ${employee.fullName}`}
+            onRowActivate={setSelectedEmployee}
+            ariaLabel="Lista de funcionários"
+            className="employee-table"
+            wrapperClassName="employee-table-wrap"
+          />
+        )}
 
-          {!isLoading && !error && employees.length > 0 ? (
-            <Pagination
-              currentPage={page}
-              totalPages={totalPages}
-              pageSize={pageSize}
-              pageSizeOptions={PAGE_SIZE_OPTIONS}
-              onPageChange={goToPage}
-              onPageSizeChange={changePageSize}
-              ariaLabel="Paginação da lista de funcionários"
-              className="employee-list-controls"
-            />
-          ) : null}
-        </Panel>
+        {!isLoading && !error && employees.length > 0 ? (
+          <Pagination
+            currentPage={page}
+            totalPages={totalPages}
+            pageSize={pageSize}
+            pageSizeOptions={PAGE_SIZE_OPTIONS}
+            onPageChange={goToPage}
+            onPageSizeChange={changePageSize}
+            ariaLabel="Paginação da lista de funcionários"
+            className="employee-list-controls"
+          />
+        ) : null}
+      </Panel>
       <Link to="/employees/new" className="employee-create-fab">
         <span aria-hidden="true">+</span>
         Cadastrar funcionário
@@ -324,7 +366,10 @@ export function EmployeeListPage() {
 
       <Outlet context={{ refreshEmployees, employees, isLoading }} />
 
-      <EmployeeDetailsDialog employee={selectedEmployee} onClose={() => setSelectedEmployee(null)} />
+      <EmployeeDetailsDialog
+        employee={selectedEmployee}
+        onClose={() => setSelectedEmployee(null)}
+      />
 
       {employeeToDelete ? (
         <ConfirmDialog
@@ -337,12 +382,12 @@ export function EmployeeListPage() {
           }}
           eyebrow="Confirmar exclusão"
           title="Excluir funcionário?"
-          description={(
+          description={
             <>
-              Você está prestes a excluir <strong>{employeeToDelete.fullName}</strong>.
-              Essa ação é permanente e não pode ser desfeita.
+              Você está prestes a excluir <strong>{employeeToDelete.fullName}</strong>. Essa ação é
+              permanente e não pode ser desfeita.
             </>
-          )}
+          }
           error={deleteError}
           isConfirming={Boolean(deletingEmployeeId)}
           confirmLabel="Excluir funcionário"

@@ -90,7 +90,9 @@
   color: #fff;
   font-weight: 700;
   text-decoration: none;
-  transition: transform 0.15s ease, filter 0.15s ease;
+  transition:
+    transform 0.15s ease,
+    filter 0.15s ease;
 }
 
 .supplier-create-fab:hover {
@@ -165,7 +167,6 @@
     min-height: 50px;
     padding-inline: 16px;
   }
-
 }
 
 .supplier-filters {
@@ -175,11 +176,22 @@
   gap: 12px;
   padding: 0 24px 20px;
 
-  .field { flex: 1 1 320px; min-width: 0; }
-  button { min-height: 44px; }
-  p { flex-basis: 100%; margin: 0; color: var(--color-danger-ink); }
+  .field {
+    flex: 1 1 320px;
+    min-width: 0;
+  }
+  button {
+    min-height: 44px;
+  }
+  p {
+    flex-basis: 100%;
+    margin: 0;
+    color: var(--color-danger-ink);
+  }
 }
 
 @media (max-width: 720px) {
-  .supplier-filters { padding-inline: 16px; }
+  .supplier-filters {
+    padding-inline: 16px;
+  }
 }

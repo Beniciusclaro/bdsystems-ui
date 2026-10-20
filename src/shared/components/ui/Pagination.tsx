@@ -42,7 +42,9 @@ export function Pagination({
           disabled={disabled}
         >
           {pageSizeOptions.map((size) => (
-            <option key={size} value={size}>{size}</option>
+            <option key={size} value={size}>
+              {size}
+            </option>
           ))}
         </select>
       </label>
@@ -57,7 +59,9 @@ export function Pagination({
           >
             Anterior
           </button>
-          <span aria-live="polite">Página {currentPage + 1} de {totalPages}</span>
+          <span aria-live="polite">
+            Página {currentPage + 1} de {totalPages}
+          </span>
           <button
             type="button"
             className="secondary-button"

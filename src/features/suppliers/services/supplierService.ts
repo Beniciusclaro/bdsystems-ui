@@ -37,7 +37,18 @@ function isSupplier(value: unknown): value is SupplierResponse {
 }
 
 function parseSupplierPage(value: unknown): SupplierPage {
-  return parsePage<SupplierResponse>(value, isSupplier, 'A resposta da lista de fornecedores está em um formato inválido.', (supplier) => ({ ...supplier, tradeName: supplier.tradeName ?? null, taxNumber: supplier.taxNumber ?? null, email: supplier.email ?? null, phoneNumber: supplier.phoneNumber ?? null }));
+  return parsePage<SupplierResponse>(
+    value,
+    isSupplier,
+    'A resposta da lista de fornecedores está em um formato inválido.',
+    (supplier) => ({
+      ...supplier,
+      tradeName: supplier.tradeName ?? null,
+      taxNumber: supplier.taxNumber ?? null,
+      email: supplier.email ?? null,
+      phoneNumber: supplier.phoneNumber ?? null,
+    }),
+  );
 }
 
 export class SupplierNotFoundError extends Error {}
@@ -72,7 +83,9 @@ export async function getSuppliers(page: number, size: number): Promise<Supplier
   const response = await apiFetch(`/api/suppliers?${query}`);
 
   if (!response.ok) {
-    throw new Error(await getApiErrorMessage(response, 'Não foi possível carregar os fornecedores.'));
+    throw new Error(
+      await getApiErrorMessage(response, 'Não foi possível carregar os fornecedores.'),
+    );
   }
 
   return parseSupplierPage(await response.json());
@@ -104,17 +117,11 @@ export async function createSupplier(payload: SupplierRequest): Promise<void> {
   }
 }
 
-export async function updateSupplier(
-  supplierId: string,
-  payload: SupplierRequest,
-): Promise<void> {
-  const response = await apiFetch(
-    `/api/suppliers/${encodeURIComponent(supplierId)}`,
-    {
-      method: 'PUT',
-        body: JSON.stringify(payload),
-    },
-  );
+export async function updateSupplier(supplierId: string, payload: SupplierRequest): Promise<void> {
+  const response = await apiFetch(`/api/suppliers/${encodeURIComponent(supplierId)}`, {
+    method: 'PUT',
+    body: JSON.stringify(payload),
+  });
 
   if (!response.ok) {
     throw new Error(await getApiErrorMessage(response, 'Não foi possível atualizar o fornecedor.'));
@@ -122,12 +129,9 @@ export async function updateSupplier(
 }
 
 export async function deleteSupplier(supplierId: string): Promise<void> {
-  const response = await apiFetch(
-    `/api/suppliers/${encodeURIComponent(supplierId)}`,
-    {
-      method: 'DELETE',
-      },
-  );
+  const response = await apiFetch(`/api/suppliers/${encodeURIComponent(supplierId)}`, {
+    method: 'DELETE',
+  });
 
   if (!response.ok) {
     throw new Error(await getApiErrorMessage(response, 'Não foi possível excluir o fornecedor.'));

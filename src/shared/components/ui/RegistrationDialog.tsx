@@ -5,14 +5,21 @@ import { Modal } from './Modal';
 interface RegistrationDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  kind: 'employee' | 'supplier' | 'tool';
+  kind: 'employee' | 'supplier' | 'tool' | 'material';
   eyebrow: string;
   title: string;
   children: ReactNode;
+  isSubmitting?: boolean;
 }
 
 export function RegistrationDialog({
-  open, onOpenChange, kind, eyebrow, title, children,
+  open,
+  onOpenChange,
+  kind,
+  eyebrow,
+  title,
+  children,
+  isSubmitting = false,
 }: RegistrationDialogProps) {
   const headingId = useId();
   return (
@@ -21,6 +28,8 @@ export function RegistrationDialog({
       onOpenChange={onOpenChange}
       ariaLabelledBy={headingId}
       className={`ui-registration-dialog ${kind}-registration-dialog`}
+      closeOnBackdrop={!isSubmitting}
+      closeOnEscape={!isSubmitting}
       size="large"
     >
       <div className={`ui-registration-dialog__content ${kind}-registration-content`}>
@@ -32,6 +41,7 @@ export function RegistrationDialog({
           <button
             type="button"
             className={`ui-registration-dialog__close ${kind}-dialog-close`}
+            disabled={isSubmitting}
             aria-label="Fechar cadastro"
             onClick={() => onOpenChange(false)}
           >

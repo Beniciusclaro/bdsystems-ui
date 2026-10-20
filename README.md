@@ -8,9 +8,13 @@ Frontend em React, TypeScript, Vite e SCSS.
 npm install
 npm run dev
 npm run lint
+npm run format
+npm run format:check
 npm run test
 npm run build
 ```
+
+O projeto usa Prettier para manter a formatação consistente. No VS Code, instale a extensão recomendada; os arquivos serão formatados ao salvar. Agentes devem executar `npm run format` depois de editar arquivos e `npm run format:check` para validar.
 
 Configure `VITE_API_BASE_URL` quando a API não estiver no mesmo host. Sem essa variável, o Vite encaminha `/api` para `http://localhost:8080` durante o desenvolvimento.
 

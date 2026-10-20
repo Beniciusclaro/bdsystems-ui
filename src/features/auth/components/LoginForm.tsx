@@ -13,9 +13,9 @@ const initialState = {
 };
 
 export function LoginForm({ isSubmitting, onSubmit }: LoginProps) {
-  const [form, setForm] = useState(initialState);   
+  const [form, setForm] = useState(initialState);
 
-    const payload = useMemo<LoginRequest>(
+  const payload = useMemo<LoginRequest>(
     () => ({
       email: form.email,
       password: form.password,
@@ -23,19 +23,17 @@ export function LoginForm({ isSubmitting, onSubmit }: LoginProps) {
     [form],
   );
 
-  const handleChange = (
-    event: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>,
-  ) => {
+  const handleChange = (event: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = event.target;
     setForm((current) => ({ ...current, [name]: value }));
   };
 
-    const handleSubmit = async (event: React.SubmitEvent<HTMLFormElement>) => {
+  const handleSubmit = async (event: React.SubmitEvent<HTMLFormElement>) => {
     event.preventDefault();
     await onSubmit(payload);
-    };
+  };
 
-    return (
+  return (
     <form className="login-form" onSubmit={handleSubmit}>
       <div className="form-grid">
         <label>

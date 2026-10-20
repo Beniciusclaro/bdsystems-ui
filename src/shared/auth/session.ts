@@ -11,4 +11,3 @@ export function getAuthToken(): string | null {
 export function clearAuthToken(): void {
   sessionStorage.removeItem(TOKEN_KEY);
 }
-

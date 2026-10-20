@@ -1,9 +1,9 @@
-import type { ReactNode } from 'react'
-import { Link } from 'react-router-dom'
-import { BrandLogo } from '../../../shared/components/brand/BrandLogo'
-import './LandingPage.scss'
+import type { ReactNode } from 'react';
+import { Link } from 'react-router-dom';
+import { BrandLogo } from '../../../shared/components/brand/BrandLogo';
+import './LandingPage.scss';
 
-type Feature = { title: string; description: string; icon: ReactNode }
+type Feature = { title: string; description: string; icon: ReactNode };
 
 const iconProps = {
   viewBox: '0 0 24 24',
@@ -13,7 +13,7 @@ const iconProps = {
   strokeLinecap: 'round' as const,
   strokeLinejoin: 'round' as const,
   'aria-hidden': true,
-}
+};
 
 // TODO: ajuste os textos para as funcionalidades reais do sistema.
 const features: Feature[] = [
@@ -48,19 +48,22 @@ const features: Feature[] = [
       </svg>
     ),
   },
-]
+];
 
 const steps = [
   { title: 'Crie sua conta', description: 'Cadastre-se com seus dados básicos.' },
   { title: 'Cadastre sua obra', description: 'Adicione o projeto, as etapas e a equipe.' },
-  { title: 'Acompanhe o andamento', description: 'Veja o progresso de cada etapa em um painel único.' },
-]
+  {
+    title: 'Acompanhe o andamento',
+    description: 'Veja o progresso de cada etapa em um painel único.',
+  },
+];
 
 const previewStages = [
   { name: 'Fundação', progress: 100 },
   { name: 'Estrutura', progress: 72 },
   { name: 'Acabamento', progress: 18 },
-]
+];
 
 function HeroIllustration() {
   return (
@@ -80,7 +83,7 @@ function HeroIllustration() {
       <path d="M392 94H452M422 80V107M452 94V207" className="building-crane" />
       <path d="M382 104L452 94L478 101" className="building-crane" />
     </svg>
-  )
+  );
 }
 
 function AppPreview() {
@@ -124,7 +127,7 @@ function AppPreview() {
       </div>
       <p className="app-preview__note">Exemplo ilustrativo</p>
     </div>
-  )
+  );
 }
 
 export function LandingPage() {
@@ -175,11 +178,7 @@ export function LandingPage() {
           </div>
         </section>
 
-        <section
-          id="funcionalidades"
-          className="landing-section"
-          aria-labelledby="features-title"
-        >
+        <section id="funcionalidades" className="landing-section" aria-labelledby="features-title">
           <div className="landing-container">
             <div className="section-heading">
               <h2 id="features-title">O essencial para acompanhar sua operação</h2>
@@ -242,5 +241,5 @@ export function LandingPage() {
         </div>
       </footer>
     </div>
-  )
+  );
 }

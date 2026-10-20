@@ -13,10 +13,7 @@ import {
 } from '../services/toolRentalService';
 import type { SupplierResponse } from '../../suppliers/types/supplier';
 import type { ToolResponse } from '../../tools/types/tool';
-import type {
-  ToolRentalRequest,
-  ToolRentalResponse,
-} from '../types/toolRental';
+import type { ToolRentalRequest, ToolRentalResponse } from '../types/toolRental';
 
 interface ToolRentalDetailsDialogProps {
   embedded?: boolean;
@@ -176,9 +173,8 @@ export function ToolRentalDetailsDialog({
       key: 'price',
       header: 'Preço',
       mobileLabel: 'Preço',
-      renderCell: (rental: ToolRentalResponse) => (
-        `${formatPrice(rental.price)} / ${rentalPeriodLabels[rental.rentalPeriod].toLowerCase()}`
-      ),
+      renderCell: (rental: ToolRentalResponse) =>
+        `${formatPrice(rental.price)} / ${rentalPeriodLabels[rental.rentalPeriod].toLowerCase()}`,
     },
     {
       key: 'dates',
@@ -257,109 +253,115 @@ export function ToolRentalDetailsDialog({
   const managementContent = (
     <>
       {mutationSuccess ? (
-          <p className="message success tool-rental-feedback" role="status">
-            {mutationSuccess}
-          </p>
-        ) : null}
+        <p className="message success tool-rental-feedback" role="status">
+          {mutationSuccess}
+        </p>
+      ) : null}
 
-        {tool && formMode ? (
-          <>
-            {mutationError ? (
-              <p className="message error tool-rental-feedback" role="alert">{mutationError}</p>
-            ) : null}
-            {isLoadingSuppliers ? (
-              <ContentState variant="loading" title="Carregando fornecedores..." />
-            ) : supplierError ? (
-              <ContentState
-                variant="error"
-                title={supplierError}
-                action={(
-                  <button type="button" className="text-button" onClick={onLoadSuppliers}>
-                    Tentar novamente
-                  </button>
-                )}
-              />
-            ) : suppliers ? (
-              <ToolRentalForm
-                key={`${formMode}-${selectedRental?.id ?? tool.id}`}
-                tool={tool}
-                suppliers={suppliers}
-                initialValues={selectedRental ?? undefined}
-                isSubmitting={isSubmitting}
-                submitLabel={formMode === 'edit' ? 'Atualizar registo' : 'Cadastrar registo'}
-                submittingLabel={formMode === 'edit' ? 'Atualizando...' : 'Cadastrando...'}
-                onSubmit={submitRental}
-                onCancel={() => {
-                  setFormMode(null);
-                  setSelectedRental(null);
-                  setMutationError(null);
-                }}
-              />
-            ) : null}
-          </>
-        ) : tool && isLoadingRentals ? (
-          <ContentState variant="loading" title="Carregando registos de aluguer..." />
-        ) : tool && rentalError ? (
-          <ContentState
-            variant="error"
-            title={rentalError}
-            action={!readOnly ? (
+      {tool && formMode ? (
+        <>
+          {mutationError ? (
+            <p className="message error tool-rental-feedback" role="alert">
+              {mutationError}
+            </p>
+          ) : null}
+          {isLoadingSuppliers ? (
+            <ContentState variant="loading" title="Carregando fornecedores..." />
+          ) : supplierError ? (
+            <ContentState
+              variant="error"
+              title={supplierError}
+              action={
+                <button type="button" className="text-button" onClick={onLoadSuppliers}>
+                  Tentar novamente
+                </button>
+              }
+            />
+          ) : suppliers ? (
+            <ToolRentalForm
+              key={`${formMode}-${selectedRental?.id ?? tool.id}`}
+              tool={tool}
+              suppliers={suppliers}
+              initialValues={selectedRental ?? undefined}
+              isSubmitting={isSubmitting}
+              submitLabel={formMode === 'edit' ? 'Atualizar registo' : 'Cadastrar registo'}
+              submittingLabel={formMode === 'edit' ? 'Atualizando...' : 'Cadastrando...'}
+              onSubmit={submitRental}
+              onCancel={() => {
+                setFormMode(null);
+                setSelectedRental(null);
+                setMutationError(null);
+              }}
+            />
+          ) : null}
+        </>
+      ) : tool && isLoadingRentals ? (
+        <ContentState variant="loading" title="Carregando registos de aluguer..." />
+      ) : tool && rentalError ? (
+        <ContentState
+          variant="error"
+          title={rentalError}
+          action={
+            !readOnly ? (
               <button type="button" className="text-button" onClick={onRetryRentals}>
                 Tentar novamente
               </button>
-            ) : undefined}
+            ) : undefined
+          }
+        />
+      ) : tool && rentals.length === 0 ? (
+        <div className="tool-rental-empty">
+          <ContentState
+            variant="empty"
+            title="Nenhum registo de aluguer"
+            description="Esta ferramenta ainda não tem alugueres associados."
           />
-        ) : tool && rentals.length === 0 ? (
-          <div className="tool-rental-empty">
+          {!readOnly && tool.active ? (
+            <button type="button" className="primary-button" onClick={() => openForm('create')}>
+              Criar registo de aluguer
+            </button>
+          ) : !readOnly && !tool.active ? (
+            <p className="tool-field-hint">
+              Ative a ferramenta antes de criar um registo de aluguer.
+            </p>
+          ) : null}
+        </div>
+      ) : tool ? (
+        <div className="tool-rental-details">
+          {isLoadingSuppliers && !readOnly ? (
+            <ContentState variant="loading" title="Carregando fornecedores..." />
+          ) : supplierError && !readOnly ? (
             <ContentState
-              variant="empty"
-              title="Nenhum registo de aluguer"
-              description="Esta ferramenta ainda não tem alugueres associados."
+              variant="error"
+              title={supplierError}
+              action={
+                <button type="button" className="text-button" onClick={onLoadSuppliers}>
+                  Tentar novamente
+                </button>
+              }
             />
-            {!readOnly && tool.active ? (
-              <button type="button" className="primary-button" onClick={() => openForm('create')}>
-                Criar registo de aluguer
-              </button>
-            ) : !readOnly && !tool.active ? (
-              <p className="tool-field-hint">Ative a ferramenta antes de criar um registo de aluguer.</p>
-            ) : null}
-          </div>
-        ) : tool ? (
-          <div className="tool-rental-details">
-            {isLoadingSuppliers && !readOnly ? (
-              <ContentState variant="loading" title="Carregando fornecedores..." />
-            ) : supplierError && !readOnly ? (
-              <ContentState
-                variant="error"
-                title={supplierError}
-                action={(
-                  <button type="button" className="text-button" onClick={onLoadSuppliers}>
-                    Tentar novamente
-                  </button>
-                )}
+          ) : (
+            <>
+              <DataTable
+                rows={rentals}
+                columns={rentalColumns}
+                getRowKey={(rental) => rental.id}
+                ariaLabel={`Registos de aluguer de ${tool.name}`}
+                className="tool-rental-table"
               />
-            ) : (
-              <>
-                <DataTable
-                  rows={rentals}
-                  columns={rentalColumns}
-                  getRowKey={(rental) => rental.id}
-                  ariaLabel={`Registos de aluguer de ${tool.name}`}
-                  className="tool-rental-table"
-                />
-                {!readOnly && tool.active ? (
-                  <button
-                    type="button"
-                    className="primary-button tool-add-rental"
-                    onClick={() => openForm('create')}
-                  >
-                    Criar registo de aluguer
-                  </button>
-                ) : null}
-              </>
-            )}
-          </div>
-        ) : null}
+              {!readOnly && tool.active ? (
+                <button
+                  type="button"
+                  className="primary-button tool-add-rental"
+                  onClick={() => openForm('create')}
+                >
+                  Criar registo de aluguer
+                </button>
+              ) : null}
+            </>
+          )}
+        </div>
+      ) : null}
     </>
   );
   const content = readOnly ? readOnlyContent : managementContent;
@@ -392,7 +394,7 @@ export function ToolRentalDetailsDialog({
               ? 'Novo registo de aluguer'
               : formMode === 'edit'
                 ? 'Editar registo de aluguer'
-                : tool?.name ?? ''
+                : (tool?.name ?? '')
           }
         >
           {content}

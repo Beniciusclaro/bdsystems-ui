@@ -10,7 +10,8 @@ const page = (content: string[], number: number, totalPages = 3) => ({
 
 describe('usePaginatedResource', () => {
   it('applies filters, resets pagination, and refreshes after an error', async () => {
-    const load = vi.fn(async () => page([], 0))
+    const load = vi
+      .fn(async () => page([], 0))
       .mockResolvedValueOnce(page(['first'], 0))
       .mockResolvedValueOnce(page(['second'], 1))
       .mockRejectedValueOnce(new Error('falha'))
@@ -29,8 +30,11 @@ describe('usePaginatedResource', () => {
 
   it('ignores stale responses and clamps the page after the last item is removed', async () => {
     let resolveLater!: (value: ReturnType<typeof page>) => void;
-    const delayed = new Promise<ReturnType<typeof page>>((resolve) => { resolveLater = resolve; });
-    const load = vi.fn()
+    const delayed = new Promise<ReturnType<typeof page>>((resolve) => {
+      resolveLater = resolve;
+    });
+    const load = vi
+      .fn()
       .mockResolvedValueOnce(page(['first'], 0, 3))
       .mockReturnValueOnce(delayed)
       .mockResolvedValueOnce(page(['latest'], 0, 1));

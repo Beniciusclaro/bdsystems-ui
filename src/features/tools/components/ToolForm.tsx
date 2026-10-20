@@ -48,7 +48,11 @@ export function ToolForm({
 
   return (
     <form className="tool-form" onSubmit={handleSubmit}>
-      {validationError ? <p className="message error" role="alert">{validationError}</p> : null}
+      {validationError ? (
+        <p className="message error" role="alert">
+          {validationError}
+        </p>
+      ) : null}
       <div className="form-grid">
         <FormField label="Código" hint="Até 50 caracteres.">
           <input
@@ -81,11 +85,7 @@ export function ToolForm({
         </label>
       ) : null}
       {children}
-      <button
-        type="submit"
-        className="primary-button"
-        disabled={isSubmitting || submitDisabled}
-      >
+      <button type="submit" className="primary-button" disabled={isSubmitting || submitDisabled}>
         {isSubmitting ? submittingLabel : submitLabel}
       </button>
     </form>

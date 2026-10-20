@@ -26,8 +26,12 @@ interface ToolListOutletContext {
 export function ToolRegistrationPage() {
   const navigate = useNavigate();
   const { toolId } = useParams();
-  const { refreshTools, refreshRentalData, tools, isLoading: isLoadingTools } =
-    useOutletContext<ToolListOutletContext>();
+  const {
+    refreshTools,
+    refreshRentalData,
+    tools,
+    isLoading: isLoadingTools,
+  } = useOutletContext<ToolListOutletContext>();
   const toolInList = toolId ? tools.find((item) => item.id === toolId) : undefined;
   const [loadedTool, setLoadedTool] = useState<ToolResponse | null>(null);
   const tool = toolInList ?? loadedTool;
@@ -201,97 +205,115 @@ export function ToolRegistrationPage() {
       kind="tool"
       eyebrow="Cadastros"
       title={isEditing ? 'Editar ferramenta' : 'Cadastrar ferramenta'}
-      onOpenChange={(open) => { if (!open) closeModal(); }}
+      onOpenChange={(open) => {
+        if (!open) closeModal();
+      }}
     >
-        <section className="panel-card tool-form-card">
-          <p className="tool-form-intro">
-            {isEditing
-              ? 'Atualize o código e o nome da ferramenta.'
-              : 'Informe o código e o nome para cadastrar uma ferramenta ativa.'}
+      <section className="panel-card tool-form-card">
+        <p className="tool-form-intro">
+          {isEditing
+            ? 'Atualize o código e o nome da ferramenta.'
+            : 'Informe o código e o nome para cadastrar uma ferramenta ativa.'}
+        </p>
+
+        {isEditing && isLoadingTool ? (
+          <p className="tool-list-state" role="status">
+            Carregando dados da ferramenta...
           </p>
+        ) : null}
+        {error ? (
+          <div className="message error" role="alert">
+            {error}
+          </div>
+        ) : null}
+        {success ? (
+          <div className="message success" role="status">
+            {success}
+          </div>
+        ) : null}
 
-          {isEditing && isLoadingTool ? (
-            <p className="tool-list-state" role="status">Carregando dados da ferramenta...</p>
-          ) : null}
-          {error ? <div className="message error" role="alert">{error}</div> : null}
-          {success ? <div className="message success" role="status">{success}</div> : null}
-
-          {((!isEditing && !createdTool) || (isEditing && tool)) ? (
-            <ToolForm
-              key={toolId ?? 'new'}
-              initialValues={tool ?? undefined}
-              showRentalOption={!isEditing}
-              addRental={addRentalAfterSave}
-              onAddRentalChange={(enabled) => {
-                setAddRentalAfterSave(enabled);
-                if (enabled) {
-                  void loadSuppliers();
-                }
-              }}
-              isSubmitting={isSubmitting}
-              submitDisabled={
-                (addRentalAfterSave &&
-                  (isLoadingSuppliers ||
-                    supplierError !== null ||
-                    !suppliers ||
-                    !suppliers.some((supplier) => supplier.active)))
+        {(!isEditing && !createdTool) || (isEditing && tool) ? (
+          <ToolForm
+            key={toolId ?? 'new'}
+            initialValues={tool ?? undefined}
+            showRentalOption={!isEditing}
+            addRental={addRentalAfterSave}
+            onAddRentalChange={(enabled) => {
+              setAddRentalAfterSave(enabled);
+              if (enabled) {
+                void loadSuppliers();
               }
-              submitLabel={
-                isEditing
-                  ? 'Atualizar ferramenta'
-                  : addRentalAfterSave
-                    ? 'Cadastrar ferramenta e aluguer'
-                    : 'Cadastrar ferramenta'
-              }
-              submittingLabel={isEditing ? 'Atualizando...' : 'Cadastrando...'}
-              onSubmit={handleSubmit}
-            >
-              {addRentalAfterSave ? (
-                <fieldset className="tool-rental-draft">
-                  <legend>Dados do aluguer</legend>
-                  {isLoadingSuppliers ? (
-                    <p className="tool-field-hint" role="status">Carregando fornecedores...</p>
-                  ) : supplierError ? (
-                    <p className="message error" role="alert">
-                      {supplierError}{' '}
-                      <button type="button" className="text-button" onClick={() => void loadSuppliers()}>
-                        Tentar novamente
-                      </button>
-                    </p>
-                  ) : suppliers ? (
-                    <ToolRentalForm
-                      fieldsOnly
-                      suppliers={suppliers}
-                      initialValues={rentalDraft}
-                      isSubmitting={isSubmitting}
-                      submitLabel=""
-                      submittingLabel=""
-                      onDraftChange={setRentalDraft}
-                    />
-                  ) : null}
-                </fieldset>
-              ) : null}
-            </ToolForm>
-          ) : null}
+            }}
+            isSubmitting={isSubmitting}
+            submitDisabled={
+              addRentalAfterSave &&
+              (isLoadingSuppliers ||
+                supplierError !== null ||
+                !suppliers ||
+                !suppliers.some((supplier) => supplier.active))
+            }
+            submitLabel={
+              isEditing
+                ? 'Atualizar ferramenta'
+                : addRentalAfterSave
+                  ? 'Cadastrar ferramenta e aluguer'
+                  : 'Cadastrar ferramenta'
+            }
+            submittingLabel={isEditing ? 'Atualizando...' : 'Cadastrando...'}
+            onSubmit={handleSubmit}
+          >
+            {addRentalAfterSave ? (
+              <fieldset className="tool-rental-draft">
+                <legend>Dados do aluguer</legend>
+                {isLoadingSuppliers ? (
+                  <p className="tool-field-hint" role="status">
+                    Carregando fornecedores...
+                  </p>
+                ) : supplierError ? (
+                  <p className="message error" role="alert">
+                    {supplierError}{' '}
+                    <button
+                      type="button"
+                      className="text-button"
+                      onClick={() => void loadSuppliers()}
+                    >
+                      Tentar novamente
+                    </button>
+                  </p>
+                ) : suppliers ? (
+                  <ToolRentalForm
+                    fieldsOnly
+                    suppliers={suppliers}
+                    initialValues={rentalDraft}
+                    isSubmitting={isSubmitting}
+                    submitLabel=""
+                    submittingLabel=""
+                    onDraftChange={setRentalDraft}
+                  />
+                ) : null}
+              </fieldset>
+            ) : null}
+          </ToolForm>
+        ) : null}
 
-          {rentalTool && (isEditing || addRentalAfterSave) ? (
-            <ToolRentalDetailsDialog
-              embedded
-              tool={rentalTool}
-              open
-              rentals={rentalRecords ?? []}
-              isLoadingRentals={isLoadingRentals}
-              rentalError={rentalError}
-              onRetryRentals={refreshRentals}
-              suppliers={suppliers}
-              isLoadingSuppliers={isLoadingSuppliers}
-              supplierError={supplierError}
-              onLoadSuppliers={() => void loadSuppliers()}
-              onRentalDataChanged={refreshRentals}
-              onOpenChange={() => {}}
-            />
-          ) : null}
-        </section>
+        {rentalTool && (isEditing || addRentalAfterSave) ? (
+          <ToolRentalDetailsDialog
+            embedded
+            tool={rentalTool}
+            open
+            rentals={rentalRecords ?? []}
+            isLoadingRentals={isLoadingRentals}
+            rentalError={rentalError}
+            onRetryRentals={refreshRentals}
+            suppliers={suppliers}
+            isLoadingSuppliers={isLoadingSuppliers}
+            supplierError={supplierError}
+            onLoadSuppliers={() => void loadSuppliers()}
+            onRentalDataChanged={refreshRentals}
+            onOpenChange={() => {}}
+          />
+        ) : null}
+      </section>
     </RegistrationDialog>
   );
 }

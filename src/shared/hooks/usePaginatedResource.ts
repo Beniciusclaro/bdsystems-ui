@@ -37,7 +37,9 @@ export function usePaginatedResource<T, F>(
       .finally(() => {
         if (active) setIsLoading(false);
       });
-    return () => { active = false; };
+    return () => {
+      active = false;
+    };
   }, [loadPage, page, pageSize, filters, revision, fallbackError]);
 
   const applyFilters = (nextFilters: F) => {
@@ -64,7 +66,18 @@ export function usePaginatedResource<T, F>(
   };
 
   return {
-    rows, totalElements, totalPages, page, pageSize, filters, isLoading, error, setError,
-    applyFilters, goToPage, changePageSize, refresh,
+    rows,
+    totalElements,
+    totalPages,
+    page,
+    pageSize,
+    filters,
+    isLoading,
+    error,
+    setError,
+    applyFilters,
+    goToPage,
+    changePageSize,
+    refresh,
   };
 }

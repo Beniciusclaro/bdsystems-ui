@@ -41,7 +41,7 @@ export function ToolRentalForm({
   onSubmit,
   onCancel,
 }: ToolRentalFormProps) {
-  const [draft, setDraft] = useState<ToolRentalDraft>(() => (
+  const [draft, setDraft] = useState<ToolRentalDraft>(() =>
     initialValues
       ? {
           supplierId: initialValues.supplierId,
@@ -50,8 +50,8 @@ export function ToolRentalForm({
           rentalStartDate: initialValues.rentalStartDate ?? '',
           rentalEndDate: initialValues.rentalEndDate ?? '',
         }
-      : EMPTY_TOOL_RENTAL_DRAFT
-  ));
+      : EMPTY_TOOL_RENTAL_DRAFT,
+  );
   const [validationError, setValidationError] = useState<string | null>(null);
 
   const activeSuppliers = suppliers.filter((supplier) => supplier.active);
@@ -103,7 +103,11 @@ export function ToolRentalForm({
 
   const fields = (
     <>
-      {validationError ? <p className="message error" role="alert">{validationError}</p> : null}
+      {validationError ? (
+        <p className="message error" role="alert">
+          {validationError}
+        </p>
+      ) : null}
       {tool ? (
         <label>
           Ferramenta
@@ -151,7 +155,9 @@ export function ToolRentalForm({
             required
           >
             {periodOptions.map((period) => (
-              <option key={period.value} value={period.value}>{period.label}</option>
+              <option key={period.value} value={period.value}>
+                {period.label}
+              </option>
             ))}
           </select>
         </label>

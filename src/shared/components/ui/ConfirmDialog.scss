@@ -74,7 +74,9 @@
   background: var(--color-action);
   color: #fff;
   font-weight: 700;
-  transition: filter 0.2s ease, opacity 0.2s ease;
+  transition:
+    filter 0.2s ease,
+    opacity 0.2s ease;
 }
 
 .ui-confirm-dialog__confirm--danger {

@@ -6,7 +6,8 @@ import { useToolRentalData } from './useToolRentalData';
 
 vi.mock('../../suppliers/services/supplierService', () => ({ getAllSuppliers: vi.fn() }));
 vi.mock('../services/toolRentalService', () => ({
-  getAllToolRentals: vi.fn(), getToolRentals: vi.fn(),
+  getAllToolRentals: vi.fn(),
+  getToolRentals: vi.fn(),
 }));
 
 beforeEach(() => {

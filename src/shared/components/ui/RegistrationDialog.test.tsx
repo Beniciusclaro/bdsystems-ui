@@ -7,9 +7,17 @@ describe('RegistrationDialog', () => {
   it('labels the dialog and asks to close it from the close button and Escape', async () => {
     const onOpenChange = vi.fn();
     const user = userEvent.setup();
-    render(<RegistrationDialog open kind="tool" eyebrow="Cadastros" title="Nova ferramenta" onOpenChange={onOpenChange}>
-      <p>Campos</p>
-    </RegistrationDialog>);
+    render(
+      <RegistrationDialog
+        open
+        kind="tool"
+        eyebrow="Cadastros"
+        title="Nova ferramenta"
+        onOpenChange={onOpenChange}
+      >
+        <p>Campos</p>
+      </RegistrationDialog>,
+    );
     const dialog = screen.getByRole('dialog', { name: 'Nova ferramenta' });
     expect(dialog).toBeVisible();
     await user.click(screen.getByRole('button', { name: 'Fechar cadastro' }));

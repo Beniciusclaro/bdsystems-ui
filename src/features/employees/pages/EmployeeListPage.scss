@@ -125,7 +125,9 @@
   color: #fff;
   font-weight: 700;
   text-decoration: none;
-  transition: transform 0.15s ease, filter 0.15s ease;
+  transition:
+    transform 0.15s ease,
+    filter 0.15s ease;
 }
 
 .employee-create-fab:hover {
@@ -194,7 +196,6 @@
   .employee-actions-cell .ui-row-actions {
     justify-content: flex-start;
   }
-
 }
 
 @media (max-width: 520px) {
@@ -228,5 +229,4 @@
     min-height: 50px;
     padding-inline: 16px;
   }
-
 }

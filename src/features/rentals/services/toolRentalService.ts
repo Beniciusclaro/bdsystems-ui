@@ -43,7 +43,16 @@ function isToolRental(value: unknown): value is ToolRentalResponse {
 }
 
 function parseToolRentalPage(value: unknown): ToolRentalPage {
-  return parsePage<ToolRentalResponse>(value, isToolRental, 'A resposta da lista de alugueres está em um formato inválido.', (rental) => ({ ...rental, rentalStartDate: rental.rentalStartDate ?? null, rentalEndDate: rental.rentalEndDate ?? null }));
+  return parsePage<ToolRentalResponse>(
+    value,
+    isToolRental,
+    'A resposta da lista de alugueres está em um formato inválido.',
+    (rental) => ({
+      ...rental,
+      rentalStartDate: rental.rentalStartDate ?? null,
+      rentalEndDate: rental.rentalEndDate ?? null,
+    }),
+  );
 }
 
 export async function getAllToolRentals(): Promise<ToolRentalResponse[]> {
@@ -59,11 +68,13 @@ export async function getAllToolRentals(): Promise<ToolRentalResponse[]> {
     });
     const response = await apiFetch(`/api/tool-rentals?${query}`);
     if (!response.ok) {
-      throw new Error(await getApiErrorMessage(
-        response,
-        'Não foi possível carregar os registos de aluguer.',
-        RENTAL_ERROR_MESSAGES,
-      ));
+      throw new Error(
+        await getApiErrorMessage(
+          response,
+          'Não foi possível carregar os registos de aluguer.',
+          RENTAL_ERROR_MESSAGES,
+        ),
+      );
     }
 
     const result = parseToolRentalPage(await response.json());
@@ -86,13 +97,15 @@ export async function getToolRentals(toolId: string): Promise<ToolRentalResponse
       size: String(RENTAL_PAGE_SIZE),
       sort: 'createdAt,desc',
     });
-    const response = await apiFetch(      `/api/tools/${encodeURIComponent(toolId)}/rentals?${query}`);
+    const response = await apiFetch(`/api/tools/${encodeURIComponent(toolId)}/rentals?${query}`);
     if (!response.ok) {
-      throw new Error(await getApiErrorMessage(
-        response,
-        'Não foi possível carregar os registos de aluguer desta ferramenta.',
-        RENTAL_ERROR_MESSAGES,
-      ));
+      throw new Error(
+        await getApiErrorMessage(
+          response,
+          'Não foi possível carregar os registos de aluguer desta ferramenta.',
+          RENTAL_ERROR_MESSAGES,
+        ),
+      );
     }
 
     const result = parseToolRentalPage(await response.json());
@@ -110,11 +123,13 @@ export async function createToolRental(payload: ToolRentalRequest): Promise<void
     body: JSON.stringify(payload),
   });
   if (!response.ok) {
-    throw new Error(await getApiErrorMessage(
-      response,
-      'Não foi possível cadastrar o registo de aluguer.',
-      RENTAL_ERROR_MESSAGES,
-    ));
+    throw new Error(
+      await getApiErrorMessage(
+        response,
+        'Não foi possível cadastrar o registo de aluguer.',
+        RENTAL_ERROR_MESSAGES,
+      ),
+    );
   }
 }
 
@@ -122,34 +137,32 @@ export async function updateToolRental(
   rentalId: string,
   payload: ToolRentalRequest,
 ): Promise<void> {
-  const response = await apiFetch(
-    `/api/tool-rentals/${encodeURIComponent(rentalId)}`,
-    {
-      method: 'PUT',
-        body: JSON.stringify(payload),
-    },
-  );
+  const response = await apiFetch(`/api/tool-rentals/${encodeURIComponent(rentalId)}`, {
+    method: 'PUT',
+    body: JSON.stringify(payload),
+  });
   if (!response.ok) {
-    throw new Error(await getApiErrorMessage(
-      response,
-      'Não foi possível atualizar o registo de aluguer.',
-      RENTAL_ERROR_MESSAGES,
-    ));
+    throw new Error(
+      await getApiErrorMessage(
+        response,
+        'Não foi possível atualizar o registo de aluguer.',
+        RENTAL_ERROR_MESSAGES,
+      ),
+    );
   }
 }
 
 export async function deleteToolRental(rentalId: string): Promise<void> {
-  const response = await apiFetch(
-    `/api/tool-rentals/${encodeURIComponent(rentalId)}`,
-    {
-      method: 'DELETE',
-      },
-  );
+  const response = await apiFetch(`/api/tool-rentals/${encodeURIComponent(rentalId)}`, {
+    method: 'DELETE',
+  });
   if (!response.ok) {
-    throw new Error(await getApiErrorMessage(
-      response,
-      'Não foi possível eliminar o registo de aluguer.',
-      RENTAL_ERROR_MESSAGES,
-    ));
+    throw new Error(
+      await getApiErrorMessage(
+        response,
+        'Não foi possível eliminar o registo de aluguer.',
+        RENTAL_ERROR_MESSAGES,
+      ),
+    );
   }
 }

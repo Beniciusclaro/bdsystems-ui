@@ -18,7 +18,13 @@ export async function registerUser(payload: UserRequest): Promise<UserResponse> 
   });
 
   if (!response.ok) {
-    throw new Error(await getApiErrorMessage(response, 'Não foi possível concluir o cadastro.', AUTH_ERROR_MESSAGES));
+    throw new Error(
+      await getApiErrorMessage(
+        response,
+        'Não foi possível concluir o cadastro.',
+        AUTH_ERROR_MESSAGES,
+      ),
+    );
   }
 
   const contentType = response.headers.get('content-type') ?? '';
@@ -40,7 +46,9 @@ export async function loginUser(payload: LoginRequest): Promise<LoginResponse> {
   });
 
   if (!response.ok) {
-    throw new Error(await getApiErrorMessage(response, 'Não foi possível realizar o login', AUTH_ERROR_MESSAGES));
+    throw new Error(
+      await getApiErrorMessage(response, 'Não foi possível realizar o login', AUTH_ERROR_MESSAGES),
+    );
   }
 
   const contentType = response.headers.get('content-type') ?? '';

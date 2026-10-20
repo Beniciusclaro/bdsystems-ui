@@ -48,12 +48,7 @@ const professionalFieldNames = new Set([
 ]);
 
 function isEmployeePaymentMethod(value: string): value is EmployeePaymentMethod {
-  return (
-    value === 'MONTHLY' ||
-    value === 'WEEKLY' ||
-    value === 'DAILY' ||
-    value === 'HOURLY'
-  );
+  return value === 'MONTHLY' || value === 'WEEKLY' || value === 'DAILY' || value === 'HOURLY';
 }
 
 const initialForm: EmployeeFormState = {
@@ -126,9 +121,7 @@ export function EmployeeForm({
     event.preventDefault();
 
     const invalidField = Array.from(
-      event.currentTarget.querySelectorAll<HTMLInputElement | HTMLSelectElement>(
-        'input, select',
-      ),
+      event.currentTarget.querySelectorAll<HTMLInputElement | HTMLSelectElement>('input, select'),
     ).find((field) => !field.validity.valid);
 
     if (invalidField) {

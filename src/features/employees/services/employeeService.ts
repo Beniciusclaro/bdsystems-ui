@@ -15,21 +15,11 @@ function isRecord(value: unknown): value is Record<string, unknown> {
 }
 
 function isEmployeeStatus(value: unknown): value is EmployeeStatus {
-  return (
-    value === 'ACTIVE' ||
-    value === 'INACTIVE' ||
-    value === 'TERMINATED' ||
-    value === 'LEASED'
-  );
+  return value === 'ACTIVE' || value === 'INACTIVE' || value === 'TERMINATED' || value === 'LEASED';
 }
 
 function isEmployeePaymentMethod(value: unknown): value is EmployeePaymentMethod {
-  return (
-    value === 'MONTHLY' ||
-    value === 'WEEKLY' ||
-    value === 'DAILY' ||
-    value === 'HOURLY'
-  );
+  return value === 'MONTHLY' || value === 'WEEKLY' || value === 'DAILY' || value === 'HOURLY';
 }
 
 function isEmployee(value: unknown): value is EmployeeResponse {
@@ -65,7 +55,11 @@ function isEmployee(value: unknown): value is EmployeeResponse {
 }
 
 function parseEmployeePage(value: unknown): EmployeePage {
-  return parsePage<EmployeeResponse>(value, isEmployee, 'A resposta da lista de funcionários está em um formato inválido.');
+  return parsePage<EmployeeResponse>(
+    value,
+    isEmployee,
+    'A resposta da lista de funcionários está em um formato inválido.',
+  );
 }
 
 export async function getEmployees(
@@ -92,7 +86,9 @@ export async function getEmployees(
   const response = await apiFetch(`/api/employees?${query}`);
 
   if (!response.ok) {
-    throw new Error(await getApiErrorMessage(response, 'Não foi possível carregar os funcionários.'));
+    throw new Error(
+      await getApiErrorMessage(response, 'Não foi possível carregar os funcionários.'),
+    );
   }
 
   return parseEmployeePage(await response.json());
@@ -111,17 +107,11 @@ export async function createEmployee(payload: EmployeeRequest): Promise<void> {
   throw new Error(await getApiErrorMessage(response, 'Não foi possível cadastrar o funcionário.'));
 }
 
-export async function updateEmployee(
-  employeeId: string,
-  payload: EmployeeRequest,
-): Promise<void> {
-  const response = await apiFetch(
-    `/api/employees/${encodeURIComponent(employeeId)}`,
-    {
-      method: 'PUT',
-        body: JSON.stringify(payload),
-    },
-  );
+export async function updateEmployee(employeeId: string, payload: EmployeeRequest): Promise<void> {
+  const response = await apiFetch(`/api/employees/${encodeURIComponent(employeeId)}`, {
+    method: 'PUT',
+    body: JSON.stringify(payload),
+  });
 
   if (response.ok) {
     return;
@@ -131,12 +121,9 @@ export async function updateEmployee(
 }
 
 export async function deleteEmployee(employeeId: string): Promise<void> {
-  const response = await apiFetch(
-    `/api/employees/${encodeURIComponent(employeeId)}`,
-    {
-      method: 'DELETE',
-      },
-  );
+  const response = await apiFetch(`/api/employees/${encodeURIComponent(employeeId)}`, {
+    method: 'DELETE',
+  });
 
   if (response.ok) {
     return;

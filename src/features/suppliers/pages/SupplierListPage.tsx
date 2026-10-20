@@ -9,7 +9,12 @@ import type { DataTableColumn } from '../../../shared/components/ui/DataTable';
 import { IconActionButton, RowActions } from '../../../shared/components/ui/RowActions';
 import { Pagination } from '../../../shared/components/ui/Pagination';
 import { StatusBadge } from '../../../shared/components/ui/StatusBadge';
-import { deleteSupplier, getSupplier, getSuppliers, SupplierNotFoundError } from '../services/supplierService';
+import {
+  deleteSupplier,
+  getSupplier,
+  getSuppliers,
+  SupplierNotFoundError,
+} from '../services/supplierService';
 import type { SupplierPage, SupplierResponse } from '../types/supplier';
 import { SupplierDetailsDialog } from '../components/SupplierDetailsDialog';
 import { getSupplierDisplayName } from '../presentation';
@@ -20,7 +25,11 @@ const PAGE_SIZE_OPTIONS = [10, 20, 50];
 type SupplierFilters = { id?: string };
 const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
-async function getSuppliersPage(page: number, size: number, filters: SupplierFilters): Promise<SupplierPage> {
+async function getSuppliersPage(
+  page: number,
+  size: number,
+  filters: SupplierFilters,
+): Promise<SupplierPage> {
   if (!filters.id) return getSuppliers(page, size);
 
   let content: SupplierResponse[];
@@ -86,9 +95,7 @@ export function SupplierListPage() {
           >
             {getSupplierDisplayName(supplier)}
           </button>
-          {supplier.tradeName ? (
-            <span className="supplier-meta">{supplier.legalName}</span>
-          ) : null}
+          {supplier.tradeName ? <span className="supplier-meta">{supplier.legalName}</span> : null}
         </>
       ),
     },
@@ -192,19 +199,30 @@ export function SupplierListPage() {
 
   return (
     <section className="dashboard-content supplier-list-page">
-        <PageHeader eyebrow="Cadastros" title="Fornecedores" action={<span className="supplier-total">{totalElements} {totalElements === 1 ? 'fornecedor' : 'fornecedores'}</span>} />
+      <PageHeader
+        eyebrow="Cadastros"
+        title="Fornecedores"
+        action={
+          <span className="supplier-total">
+            {totalElements} {totalElements === 1 ? 'fornecedor' : 'fornecedores'}
+          </span>
+        }
+      />
 
-        <Panel className="supplier-list-card" labelledBy="supplier-list-heading">
-          <div className="supplier-list-heading">
-            <div>
-              <h2 id="supplier-list-heading">Lista de fornecedores</h2>
-            </div>
-            <span className="supplier-page-count" aria-live="polite">
-              {suppliers.length} {suppliers.length === 1 ? 'fornecedor' : 'fornecedores'} nesta página
-            </span>
+      <Panel className="supplier-list-card" labelledBy="supplier-list-heading">
+        <div className="supplier-list-heading">
+          <div>
+            <h2 id="supplier-list-heading">Lista de fornecedores</h2>
           </div>
+          <span className="supplier-page-count" aria-live="polite">
+            {suppliers.length} {suppliers.length === 1 ? 'fornecedor' : 'fornecedores'} nesta página
+          </span>
+        </div>
 
-          <form className="supplier-filters" aria-label="Busca de fornecedores" onSubmit={(event) => {
+        <form
+          className="supplier-filters"
+          aria-label="Busca de fornecedores"
+          onSubmit={(event) => {
             event.preventDefault();
             const id = searchId.trim();
             if (id && !UUID_PATTERN.test(id)) {
@@ -213,73 +231,99 @@ export function SupplierListPage() {
             }
             setSearchError(null);
             applyFilters(id ? { id } : {});
-          }}>
-            <label className="field">
-              <span>ID do fornecedor</span>
-              <input
-                type="search"
-                value={searchId}
-                onChange={(event) => { setSearchId(event.target.value); setSearchError(null); }}
-                placeholder="Informe o UUID do fornecedor"
-                aria-invalid={Boolean(searchError)}
-                aria-describedby={searchError ? 'supplier-search-error' : undefined}
-              />
-            </label>
-            <button type="submit" className="primary-button" disabled={isLoading}>Buscar</button>
-            <button type="button" className="text-button" onClick={clearSearch}>Limpar</button>
-            {searchError ? <p id="supplier-search-error" role="alert">{searchError}</p> : null}
-          </form>
-
-          {isLoading ? (
-            <ContentState
-              variant="loading"
-              title="Carregando fornecedores..."
-              className="supplier-list-state"
+          }}
+        >
+          <label className="field">
+            <span>ID do fornecedor</span>
+            <input
+              type="search"
+              value={searchId}
+              onChange={(event) => {
+                setSearchId(event.target.value);
+                setSearchError(null);
+              }}
+              placeholder="Informe o UUID do fornecedor"
+              aria-invalid={Boolean(searchError)}
+              aria-describedby={searchError ? 'supplier-search-error' : undefined}
             />
-          ) : error ? (
-            <ContentState
-              variant="error"
-              title={error}
-              action={(
-                <button type="button" className="text-button" onClick={retryLoading}>
-                  Tentar novamente
-                </button>
-              )}
-            />
-          ) : suppliers.length === 0 && totalElements === 0 ? (
-            <ContentState
-              variant="empty"
-              title={appliedFilters.id ? "Fornecedor não encontrado" : "Nenhum fornecedor cadastrado"}
-              description={appliedFilters.id ? "Nenhum fornecedor foi encontrado com o ID informado." : "Cadastre um fornecedor para começar a organizar seus parceiros."}
-              action={appliedFilters.id ? <button type="button" className="text-button" onClick={clearSearch}>Limpar busca</button> : <Link to="/suppliers/new" className="primary-button">Cadastrar fornecedor</Link>}
-              className="supplier-list-state"
-            />
-          ) : (
-            <DataTable
-              rows={suppliers}
-              columns={supplierColumns}
-              getRowKey={(supplier) => supplier.id}
-              getRowLabel={(supplier) => `Abrir detalhes de ${getSupplierDisplayName(supplier)}`}
-              onRowActivate={setSelectedSupplier}
-              ariaLabel="Lista de fornecedores"
-              className="supplier-table"
-              wrapperClassName="supplier-table-wrap"
-            />
-          )}
-
-          {!appliedFilters.id && !isLoading && !error && suppliers.length > 0 ? (
-            <Pagination
-              currentPage={page}
-              totalPages={totalPages}
-              pageSize={pageSize}
-              pageSizeOptions={PAGE_SIZE_OPTIONS}
-              onPageChange={goToPage}
-              onPageSizeChange={changePageSize}
-              ariaLabel="Paginação da lista de fornecedores"
-              className="supplier-list-controls"
-            />
+          </label>
+          <button type="submit" className="primary-button" disabled={isLoading}>
+            Buscar
+          </button>
+          <button type="button" className="text-button" onClick={clearSearch}>
+            Limpar
+          </button>
+          {searchError ? (
+            <p id="supplier-search-error" role="alert">
+              {searchError}
+            </p>
           ) : null}
-        </Panel>
+        </form>
+
+        {isLoading ? (
+          <ContentState
+            variant="loading"
+            title="Carregando fornecedores..."
+            className="supplier-list-state"
+          />
+        ) : error ? (
+          <ContentState
+            variant="error"
+            title={error}
+            action={
+              <button type="button" className="text-button" onClick={retryLoading}>
+                Tentar novamente
+              </button>
+            }
+          />
+        ) : suppliers.length === 0 && totalElements === 0 ? (
+          <ContentState
+            variant="empty"
+            title={appliedFilters.id ? 'Fornecedor não encontrado' : 'Nenhum fornecedor cadastrado'}
+            description={
+              appliedFilters.id
+                ? 'Nenhum fornecedor foi encontrado com o ID informado.'
+                : 'Cadastre um fornecedor para começar a organizar seus parceiros.'
+            }
+            action={
+              appliedFilters.id ? (
+                <button type="button" className="text-button" onClick={clearSearch}>
+                  Limpar busca
+                </button>
+              ) : (
+                <Link to="/suppliers/new" className="primary-button">
+                  Cadastrar fornecedor
+                </Link>
+              )
+            }
+            className="supplier-list-state"
+          />
+        ) : (
+          <DataTable
+            rows={suppliers}
+            columns={supplierColumns}
+            getRowKey={(supplier) => supplier.id}
+            getRowLabel={(supplier) => `Abrir detalhes de ${getSupplierDisplayName(supplier)}`}
+            onRowActivate={setSelectedSupplier}
+            ariaLabel="Lista de fornecedores"
+            className="supplier-table"
+            wrapperClassName="supplier-table-wrap"
+          />
+        )}
+
+        {!appliedFilters.id && !isLoading && !error && suppliers.length > 0 ? (
+          <Pagination
+            currentPage={page}
+            totalPages={totalPages}
+            pageSize={pageSize}
+            pageSizeOptions={PAGE_SIZE_OPTIONS}
+            onPageChange={goToPage}
+            onPageSizeChange={changePageSize}
+            ariaLabel="Paginação da lista de fornecedores"
+            className="supplier-list-controls"
+          />
+        ) : null}
+      </Panel>
       <Link to="/suppliers/new" className="supplier-create-fab">
         <span aria-hidden="true">+</span>
         Cadastrar fornecedor
@@ -287,7 +331,10 @@ export function SupplierListPage() {
 
       <Outlet context={{ refreshSuppliers, suppliers }} />
 
-      <SupplierDetailsDialog supplier={selectedSupplier} onClose={() => setSelectedSupplier(null)} />
+      <SupplierDetailsDialog
+        supplier={selectedSupplier}
+        onClose={() => setSelectedSupplier(null)}
+      />
 
       {supplierToDelete ? (
         <ConfirmDialog
@@ -300,12 +347,13 @@ export function SupplierListPage() {
           }}
           eyebrow="Confirmar exclusão"
           title="Excluir fornecedor?"
-          description={(
+          description={
             <>
-              Você está prestes a excluir <strong>{getSupplierDisplayName(supplierToDelete)}</strong>.
-              Essa ação não pode ser desfeita.
+              Você está prestes a excluir{' '}
+              <strong>{getSupplierDisplayName(supplierToDelete)}</strong>. Essa ação não pode ser
+              desfeita.
             </>
-          )}
+          }
           error={deleteError}
           isConfirming={Boolean(deletingSupplierId)}
           confirmLabel="Excluir fornecedor"

@@ -7,24 +7,35 @@ type ToolRentalData = ReturnType<typeof useToolRentalData>;
 
 export function ToolDetailsDialog({ rental }: { rental: ToolRentalData }) {
   const {
-    selectedTool, selectedToolRentals, selectedToolRentalError,
-    isLoadingSelectedToolRentals, refreshSelectedToolRentals,
-    suppliers, isLoadingSuppliers, supplierError, loadSuppliers, closeTool,
+    selectedTool,
+    selectedToolRentals,
+    selectedToolRentalError,
+    isLoadingSelectedToolRentals,
+    refreshSelectedToolRentals,
+    suppliers,
+    isLoadingSuppliers,
+    supplierError,
+    loadSuppliers,
+    closeTool,
   } = rental;
 
   return (
     <DetailsDialog
       open={Boolean(selectedTool)}
-      onOpenChange={(open) => { if (!open) closeTool(); }}
+      onOpenChange={(open) => {
+        if (!open) closeTool();
+      }}
       eyebrow="Detalhes da ferramenta"
       heading={selectedTool?.name ?? ''}
     >
       {selectedTool ? (
         <>
-          <DetailList items={[
-            { key: 'code', label: 'Código', value: selectedTool.code },
-            { key: 'status', label: 'Estado', value: selectedTool.active ? 'Ativa' : 'Inativa' },
-          ]} />
+          <DetailList
+            items={[
+              { key: 'code', label: 'Código', value: selectedTool.code },
+              { key: 'status', label: 'Estado', value: selectedTool.active ? 'Ativa' : 'Inativa' },
+            ]}
+          />
           <ToolRentalDetailsDialog
             embedded
             readOnly

@@ -100,11 +100,7 @@ export function SupplierForm({
             <span className="supplier-field-label">
               CNPJ / documento fiscal <span className="supplier-optional">(opcional)</span>
             </span>
-            <input
-              name="taxNumber"
-              value={form.taxNumber}
-              onChange={handleChange}
-            />
+            <input name="taxNumber" value={form.taxNumber} onChange={handleChange} />
           </label>
 
           <label>

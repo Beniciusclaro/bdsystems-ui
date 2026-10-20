@@ -80,7 +80,9 @@
   border-radius: 6px;
   color: #fff;
   background: var(--color-action);
-  transition: background 0.2s ease, transform 0.2s ease;
+  transition:
+    background 0.2s ease,
+    transform 0.2s ease;
 
   &:hover {
     transform: translateY(-1px);

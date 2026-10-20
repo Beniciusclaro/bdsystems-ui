@@ -26,7 +26,11 @@ function isTool(value: unknown): value is ToolResponse {
 }
 
 function parseToolPage(value: unknown): ToolPage {
-  return parsePage<ToolResponse>(value, isTool, 'A resposta da lista de ferramentas está em um formato inválido.');
+  return parsePage<ToolResponse>(
+    value,
+    isTool,
+    'A resposta da lista de ferramentas está em um formato inválido.',
+  );
 }
 
 function parseTool(value: unknown): ToolResponse {
@@ -56,11 +60,13 @@ export async function getTools(
 
   const response = await apiFetch(`/api/tools?${query}`);
   if (!response.ok) {
-    throw new Error(await getApiErrorMessage(
-      response,
-      'Não foi possível carregar as ferramentas.',
-      TOOL_ERROR_MESSAGES,
-    ));
+    throw new Error(
+      await getApiErrorMessage(
+        response,
+        'Não foi possível carregar as ferramentas.',
+        TOOL_ERROR_MESSAGES,
+      ),
+    );
   }
 
   return parseToolPage(await response.json());
@@ -69,11 +75,13 @@ export async function getTools(
 export async function getTool(toolId: string): Promise<ToolResponse> {
   const response = await apiFetch(`/api/tools/${encodeURIComponent(toolId)}`);
   if (!response.ok) {
-    throw new Error(await getApiErrorMessage(
-      response,
-      'Não foi possível carregar os dados da ferramenta.',
-      TOOL_ERROR_MESSAGES,
-    ));
+    throw new Error(
+      await getApiErrorMessage(
+        response,
+        'Não foi possível carregar os dados da ferramenta.',
+        TOOL_ERROR_MESSAGES,
+      ),
+    );
   }
 
   return parseTool(await response.json());
@@ -85,11 +93,13 @@ export async function createTool(payload: ToolRequest): Promise<ToolResponse> {
     body: JSON.stringify(payload),
   });
   if (!response.ok) {
-    throw new Error(await getApiErrorMessage(
-      response,
-      'Não foi possível cadastrar a ferramenta.',
-      TOOL_ERROR_MESSAGES,
-    ));
+    throw new Error(
+      await getApiErrorMessage(
+        response,
+        'Não foi possível cadastrar a ferramenta.',
+        TOOL_ERROR_MESSAGES,
+      ),
+    );
   }
 
   return parseTool(await response.json());
@@ -101,27 +111,28 @@ export async function updateTool(toolId: string, payload: ToolRequest): Promise<
     body: JSON.stringify(payload),
   });
   if (!response.ok) {
-    throw new Error(await getApiErrorMessage(
-      response,
-      'Não foi possível atualizar a ferramenta.',
-      TOOL_ERROR_MESSAGES,
-    ));
+    throw new Error(
+      await getApiErrorMessage(
+        response,
+        'Não foi possível atualizar a ferramenta.',
+        TOOL_ERROR_MESSAGES,
+      ),
+    );
   }
 }
 
 async function changeToolStatus(toolId: string, action: 'activate' | 'deactivate'): Promise<void> {
-  const response = await apiFetch(
-    `/api/tools/${encodeURIComponent(toolId)}/${action}`,
-    {
-      method: 'PATCH',
-      },
-  );
+  const response = await apiFetch(`/api/tools/${encodeURIComponent(toolId)}/${action}`, {
+    method: 'PATCH',
+  });
   if (!response.ok) {
-    throw new Error(await getApiErrorMessage(
-      response,
-      `Não foi possível ${action === 'activate' ? 'ativar' : 'desativar'} a ferramenta.`,
-      TOOL_ERROR_MESSAGES,
-    ));
+    throw new Error(
+      await getApiErrorMessage(
+        response,
+        `Não foi possível ${action === 'activate' ? 'ativar' : 'desativar'} a ferramenta.`,
+        TOOL_ERROR_MESSAGES,
+      ),
+    );
   }
 }
 

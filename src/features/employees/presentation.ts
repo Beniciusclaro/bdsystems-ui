@@ -1,13 +1,22 @@
 import type { EmployeeStatus } from './types/employee';
 
 export const statusLabels: Record<EmployeeStatus, string> = {
-  ACTIVE: 'Ativo', INACTIVE: 'Inativo', TERMINATED: 'Desligado', LEASED: 'Alocado',
+  ACTIVE: 'Ativo',
+  INACTIVE: 'Inativo',
+  TERMINATED: 'Desligado',
+  LEASED: 'Alocado',
 };
 const statusTones: Record<EmployeeStatus, 'success' | 'warning' | 'danger' | 'info'> = {
-  ACTIVE: 'success', INACTIVE: 'warning', TERMINATED: 'danger', LEASED: 'info',
+  ACTIVE: 'success',
+  INACTIVE: 'warning',
+  TERMINATED: 'danger',
+  LEASED: 'info',
 };
 export const paymentMethodLabels = {
-  MONTHLY: 'Mensal', WEEKLY: 'Semanal', DAILY: 'Diário', HOURLY: 'Hora',
+  MONTHLY: 'Mensal',
+  WEEKLY: 'Semanal',
+  DAILY: 'Diário',
+  HOURLY: 'Hora',
 } as const;
 
 export function getStatusLabel(status: EmployeeStatus | null): string {

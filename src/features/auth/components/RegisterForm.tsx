@@ -23,9 +23,7 @@ export function RegisterForm({ isSubmitting, onSubmit }: RegisterFormProps) {
   const [form, setForm] = useState(initialState);
   const passwordsMatch = form.password === form.confirmPassword;
   const passwordError =
-    form.confirmPassword && !passwordsMatch
-      ? 'As senhas devem ser iguais.'
-      : null;
+    form.confirmPassword && !passwordsMatch ? 'As senhas devem ser iguais.' : null;
 
   const payload = useMemo<UserRequest>(
     () => ({
@@ -46,9 +44,7 @@ export function RegisterForm({ isSubmitting, onSubmit }: RegisterFormProps) {
     [form],
   );
 
-  const handleChange = (
-    event: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>,
-  ) => {
+  const handleChange = (event: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = event.target;
     setForm((current) => ({ ...current, [name]: value }));
   };
@@ -103,7 +99,7 @@ export function RegisterForm({ isSubmitting, onSubmit }: RegisterFormProps) {
             required
           />
         </label>
-        
+
         <label>
           Confirmar Senha
           <input
@@ -114,17 +110,11 @@ export function RegisterForm({ isSubmitting, onSubmit }: RegisterFormProps) {
             onChange={handleChange}
             placeholder="Mínimo 6 caracteres"
             aria-invalid={Boolean(passwordError)}
-            aria-describedby={
-              passwordError ? 'confirm-password-error' : undefined
-            }
+            aria-describedby={passwordError ? 'confirm-password-error' : undefined}
             required
           />
           {passwordError ? (
-            <span
-              id="confirm-password-error"
-              className="password-error"
-              role="alert"
-            >
+            <span id="confirm-password-error" className="password-error" role="alert">
               {passwordError}
             </span>
           ) : null}

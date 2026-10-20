@@ -27,29 +27,47 @@ export function useToolRentalData(visibleToolCount: number) {
     const request = pendingRentalsRef.current ?? getAllToolRentals();
     pendingRentalsRef.current = request;
     request
-      .then((result) => { if (active) setRentalData(result); })
+      .then((result) => {
+        if (active) setRentalData(result);
+      })
       .catch((cause: unknown) => {
-        if (active) setRentalError(cause instanceof Error
-          ? cause.message : 'Não foi possível carregar os registos de aluguer.');
+        if (active)
+          setRentalError(
+            cause instanceof Error
+              ? cause.message
+              : 'Não foi possível carregar os registos de aluguer.',
+          );
       })
       .finally(() => {
         if (pendingRentalsRef.current === request) pendingRentalsRef.current = null;
         if (active) setIsLoadingRentals(false);
       });
-    return () => { active = false; };
+    return () => {
+      active = false;
+    };
   }, [rentalData, showRentalData, visibleToolCount]);
 
   useEffect(() => {
     if (!selectedTool) return;
     let active = true;
     getToolRentals(selectedTool.id)
-      .then((result) => { if (active) setSelectedToolRentals(result); })
-      .catch((cause: unknown) => {
-        if (active) setSelectedToolRentalError(cause instanceof Error
-          ? cause.message : 'Não foi possível carregar os registos de aluguer desta ferramenta.');
+      .then((result) => {
+        if (active) setSelectedToolRentals(result);
       })
-      .finally(() => { if (active) setIsLoadingSelectedToolRentals(false); });
-    return () => { active = false; };
+      .catch((cause: unknown) => {
+        if (active)
+          setSelectedToolRentalError(
+            cause instanceof Error
+              ? cause.message
+              : 'Não foi possível carregar os registos de aluguer desta ferramenta.',
+          );
+      })
+      .finally(() => {
+        if (active) setIsLoadingSelectedToolRentals(false);
+      });
+    return () => {
+      active = false;
+    };
   }, [selectedTool, selectedToolRentalRevision]);
 
   const loadSuppliers = useCallback(async () => {
@@ -61,8 +79,9 @@ export function useToolRentalData(visibleToolCount: number) {
     try {
       setSuppliers(await request);
     } catch (cause: unknown) {
-      setSupplierError(cause instanceof Error
-        ? cause.message : 'Não foi possível carregar os fornecedores.');
+      setSupplierError(
+        cause instanceof Error ? cause.message : 'Não foi possível carregar os fornecedores.',
+      );
     } finally {
       if (pendingSuppliersRef.current === request) pendingSuppliersRef.current = null;
       setIsLoadingSuppliers(false);
@@ -101,10 +120,23 @@ export function useToolRentalData(visibleToolCount: number) {
   };
 
   return {
-    showRentalData, rentalData, isLoadingRentals, rentalError, toggleRentalData,
-    refreshRentalData, retryRentalData, selectedTool, selectedToolRentals,
-    selectedToolRentalError, isLoadingSelectedToolRentals, openTool,
-    closeTool: () => setSelectedTool(null), refreshSelectedToolRentals,
-    suppliers, isLoadingSuppliers, supplierError, loadSuppliers,
+    showRentalData,
+    rentalData,
+    isLoadingRentals,
+    rentalError,
+    toggleRentalData,
+    refreshRentalData,
+    retryRentalData,
+    selectedTool,
+    selectedToolRentals,
+    selectedToolRentalError,
+    isLoadingSelectedToolRentals,
+    openTool,
+    closeTool: () => setSelectedTool(null),
+    refreshSelectedToolRentals,
+    suppliers,
+    isLoadingSuppliers,
+    supplierError,
+    loadSuppliers,
   };
 }

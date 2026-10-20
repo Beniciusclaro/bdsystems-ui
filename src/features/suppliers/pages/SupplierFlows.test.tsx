@@ -4,10 +4,15 @@ import { MemoryRouter, Outlet, Route, Routes } from 'react-router-dom';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { SupplierListPage } from './SupplierListPage';
 import { SupplierRegistrationPage } from './SupplierRegistrationPage';
-import { deleteSupplier, getSupplier, getSuppliers, SupplierNotFoundError } from '../services/supplierService';
+import {
+  deleteSupplier,
+  getSupplier,
+  getSuppliers,
+  SupplierNotFoundError,
+} from '../services/supplierService';
 
 vi.mock('../services/supplierService', async (importOriginal) => ({
-  ...await importOriginal<typeof import('../services/supplierService')>(),
+  ...(await importOriginal<typeof import('../services/supplierService')>()),
   getSuppliers: vi.fn(),
   getSupplier: vi.fn(),
   deleteSupplier: vi.fn(),
@@ -16,10 +21,15 @@ vi.mock('../services/supplierService', async (importOriginal) => ({
 }));
 
 const supplier = {
-  id: 'supplier-1', legalName: 'Oficina Central', tradeName: null,
-  taxNumber: null, email: null, phoneNumber: null,
+  id: 'supplier-1',
+  legalName: 'Oficina Central',
+  tradeName: null,
+  taxNumber: null,
+  email: null,
+  phoneNumber: null,
   address: { street: 'Rua A', city: 'Lisboa', state: 'Lisboa', zipCode: '1000' },
-  companyId: 'company-1', active: true,
+  companyId: 'company-1',
+  active: true,
 };
 
 beforeEach(() => {
@@ -37,7 +47,12 @@ describe('supplier flows', () => {
     render(
       <MemoryRouter initialEntries={['/suppliers/supplier-1/edit']}>
         <Routes>
-          <Route path="/suppliers" element={<Outlet context={{ refreshSuppliers: vi.fn(), suppliers: [], isLoading: false }} />}>
+          <Route
+            path="/suppliers"
+            element={
+              <Outlet context={{ refreshSuppliers: vi.fn(), suppliers: [], isLoading: false }} />
+            }
+          >
             <Route path=":supplierId/edit" element={<SupplierRegistrationPage />} />
           </Route>
         </Routes>
@@ -51,15 +66,25 @@ describe('supplier flows', () => {
   it('searches by UUID and restores the paginated list when cleared', async () => {
     const user = userEvent.setup();
     const id = '550e8400-e29b-41d4-a716-446655440000';
-    vi.mocked(getSupplier).mockResolvedValue({ ...supplier, id, legalName: 'Fornecedor encontrado' });
-    render(<MemoryRouter><SupplierListPage /></MemoryRouter>);
+    vi.mocked(getSupplier).mockResolvedValue({
+      ...supplier,
+      id,
+      legalName: 'Fornecedor encontrado',
+    });
+    render(
+      <MemoryRouter>
+        <SupplierListPage />
+      </MemoryRouter>,
+    );
     await screen.findByRole('table');
     await user.type(screen.getByRole('searchbox', { name: 'ID do fornecedor' }), ` ${id} `);
     await user.click(screen.getByRole('button', { name: 'Buscar' }));
     expect(await screen.findByText('Fornecedor encontrado')).toBeInTheDocument();
     expect(getSupplier).toHaveBeenCalledWith(id);
     expect(getSuppliers).toHaveBeenCalledTimes(1);
-    expect(screen.queryByRole('navigation', { name: 'Paginação da lista de fornecedores' })).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole('navigation', { name: 'Paginação da lista de fornecedores' }),
+    ).not.toBeInTheDocument();
     await user.click(screen.getByRole('button', { name: 'Limpar' }));
     expect(await screen.findByText('Oficina Central')).toBeInTheDocument();
     expect(getSuppliers).toHaveBeenCalledTimes(2);
@@ -67,12 +92,18 @@ describe('supplier flows', () => {
 
   it('validates UUIDs and handles missing suppliers and request failures', async () => {
     const user = userEvent.setup();
-    render(<MemoryRouter><SupplierListPage /></MemoryRouter>);
+    render(
+      <MemoryRouter>
+        <SupplierListPage />
+      </MemoryRouter>,
+    );
     await screen.findByRole('table');
     const input = screen.getByRole('searchbox', { name: 'ID do fornecedor' });
     await user.type(input, 'invalid');
     await user.click(screen.getByRole('button', { name: 'Buscar' }));
-    expect(await screen.findByRole('alert')).toHaveTextContent('Informe um ID de fornecedor válido');
+    expect(await screen.findByRole('alert')).toHaveTextContent(
+      'Informe um ID de fornecedor válido',
+    );
     expect(getSupplier).not.toHaveBeenCalled();
     await user.clear(input);
     await user.type(input, '550e8400-e29b-41d4-a716-446655440000');
@@ -88,9 +119,13 @@ describe('supplier flows', () => {
 
   it('confirms deletion and reloads the list', async () => {
     const user = userEvent.setup();
-    render(<MemoryRouter initialEntries={['/suppliers']}>
-      <Routes><Route path="/suppliers" element={<SupplierListPage />} /></Routes>
-    </MemoryRouter>);
+    render(
+      <MemoryRouter initialEntries={['/suppliers']}>
+        <Routes>
+          <Route path="/suppliers" element={<SupplierListPage />} />
+        </Routes>
+      </MemoryRouter>,
+    );
     await screen.findByRole('table', { name: 'Lista de fornecedores' });
     await user.click(screen.getByRole('button', { name: 'Excluir Oficina Central' }));
     expect(screen.getByRole('heading', { name: 'Excluir fornecedor?' })).toBeInTheDocument();
