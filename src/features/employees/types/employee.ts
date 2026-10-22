@@ -46,7 +46,7 @@ export interface EmployeeResponse {
   employeeNumber: string;
   position: string;
   department: string;
-  admissionDate: string;
+  admissionDate: string | null;
   paymentMethod?: EmployeePaymentMethod | null;
   paymentAmount?: number | null;
   terminationDate: string | null;

@@ -42,7 +42,7 @@ function isEmployee(value: unknown): value is EmployeeResponse {
     typeof value.employeeNumber === 'string' &&
     typeof value.position === 'string' &&
     typeof value.department === 'string' &&
-    typeof value.admissionDate === 'string' &&
+    (typeof value.admissionDate === 'string' || value.admissionDate === null) &&
     (!('paymentMethod' in value) ||
       value.paymentMethod === null ||
       isEmployeePaymentMethod(value.paymentMethod)) &&

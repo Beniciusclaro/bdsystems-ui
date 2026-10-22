@@ -1,7 +1,10 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
+import { apiFetch } from '../../../shared/api/client';
 import { getClients, saveClient } from '../../planning/services/planningService';
 import type { Client, ClientRequest } from '../../planning/types/planning';
-import { createClient, listClients, updateClient } from './clientService';
+import { createClient, deleteClient, listClients, updateClient } from './clientService';
+
+vi.mock('../../../shared/api/client', () => ({ apiFetch: vi.fn() }));
 
 vi.mock('../../planning/services/planningService', () => ({
   getClients: vi.fn(),
@@ -9,7 +12,10 @@ vi.mock('../../planning/services/planningService', () => ({
 }));
 
 const getClientsMock = vi.mocked(getClients);
+
 const saveClientMock = vi.mocked(saveClient);
+
+const fetchMock = vi.mocked(apiFetch);
 
 const clients: Client[] = [
   {
@@ -79,5 +85,21 @@ describe('client service', () => {
 
     expect(saveClientMock).toHaveBeenNthCalledWith(1, request);
     expect(saveClientMock).toHaveBeenNthCalledWith(2, request, 'client-3');
+  });
+
+  it('deletes a client through the authenticated API', async () => {
+    fetchMock.mockResolvedValue(new Response(null, { status: 204 }));
+
+    await deleteClient('client/1');
+
+    expect(fetchMock).toHaveBeenCalledWith('/api/clients/client%2F1', { method: 'DELETE' });
+  });
+
+  it('surfaces backend errors when a client cannot be deleted', async () => {
+    fetchMock.mockResolvedValue(
+      new Response(JSON.stringify({ message: 'Cliente vinculado a uma obra.' }), { status: 409 }),
+    );
+
+    await expect(deleteClient('client-1')).rejects.toThrow('Cliente vinculado a uma obra.');
   });
 });

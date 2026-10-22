@@ -1,0 +1,14 @@
+.ui-details-dialog:has(.composition-details-content) {
+  width: min(100% - 32px, 920px);
+  max-width: 920px;
+}
+
+.composition-details-content {
+  display: grid;
+  gap: 24px;
+}
+
+.composition-details-content h3 {
+  margin: 0 0 12px;
+  font-size: 1rem;
+}

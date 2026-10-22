@@ -53,6 +53,11 @@ function parseSupplierPage(value: unknown): SupplierPage {
 
 export class SupplierNotFoundError extends Error {}
 
+export interface SupplierListFilters {
+  name?: string;
+  taxNumber?: string;
+}
+
 export async function getSupplier(supplierId: string): Promise<SupplierResponse> {
   const response = await apiFetch(`/api/suppliers/${encodeURIComponent(supplierId)}`);
   if (response.status === 404) {
@@ -74,12 +79,19 @@ export async function getSupplier(supplierId: string): Promise<SupplierResponse>
   };
 }
 
-export async function getSuppliers(page: number, size: number): Promise<SupplierPage> {
+export async function getSuppliers(
+  page: number,
+  size: number,
+  filters: SupplierListFilters = {},
+): Promise<SupplierPage> {
   const query = new URLSearchParams({
     page: String(page),
     size: String(size),
     sort: 'legalName,asc',
   });
+
+  if (filters.name) query.set('name', filters.name);
+  if (filters.taxNumber) query.set('taxNumber', filters.taxNumber);
 
   const response = await apiFetch(`/api/suppliers?${query}`);
 

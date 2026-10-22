@@ -11,39 +11,19 @@ import { Pagination } from '../../../shared/components/ui/Pagination';
 import { StatusBadge } from '../../../shared/components/ui/StatusBadge';
 import {
   deleteSupplier,
-  getSupplier,
   getSuppliers,
-  SupplierNotFoundError,
+  type SupplierListFilters,
 } from '../services/supplierService';
-import type { SupplierPage, SupplierResponse } from '../types/supplier';
+import type { SupplierResponse } from '../types/supplier';
 import { SupplierDetailsDialog } from '../components/SupplierDetailsDialog';
 import { getSupplierDisplayName } from '../presentation';
 import { usePaginatedResource } from '../../../shared/hooks/usePaginatedResource';
 import './SupplierListPage.scss';
 
 const PAGE_SIZE_OPTIONS = [10, 20, 50];
-type SupplierFilters = { id?: string };
-const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
-async function getSuppliersPage(
-  page: number,
-  size: number,
-  filters: SupplierFilters,
-): Promise<SupplierPage> {
-  if (!filters.id) return getSuppliers(page, size);
-
-  let content: SupplierResponse[];
-  try {
-    content = [await getSupplier(filters.id)];
-  } catch (error: unknown) {
-    if (!(error instanceof SupplierNotFoundError)) throw error;
-    content = [];
-  }
-  return {
-    content,
-    page: { number: 0, size, totalElements: content.length, totalPages: content.length },
-  };
-}
+const getSuppliersPage = (page: number, size: number, filters: SupplierListFilters) =>
+  getSuppliers(page, size, filters);
 
 export function SupplierListPage() {
   const navigate = useNavigate();
@@ -61,19 +41,18 @@ export function SupplierListPage() {
     goToPage,
     changePageSize,
     refresh,
-  } = usePaginatedResource<SupplierResponse, SupplierFilters>(
+  } = usePaginatedResource<SupplierResponse, SupplierListFilters>(
     getSuppliersPage,
     {},
     'Não foi possível carregar os fornecedores.',
   );
 
-  const [searchId, setSearchId] = useState('');
+  const [draftFilters, setDraftFilters] = useState<SupplierListFilters>({});
 
-  const [searchError, setSearchError] = useState<string | null>(null);
+  const hasFilters = Boolean(appliedFilters.name || appliedFilters.taxNumber);
 
   const clearSearch = () => {
-    setSearchId('');
-    setSearchError(null);
+    setDraftFilters({});
     applyFilters({});
   };
 
@@ -233,27 +212,30 @@ export function SupplierListPage() {
           aria-label="Busca de fornecedores"
           onSubmit={(event) => {
             event.preventDefault();
-            const id = searchId.trim();
-            if (id && !UUID_PATTERN.test(id)) {
-              setSearchError('Informe um ID de fornecedor válido (UUID).');
-              return;
-            }
-            setSearchError(null);
-            applyFilters(id ? { id } : {});
+            applyFilters({
+              name: draftFilters.name?.trim() || undefined,
+              taxNumber: draftFilters.taxNumber?.trim() || undefined,
+            });
           }}
         >
           <label className="field">
-            <span>ID do fornecedor</span>
+            <span>Nome</span>
             <input
               type="search"
-              value={searchId}
-              onChange={(event) => {
-                setSearchId(event.target.value);
-                setSearchError(null);
-              }}
-              placeholder="Informe o UUID do fornecedor"
-              aria-invalid={Boolean(searchError)}
-              aria-describedby={searchError ? 'supplier-search-error' : undefined}
+              value={draftFilters.name ?? ''}
+              onChange={(event) => setDraftFilters({ ...draftFilters, name: event.target.value })}
+              placeholder="Razão social ou nome fantasia"
+            />
+          </label>
+          <label className="field">
+            <span>Documento fiscal</span>
+            <input
+              type="search"
+              value={draftFilters.taxNumber ?? ''}
+              onChange={(event) =>
+                setDraftFilters({ ...draftFilters, taxNumber: event.target.value })
+              }
+              placeholder="NIF, CNPJ ou CPF"
             />
           </label>
           <button type="submit" className="primary-button" disabled={isLoading}>
@@ -262,11 +244,6 @@ export function SupplierListPage() {
           <button type="button" className="text-button" onClick={clearSearch}>
             Limpar
           </button>
-          {searchError ? (
-            <p id="supplier-search-error" role="alert">
-              {searchError}
-            </p>
-          ) : null}
         </form>
 
         {isLoading ? (
@@ -288,14 +265,14 @@ export function SupplierListPage() {
         ) : suppliers.length === 0 && totalElements === 0 ? (
           <ContentState
             variant="empty"
-            title={appliedFilters.id ? 'Fornecedor não encontrado' : 'Nenhum fornecedor cadastrado'}
+            title={hasFilters ? 'Nenhum fornecedor encontrado' : 'Nenhum fornecedor cadastrado'}
             description={
-              appliedFilters.id
-                ? 'Nenhum fornecedor foi encontrado com o ID informado.'
+              hasFilters
+                ? 'Altere os filtros ou limpe a busca para encontrar outros fornecedores.'
                 : 'Cadastre um fornecedor para começar a organizar seus parceiros.'
             }
             action={
-              appliedFilters.id ? (
+              hasFilters ? (
                 <button type="button" className="text-button" onClick={clearSearch}>
                   Limpar busca
                 </button>
@@ -320,7 +297,7 @@ export function SupplierListPage() {
           />
         )}
 
-        {!appliedFilters.id && !isLoading && !error && suppliers.length > 0 ? (
+        {!isLoading && !error && suppliers.length > 0 ? (
           <Pagination
             currentPage={page}
             totalPages={totalPages}

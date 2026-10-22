@@ -47,10 +47,15 @@ export interface LaborProfileRequest {
 }
 export const saveLaborProfile = (employeeId: string, value: LaborProfileRequest) =>
   call(`/labor-roles/employees/${employeeId}/cost-profile`, 'PUT', value);
-export const getCompositions = () => all<Composition>('/compositions');
+export const getCompositions = () =>
+  all<Composition>('/compositions').then((compositions) =>
+    compositions.filter((composition) => composition.active),
+  );
 export const getComposition = (id: string) => call<Composition>(`/compositions/${id}`);
 export const saveComposition = (value: CompositionRequest, id?: string) =>
   call<Composition>(id ? `/compositions/${id}` : '/compositions', id ? 'PUT' : 'POST', value);
+export const setCompositionStatus = (id: string, active: boolean) =>
+  call<void>(`/compositions/${id}/status`, 'PATCH', { active });
 export const getBudgets = () => all<Budget>('/budgets', 'createdAt,desc');
 export const getBudget = (id: string) => call<Budget>(`/budgets/${id}`);
 export const saveBudget = (value: BudgetRequest, id?: string) =>

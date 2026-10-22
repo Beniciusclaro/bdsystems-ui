@@ -1,0 +1,116 @@
+.composition-list-page .composition-list-card {
+  padding: 0;
+  overflow: hidden;
+}
+
+.composition-list-heading {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 18px;
+  padding: 22px 24px 18px;
+}
+
+.composition-list-heading h2 {
+  margin: 0;
+  font-size: 1.1rem;
+}
+
+.composition-list-heading p,
+.composition-components-heading p {
+  margin: 5px 0 0;
+  color: var(--color-muted);
+  font-size: 0.88rem;
+}
+
+.composition-list-heading > span,
+.composition-total {
+  color: var(--color-muted);
+  font-size: 0.88rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.composition-actions-heading {
+  text-align: center;
+}
+
+.composition-actions-cell {
+  width: 112px;
+}
+
+.ui-modal.composition-registration-dialog {
+  --registration-width: 1120px;
+}
+
+.composition-registration-form {
+  gap: 20px;
+}
+
+.composition-fields {
+  display: grid;
+  grid-template-columns: 1fr 2fr 1fr 1fr;
+  gap: 12px;
+}
+
+.composition-components-heading {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.composition-components-heading h2 {
+  margin: 0;
+  font-size: 1.1rem;
+}
+
+.composition-registration-form .composition-line {
+  position: relative;
+  padding-top: 1.65rem;
+}
+
+.composition-registration-form .composition-line legend {
+  position: absolute;
+  top: 0.5rem;
+  left: 0.7rem;
+  padding: 0;
+  color: var(--color-muted);
+  font-size: 0.78rem;
+  font-weight: 700;
+}
+
+.composition-form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  padding-top: 4px;
+}
+
+@media (max-width: 900px) {
+  .composition-fields {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 640px) {
+  .composition-list-heading,
+  .composition-components-heading {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .composition-list-heading {
+    padding-inline: 16px;
+  }
+
+  .composition-fields,
+  .composition-registration-form .composition-line {
+    grid-template-columns: 1fr;
+  }
+
+  .composition-form-actions {
+    display: grid;
+    grid-template-columns: 1fr;
+  }
+}

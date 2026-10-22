@@ -4,12 +4,7 @@ import { MemoryRouter, Outlet, Route, Routes } from 'react-router-dom';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { SupplierListPage } from './SupplierListPage';
 import { SupplierRegistrationPage } from './SupplierRegistrationPage';
-import {
-  deleteSupplier,
-  getSupplier,
-  getSuppliers,
-  SupplierNotFoundError,
-} from '../services/supplierService';
+import { deleteSupplier, getSupplier, getSuppliers } from '../services/supplierService';
 
 vi.mock('../services/supplierService', async (importOriginal) => ({
   ...(await importOriginal<typeof import('../services/supplierService')>()),
@@ -63,58 +58,54 @@ describe('supplier flows', () => {
     expect(getSupplier).toHaveBeenCalledWith('supplier-1');
   });
 
-  it('searches by UUID and restores the paginated list when cleared', async () => {
+  it('filters suppliers by name and tax number and restores the list when cleared', async () => {
     const user = userEvent.setup();
 
-    const id = '550e8400-e29b-41d4-a716-446655440000';
-    vi.mocked(getSupplier).mockResolvedValue({
-      ...supplier,
-      id,
-      legalName: 'Fornecedor encontrado',
-    });
     render(
       <MemoryRouter>
         <SupplierListPage />
       </MemoryRouter>,
     );
     await screen.findByRole('table');
-    await user.type(screen.getByRole('searchbox', { name: 'ID do fornecedor' }), ` ${id} `);
+    await user.type(screen.getByRole('searchbox', { name: 'Nome' }), ' Oficina ');
+    await user.type(screen.getByRole('searchbox', { name: 'Documento fiscal' }), ' 123456 ');
     await user.click(screen.getByRole('button', { name: 'Buscar' }));
-    expect(await screen.findByText('Fornecedor encontrado')).toBeInTheDocument();
-    expect(getSupplier).toHaveBeenCalledWith(id);
-    expect(getSuppliers).toHaveBeenCalledTimes(1);
-    expect(
-      screen.queryByRole('navigation', { name: 'Paginação da lista de fornecedores' }),
-    ).not.toBeInTheDocument();
+
+    await waitFor(() =>
+      expect(getSuppliers).toHaveBeenLastCalledWith(0, 10, {
+        name: 'Oficina',
+        taxNumber: '123456',
+      }),
+    );
+    expect(screen.getByRole('combobox', { name: 'Itens por página' })).toBeInTheDocument();
+
     await user.click(screen.getByRole('button', { name: 'Limpar' }));
     expect(await screen.findByText('Oficina Central')).toBeInTheDocument();
-    expect(getSuppliers).toHaveBeenCalledTimes(2);
+    await waitFor(() => expect(getSuppliers).toHaveBeenLastCalledWith(0, 10, {}));
   });
 
-  it('validates UUIDs and handles missing suppliers and request failures', async () => {
+  it('shows a filtered empty state and clears the search', async () => {
     const user = userEvent.setup();
+
     render(
       <MemoryRouter>
         <SupplierListPage />
       </MemoryRouter>,
     );
+
     await screen.findByRole('table');
-    const input = screen.getByRole('searchbox', { name: 'ID do fornecedor' });
-    await user.type(input, 'invalid');
+
+    vi.mocked(getSuppliers).mockResolvedValueOnce({
+      content: [],
+      page: { size: 10, number: 0, totalElements: 0, totalPages: 0 },
+    });
+    await user.type(screen.getByRole('searchbox', { name: 'Nome' }), 'Inexistente');
     await user.click(screen.getByRole('button', { name: 'Buscar' }));
-    expect(await screen.findByRole('alert')).toHaveTextContent(
-      'Informe um ID de fornecedor válido',
-    );
-    expect(getSupplier).not.toHaveBeenCalled();
-    await user.clear(input);
-    await user.type(input, '550e8400-e29b-41d4-a716-446655440000');
-    vi.mocked(getSupplier).mockRejectedValueOnce(new SupplierNotFoundError());
-    await user.click(screen.getByRole('button', { name: 'Buscar' }));
-    expect(await screen.findByText('Fornecedor não encontrado')).toBeInTheDocument();
-    vi.mocked(getSupplier).mockRejectedValueOnce(new Error('Serviço indisponível'));
-    await user.click(screen.getByRole('button', { name: 'Buscar' }));
-    expect(await screen.findByText('Serviço indisponível')).toBeInTheDocument();
-    await user.click(screen.getByRole('button', { name: 'Tentar novamente' }));
+
+    expect(await screen.findByText('Nenhum fornecedor encontrado')).toBeInTheDocument();
+    expect(screen.getByText(/Altere os filtros/)).toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: 'Limpar busca' }));
     expect(await screen.findByText('Oficina Central')).toBeInTheDocument();
   });
 

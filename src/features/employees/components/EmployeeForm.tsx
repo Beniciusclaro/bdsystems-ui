@@ -89,7 +89,7 @@ function toFormState(employee?: EmployeeResponse): EmployeeFormState {
     employeeNumber: employee.employeeNumber,
     position: employee.position,
     department: employee.department,
-    admissionDate: employee.admissionDate,
+    admissionDate: employee.admissionDate ?? '',
     paymentMethod: employee.paymentMethod ?? '',
     paymentAmount:
       employee.paymentAmount === null || employee.paymentAmount === undefined

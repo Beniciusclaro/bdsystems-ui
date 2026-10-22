@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
-import { Pencil } from 'lucide-react';
+import { Pencil, Trash2 } from 'lucide-react';
 import { Link, Outlet, useNavigate } from 'react-router-dom';
+import { ConfirmDialog } from '../../../shared/components/ui/ConfirmDialog';
 import { ContentState } from '../../../shared/components/ui/ContentState';
 import { DataTable, type DataTableColumn } from '../../../shared/components/ui/DataTable';
 import { PageHeader } from '../../../shared/components/ui/PageHeader';
@@ -10,7 +11,7 @@ import { IconActionButton, RowActions } from '../../../shared/components/ui/RowA
 import { StatusBadge } from '../../../shared/components/ui/StatusBadge';
 import type { Client, ClientType } from '../../planning/types/planning';
 import { ClientDetailsDialog } from '../components/ClientDetailsDialog';
-import { listClients, type ClientFilters } from '../services/clientService';
+import { deleteClient, listClients, type ClientFilters } from '../services/clientService';
 import './ClientListPage.scss';
 
 const PAGE_SIZE_OPTIONS = [10, 20, 50];
@@ -33,6 +34,12 @@ export function ClientListPage() {
   const [error, setError] = useState('');
 
   const [selectedClient, setSelectedClient] = useState<Client | null>(null);
+
+  const [clientToDelete, setClientToDelete] = useState<Client | null>(null);
+
+  const [deletingClientId, setDeletingClientId] = useState<string | null>(null);
+
+  const [deleteError, setDeleteError] = useState<string | null>(null);
 
   const [revision, setRevision] = useState(0);
 
@@ -78,6 +85,39 @@ export function ClientListPage() {
     setError('');
     setAppliedFilters(emptyFilters);
     setPage(0);
+  };
+
+  const handleConfirmDeleteClient = async () => {
+    if (!clientToDelete) {
+      return;
+    }
+
+    const client = clientToDelete;
+
+    setDeleteError(null);
+    setDeletingClientId(client.id);
+
+    try {
+      await deleteClient(client.id);
+      setClientToDelete(null);
+      setSelectedClient(null);
+
+      if (visibleClients.length === 1 && page > 0) {
+        setPage(page - 1);
+      }
+
+      setIsLoading(true);
+      setError('');
+      setRevision((value) => value + 1);
+    } catch (requestError: unknown) {
+      setDeleteError(
+        requestError instanceof Error
+          ? requestError.message
+          : 'Não foi possível excluir o cliente.',
+      );
+    } finally {
+      setDeletingClientId(null);
+    }
   };
 
   const columns: DataTableColumn<Client>[] = [
@@ -129,6 +169,17 @@ export function ClientListPage() {
             onClick={() => navigate(`/clients/${client.id}/edit`)}
           >
             <Pencil aria-hidden="true" />
+          </IconActionButton>
+          <IconActionButton
+            label={`Excluir ${client.name}`}
+            variant="danger"
+            onClick={() => {
+              setDeleteError(null);
+              setClientToDelete(client);
+            }}
+            disabled={deletingClientId === client.id}
+          >
+            <Trash2 aria-hidden="true" />
           </IconActionButton>
         </RowActions>
       ),
@@ -302,6 +353,31 @@ export function ClientListPage() {
       />
 
       <ClientDetailsDialog client={selectedClient} onClose={() => setSelectedClient(null)} />
+
+      {clientToDelete ? (
+        <ConfirmDialog
+          open
+          onOpenChange={(open) => {
+            if (!open && !deletingClientId) {
+              setClientToDelete(null);
+              setDeleteError(null);
+            }
+          }}
+          eyebrow="Confirmar exclusão"
+          title="Excluir cliente?"
+          description={
+            <>
+              Você está prestes a excluir <strong>{clientToDelete.name}</strong>. Essa ação é
+              permanente e não pode ser desfeita.
+            </>
+          }
+          error={deleteError}
+          isConfirming={Boolean(deletingClientId)}
+          confirmLabel="Excluir cliente"
+          confirmingLabel="Excluindo..."
+          onConfirm={handleConfirmDeleteClient}
+        />
+      ) : null}
     </section>
   );
 }
