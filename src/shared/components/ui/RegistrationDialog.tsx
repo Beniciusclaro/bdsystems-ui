@@ -5,7 +5,8 @@ import { Modal } from './Modal';
 interface RegistrationDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  kind: 'employee' | 'client' | 'supplier' | 'tool' | 'material' | 'composition';
+  kind:
+    'employee' | 'client' | 'supplier' | 'tool' | 'material' | 'composition' | 'budget' | 'project';
   eyebrow: string;
   title: string;
   children: ReactNode;

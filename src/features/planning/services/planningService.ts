@@ -3,11 +3,14 @@ import { getApiErrorMessage } from '../../../shared/api/apiError';
 import type { PageResult } from '../../../shared/types/pagination';
 import type {
   Budget,
+  BudgetApprovalRequest,
+  BudgetApprovalResponse,
   BudgetRequest,
   Client,
   ClientRequest,
   Composition,
   CompositionRequest,
+  DuplicateBudgetRequest,
   LaborRole,
   LaborRoleRequest,
   Project,
@@ -32,6 +35,7 @@ export const getClients = () => all<Client>('/clients');
 export const saveClient = (value: ClientRequest, id?: string) =>
   call<Client>(id ? `/clients/${id}` : '/clients', id ? 'PUT' : 'POST', value);
 export const getProjects = () => all<Project>('/projects');
+export const getProject = (id: string) => call<Project>(`/projects/${id}`);
 export const saveProject = (value: ProjectRequest, id?: string) =>
   call<Project>(id ? `/projects/${id}` : '/projects', id ? 'PUT' : 'POST', value);
 export const getLaborRoles = () => all<LaborRole>('/labor-roles');
@@ -73,3 +77,10 @@ export const changeBudgetItemQuantity = (id: string, itemId: string, quantity: n
 export const refreshBudgetItem = (id: string, itemId: string) =>
   call<Budget>(`/budgets/${id}/items/${itemId}/refresh`, 'POST');
 export const finalizeBudget = (id: string) => call<Budget>(`/budgets/${id}/finalize`, 'POST');
+export const approveBudgetAndCreateProject = (id: string, value: BudgetApprovalRequest) =>
+  call<BudgetApprovalResponse>(`/budgets/${id}/approve-and-create-project`, 'POST', value);
+export const rejectBudget = (id: string) => call<Budget>(`/budgets/${id}/reject`, 'POST');
+export const duplicateBudget = (id: string, value: DuplicateBudgetRequest) =>
+  call<Budget>(`/budgets/${id}/duplicate`, 'POST', value);
+export const deleteBudget = (id: string) => call<void>(`/budgets/${id}`, 'DELETE');
+export const reloadProjects = getProjects;

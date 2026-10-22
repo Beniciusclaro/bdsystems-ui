@@ -124,27 +124,62 @@ export interface Budget {
   title: string;
   clientId: string;
   clientName: string;
-  projectId: string;
-  projectName: string;
+  proposedProjectName: string;
+  proposedProjectDescription: string | null;
+  proposedProjectStreet: string | null;
+  proposedProjectCity: string | null;
+  proposedProjectState: string | null;
+  proposedProjectZipCode: string | null;
+  projectId?: string | null;
+  projectName?: string | null;
+  projectLinkOrigin: 'LEGACY' | 'GENERATED' | null;
   validUntil: string | null;
   commercialTerms: string | null;
   notes: string | null;
   taxPercent: number;
   marginPercent: number;
-  status: 'DRAFT' | 'FINALIZED';
+  status: 'DRAFT' | 'FINALIZED' | 'APPROVED' | 'REJECTED';
   finalizedAt: string | null;
+  approvedAt?: string | null;
+  rejectedAt?: string | null;
   totalCost: number;
   totalSalePrice: number;
   stages: BudgetStage[];
 }
 export interface BudgetRequest {
   clientId: string;
-  projectId: string;
   number: string;
   title: string;
+  proposedProjectName: string;
+  proposedProjectDescription: string;
+  proposedProjectStreet: string;
+  proposedProjectCity: string;
+  proposedProjectState: string;
+  proposedProjectZipCode: string;
   validUntil: string | null;
   commercialTerms: string;
   notes: string;
   taxPercent: number;
   marginPercent: number;
+}
+
+export interface BudgetApprovalRequest {
+  code: string;
+  name: string;
+  description: string;
+  street: string;
+  city: string;
+  state: string;
+  zipCode: string;
+  plannedStartDate: string | null;
+  plannedEndDate: string | null;
+}
+
+export interface BudgetApprovalResponse {
+  budget: Budget;
+  project: Project;
+}
+
+export interface DuplicateBudgetRequest {
+  number: string;
 }

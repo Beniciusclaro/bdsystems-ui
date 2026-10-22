@@ -9,6 +9,7 @@ import {
   PackageOpen,
   Truck,
   Users,
+  HardHat,
 } from 'lucide-react';
 
 export interface NavigationItem {
@@ -31,11 +32,12 @@ export const navigationItems: NavigationItem[] = [
   { path: '/tools', label: 'Ferramentas', eyebrow: 'Recursos', icon: Hammer },
   { path: '/materials', label: 'Materiais', eyebrow: 'Recursos', icon: PackageOpen },
   {
-    path: '/planning',
-    label: 'Obras e mão de obra',
+    path: '/projects',
+    label: 'Obras',
     eyebrow: 'Planeamento',
     icon: BriefcaseBusiness,
   },
+  { path: '/labor', label: 'Mão de obra', eyebrow: 'Planeamento', icon: HardHat },
   { path: '/compositions', label: 'Composições', eyebrow: 'Planeamento', icon: Boxes },
   { path: '/budgets', label: 'Orçamentos', eyebrow: 'Planeamento', icon: Calculator },
 ];

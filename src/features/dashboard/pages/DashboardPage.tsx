@@ -225,7 +225,7 @@ export function DashboardPage() {
                   <p className="panel-kicker">Acompanhamento</p>
                   <h2 id="recent-projects-title">Obras recentes</h2>
                 </div>
-                <Link to="/planning" className="panel-link">
+                <Link to="/projects" className="panel-link">
                   Ver todas
                 </Link>
               </div>
