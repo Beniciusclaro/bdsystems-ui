@@ -73,8 +73,8 @@ function App() {
         <Route path="/budgets" element={<BudgetPage />}>
           <Route path="new" element={<BudgetRegistrationPage />} />
           <Route path=":budgetId/edit" element={<BudgetRegistrationPage />} />
+          <Route path=":budgetId" element={<BudgetDetailsPage />} />
         </Route>
-        <Route path="/budgets/:budgetId" element={<BudgetDetailsPage />} />
       </Route>
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>

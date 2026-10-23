@@ -1,6 +1,6 @@
 .ui-modal.ui-registration-dialog {
-  width: min(calc(100% - 32px), var(--registration-width, 760px));
-  max-width: var(--registration-width, 760px);
+  width: min(calc(100% - 32px), 860px);
+  max-width: 860px;
   max-height: min(92vh, var(--registration-height, 900px));
   padding: 0;
   overflow: hidden;

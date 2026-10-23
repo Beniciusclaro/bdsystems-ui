@@ -30,6 +30,13 @@ export interface Project {
   active: boolean;
 }
 export type ProjectRequest = Omit<Project, 'id' | 'clientName'>;
+export interface ProjectFilters {
+  search?: string;
+  status?: Project['status'];
+  active?: boolean;
+  clientId?: string;
+  sort?: string;
+}
 export interface LaborRole {
   id: string;
   code: string;
@@ -48,6 +55,34 @@ export interface LaborRoleRequest {
   costingMode: LaborRole['costingMode'];
   manualHourlyCost: number | null;
   active: boolean;
+}
+export interface LaborRoleFilters {
+  search?: string;
+  active?: boolean;
+  sort?: string;
+}
+export interface LaborCostProfile {
+  employeeId: string;
+  employeeNumber: string;
+  employeeName: string;
+  position: string;
+  paymentMethod: 'MONTHLY' | 'WEEKLY' | 'DAILY' | 'HOURLY' | null;
+  paymentAmount: number | null;
+  configured: boolean;
+  laborRoleId?: string | null;
+  laborRoleCode?: string | null;
+  laborRoleName?: string | null;
+  productiveHoursMonth?: number | null;
+  workDaysMonth?: number | null;
+  employerChargesPercent?: number | null;
+  monthlyBenefits?: number | null;
+  otherMonthlyCosts?: number | null;
+  effectiveHourlyCost?: number | null;
+}
+export interface LaborCostProfileFilters {
+  search?: string;
+  configured?: boolean;
+  sort?: string;
 }
 export type ComponentType = 'MATERIAL' | 'LABOR' | 'EQUIPMENT' | 'CUSTOM';
 export interface CompositionComponent {
@@ -94,6 +129,11 @@ export interface CompositionRequest {
   baseYield: number;
   active: boolean;
   components: CompositionComponentRequest[];
+}
+export interface CompositionFilters {
+  search?: string;
+  active?: boolean;
+  sort?: string;
 }
 export interface BudgetItem {
   id: string;
@@ -161,6 +201,11 @@ export interface BudgetRequest {
   notes: string;
   taxPercent: number;
   marginPercent: number;
+}
+export interface BudgetFilters {
+  search?: string;
+  status?: Budget['status'];
+  sort?: string;
 }
 
 export interface BudgetApprovalRequest {

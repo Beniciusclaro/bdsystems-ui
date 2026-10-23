@@ -76,6 +76,22 @@ describe('getDashboardData', () => {
     expect(result.budgetComparison[0]).toEqual({ name: 'ORC-1', cost: 100, sale: 120 });
   });
 
+  it('counts active projects regardless of their workflow status', async () => {
+    vi.mocked(getProjects).mockResolvedValue([
+      { ...project, id: 'planning', status: 'PLANNING', active: true },
+      { ...project, id: 'paused', status: 'ON_HOLD', active: true },
+      { ...project, id: 'inactive', status: 'ACTIVE', active: false },
+    ]);
+
+    const result = await getDashboardData();
+
+    expect(result.metrics.find((metric) => metric.id === 'active-projects')).toMatchObject({
+      label: 'Obras ativas',
+      value: 2,
+      hint: 'Em planeamento, execução ou pausa',
+    });
+  });
+
   it('keeps available cards when one service fails', async () => {
     vi.mocked(getProjects).mockRejectedValue(new Error('Projetos indisponíveis'));
 

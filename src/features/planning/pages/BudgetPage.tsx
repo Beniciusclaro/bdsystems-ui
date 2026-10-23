@@ -1,52 +1,45 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useState } from 'react';
+import { Trash2 } from 'lucide-react';
 import { Link, Outlet, useNavigate } from 'react-router-dom';
 import { ConfirmDialog } from '../../../shared/components/ui/ConfirmDialog';
 import { ContentState } from '../../../shared/components/ui/ContentState';
 import { DataTable, type DataTableColumn } from '../../../shared/components/ui/DataTable';
 import { PageHeader } from '../../../shared/components/ui/PageHeader';
 import { Panel } from '../../../shared/components/ui/Panel';
+import { Pagination } from '../../../shared/components/ui/Pagination';
 import { IconActionButton, RowActions } from '../../../shared/components/ui/RowActions';
 import { StatusBadge } from '../../../shared/components/ui/StatusBadge';
-import { deleteBudget, getBudgets } from '../services/planningService';
-import type { Budget } from '../types/planning';
+import { usePaginatedResource } from '../../../shared/hooks/usePaginatedResource';
+import { deleteBudget, getBudgetsPage } from '../services/planningService';
+import type { Budget, BudgetFilters } from '../types/planning';
 import { budgetStatusLabel, budgetStatusTone, money } from '../presentation';
 import './Planning.scss';
 
 export function BudgetPage() {
   const navigate = useNavigate();
 
-  const [budgets, setBudgets] = useState<Budget[]>([]);
+  const resource = usePaginatedResource<Budget, BudgetFilters>(
+    getBudgetsPage,
+    {},
+    'Não foi possível carregar os orçamentos.',
+  );
+
+  const [draft, setDraft] = useState({ search: '', status: '' });
 
   const [deleting, setDeleting] = useState<Budget | null>(null);
 
-  const [loading, setLoading] = useState(true);
-
   const [pending, setPending] = useState(false);
-
-  const [error, setError] = useState('');
 
   const [deleteError, setDeleteError] = useState('');
 
   const [success, setSuccess] = useState('');
 
-  const load = useCallback(() => {
-    setLoading(true);
-    setError('');
-    getBudgets()
-      .then(setBudgets)
-      .catch((cause) =>
-        setError(
-          cause instanceof Error ? cause.message : 'Não foi possível carregar os orçamentos.',
-        ),
-      )
-      .finally(() => setLoading(false));
-  }, []);
+  const hasFilters = Boolean(resource.filters.search || resource.filters.status);
 
-  useEffect(() => {
-    // Synchronize the list with the planning API on route entry.
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    load();
-  }, [load]);
+  const clear = () => {
+    setDraft({ search: '', status: '' });
+    resource.applyFilters({});
+  };
 
   const remove = async () => {
     if (!deleting || deleting.status !== 'DRAFT' || pending) return;
@@ -54,9 +47,9 @@ export function BudgetPage() {
     setDeleteError('');
     try {
       await deleteBudget(deleting.id);
-      setBudgets((rows) => rows.filter((row) => row.id !== deleting.id));
       setDeleting(null);
       setSuccess('Orçamento excluído com sucesso.');
+      resource.refresh();
     } catch (cause) {
       setDeleteError(
         cause instanceof Error ? cause.message : 'Não foi possível excluir o orçamento.',
@@ -132,7 +125,7 @@ export function BudgetPage() {
                 setDeleting(budget);
               }}
             >
-              <span aria-hidden="true">×</span>
+              <Trash2 aria-hidden="true" />
             </IconActionButton>
           ) : null}
         </RowActions>
@@ -147,7 +140,7 @@ export function BudgetPage() {
         title="Orçamentos"
         action={
           <span>
-            {budgets.length} {budgets.length === 1 ? 'orçamento' : 'orçamentos'}
+            {resource.totalElements} {resource.totalElements === 1 ? 'orçamento' : 'orçamentos'}
           </span>
         }
       />
@@ -163,31 +156,76 @@ export function BudgetPage() {
             <p>Consulte propostas, acompanhe aprovações e prepare novas revisões.</p>
           </div>
         </div>
-        {error ? (
+        <form
+          className="planning-filters"
+          aria-label="Filtros de orçamentos"
+          onSubmit={(event) => {
+            event.preventDefault();
+            resource.applyFilters({
+              search: draft.search.trim() || undefined,
+              status: (draft.status || undefined) as Budget['status'] | undefined,
+            });
+          }}
+        >
+          <label>
+            Número, orçamento, cliente ou obra
+            <input
+              type="search"
+              value={draft.search}
+              onChange={(event) => setDraft({ ...draft, search: event.target.value })}
+            />
+          </label>
+          <label>
+            Status
+            <select
+              value={draft.status}
+              onChange={(event) => setDraft({ ...draft, status: event.target.value })}
+            >
+              <option value="">Todos</option>
+              <option value="DRAFT">Rascunho</option>
+              <option value="FINALIZED">Finalizado</option>
+              <option value="APPROVED">Aprovado</option>
+              <option value="REJECTED">Rejeitado</option>
+            </select>
+          </label>
+          <button className="primary-button">Buscar</button>
+          {(hasFilters || draft.search || draft.status) && (
+            <button type="button" className="text-button" onClick={clear}>
+              Limpar filtros
+            </button>
+          )}
+        </form>
+        {resource.error ? (
           <ContentState
             variant="error"
-            title={error}
+            title={resource.error}
             action={
-              <button className="text-button" onClick={load}>
+              <button className="text-button" onClick={resource.refresh}>
                 Tentar novamente
               </button>
             }
           />
-        ) : loading ? (
+        ) : resource.isLoading ? (
           <ContentState variant="loading" title="Carregando orçamentos..." />
-        ) : budgets.length === 0 ? (
+        ) : resource.rows.length === 0 ? (
           <ContentState
-            variant="empty"
-            title="Nenhum orçamento cadastrado"
+            variant={hasFilters ? 'no-results' : 'empty'}
+            title={hasFilters ? 'Nenhum orçamento encontrado' : 'Nenhum orçamento cadastrado'}
             action={
-              <Link className="primary-button" to="/budgets/new">
-                Novo orçamento
-              </Link>
+              hasFilters ? (
+                <button className="text-button" onClick={clear}>
+                  Limpar filtros
+                </button>
+              ) : (
+                <Link className="primary-button" to="/budgets/new">
+                  Novo orçamento
+                </Link>
+              )
             }
           />
         ) : (
           <DataTable
-            rows={budgets}
+            rows={resource.rows}
             columns={columns}
             getRowKey={(budget) => budget.id}
             getRowLabel={(budget) => `Abrir detalhes do orçamento ${budget.number}`}
@@ -195,11 +233,22 @@ export function BudgetPage() {
             ariaLabel="Lista de orçamentos"
           />
         )}
+        {!resource.isLoading && !resource.error && resource.rows.length > 0 && (
+          <Pagination
+            currentPage={resource.page}
+            totalPages={resource.totalPages}
+            pageSize={resource.pageSize}
+            pageSizeOptions={[10, 20, 50]}
+            onPageChange={resource.goToPage}
+            onPageSizeChange={resource.changePageSize}
+            ariaLabel="Paginação de orçamentos"
+          />
+        )}
       </Panel>
       <Link className="list-create-fab" to="/budgets/new">
         <span aria-hidden="true">+</span>Novo orçamento
       </Link>
-      <Outlet context={{ refreshBudgets: load, notify: setSuccess }} />
+      <Outlet context={{ refreshBudgets: resource.refresh, notify: setSuccess }} />
       {deleting ? (
         <ConfirmDialog
           open

@@ -9,6 +9,7 @@ import type { Project } from '../types/planning';
 
 vi.mock('../services/planningService', () => ({
   getProjects: vi.fn(),
+  getProjectsPage: vi.fn(),
   getProject: vi.fn(),
   saveProject: vi.fn(),
 }));
@@ -33,6 +34,10 @@ const project: Project = {
 beforeEach(() => {
   vi.resetAllMocks();
   vi.mocked(service.getProjects).mockResolvedValue([project]);
+  vi.mocked(service.getProjectsPage).mockResolvedValue({
+    content: [project],
+    page: { number: 0, size: 10, totalElements: 1, totalPages: 1 },
+  });
   vi.mocked(service.getProject).mockResolvedValue(project);
   vi.mocked(service.saveProject).mockResolvedValue(project);
 });

@@ -1,12 +1,14 @@
-import { useCallback, useEffect, useState, type FormEvent } from 'react';
+import { useEffect, useState, type FormEvent } from 'react';
 import { Pencil, Trash2 } from 'lucide-react';
 import { ConfirmDialog } from '../../../shared/components/ui/ConfirmDialog';
 import { ContentState } from '../../../shared/components/ui/ContentState';
 import { DataTable, type DataTableColumn } from '../../../shared/components/ui/DataTable';
 import { PageHeader } from '../../../shared/components/ui/PageHeader';
 import { Panel } from '../../../shared/components/ui/Panel';
+import { Pagination } from '../../../shared/components/ui/Pagination';
 import { RegistrationDialog } from '../../../shared/components/ui/RegistrationDialog';
 import { IconActionButton, RowActions } from '../../../shared/components/ui/RowActions';
+import { usePaginatedResource } from '../../../shared/hooks/usePaginatedResource';
 import {
   getMaterials,
   getMaterialSuppliers,
@@ -17,7 +19,7 @@ import { getAllToolRentals } from '../../rentals/services/toolRentalService';
 import type { ToolRentalResponse } from '../../rentals/types/toolRental';
 import { CompositionDetailsDialog } from '../components/CompositionDetailsDialog';
 import {
-  getCompositions,
+  getCompositionsPage,
   getLaborRoles,
   saveComposition,
   setCompositionStatus,
@@ -26,6 +28,7 @@ import type {
   ComponentType,
   Composition,
   CompositionComponentRequest,
+  CompositionFilters,
   LaborRole,
 } from '../types/planning';
 import './Planning.scss';
@@ -66,7 +69,13 @@ const empty = (type: ComponentType = 'MATERIAL'): Line => ({
 });
 
 export function CompositionPage() {
-  const [rows, setRows] = useState<Composition[]>([]);
+  const resource = usePaginatedResource<Composition, CompositionFilters>(
+    getCompositionsPage,
+    { active: true },
+    'Falha ao carregar composições.',
+  );
+
+  const [filterDraft, setFilterDraft] = useState({ search: '', active: 'true' });
 
   const [materials, setMaterials] = useState<Material[]>([]);
 
@@ -90,10 +99,6 @@ export function CompositionPage() {
 
   const [compositionToDelete, setCompositionToDelete] = useState<Composition | null>(null);
 
-  const [isLoading, setIsLoading] = useState(true);
-
-  const [listError, setListError] = useState('');
-
   const [catalogError, setCatalogError] = useState('');
 
   const [formError, setFormError] = useState('');
@@ -106,27 +111,7 @@ export function CompositionPage() {
 
   const [deleteError, setDeleteError] = useState<string | null>(null);
 
-  const reload = useCallback(async () => {
-    setIsLoading(true);
-    setListError('');
-
-    try {
-      setRows(await getCompositions());
-    } catch (error) {
-      setListError(error instanceof Error ? error.message : 'Falha ao carregar composições.');
-    } finally {
-      setIsLoading(false);
-    }
-  }, []);
-
   useEffect(() => {
-    getCompositions()
-      .then(setRows)
-      .catch((error) => {
-        setListError(error instanceof Error ? error.message : 'Falha ao carregar composições.');
-      })
-      .finally(() => setIsLoading(false));
-
     Promise.all([
       getMaterials(0, 200, { active: true }),
       getUnits(),
@@ -234,10 +219,10 @@ export function CompositionPage() {
 
     try {
       await setCompositionStatus(composition.id, false);
-      setRows((currentRows) => currentRows.filter((row) => row.id !== composition.id));
       setSelectedComposition(null);
       setCompositionToDelete(null);
       setSuccess('Composição excluída da listagem ativa.');
+      resource.refresh();
     } catch (error) {
       setDeleteError(error instanceof Error ? error.message : 'Falha ao excluir composição.');
     } finally {
@@ -285,7 +270,7 @@ export function CompositionPage() {
       setSuccess(
         wasEditing ? 'Composição atualizada com sucesso.' : 'Composição cadastrada com sucesso.',
       );
-      await reload();
+      resource.refresh();
     } catch (error) {
       setFormError(error instanceof Error ? error.message : 'Falha ao salvar composição.');
     } finally {
@@ -363,7 +348,7 @@ export function CompositionPage() {
         title="Composições de serviço"
         action={
           <span className="composition-total">
-            {rows.length} {rows.length === 1 ? 'composição' : 'composições'}
+            {resource.totalElements} {resource.totalElements === 1 ? 'composição' : 'composições'}
           </span>
         }
       />
@@ -382,27 +367,86 @@ export function CompositionPage() {
           </div>
 
           <span aria-live="polite">
-            {rows.length} {rows.length === 1 ? 'item cadastrado' : 'itens cadastrados'}
+            {resource.rows.length}{' '}
+            {resource.rows.length === 1 ? 'item nesta página' : 'itens nesta página'}
           </span>
         </div>
 
-        {listError ? (
+        <form
+          className="planning-filters"
+          aria-label="Filtros de composições"
+          onSubmit={(event) => {
+            event.preventDefault();
+            resource.applyFilters({
+              search: filterDraft.search.trim() || undefined,
+              active: filterDraft.active === '' ? undefined : filterDraft.active === 'true',
+            });
+          }}
+        >
+          <label>
+            Código ou serviço
+            <input
+              type="search"
+              value={filterDraft.search}
+              onChange={(event) => setFilterDraft({ ...filterDraft, search: event.target.value })}
+            />
+          </label>
+          <label>
+            Situação
+            <select
+              value={filterDraft.active}
+              onChange={(event) => setFilterDraft({ ...filterDraft, active: event.target.value })}
+            >
+              <option value="true">Ativas</option>
+              <option value="false">Inativas</option>
+              <option value="">Todas</option>
+            </select>
+          </label>
+          <button className="primary-button">Buscar</button>
+          {(resource.filters.search ||
+            resource.filters.active !== true ||
+            filterDraft.search ||
+            filterDraft.active !== 'true') && (
+            <button
+              type="button"
+              className="text-button"
+              onClick={() => {
+                setFilterDraft({ search: '', active: 'true' });
+                resource.applyFilters({ active: true });
+              }}
+            >
+              Limpar filtros
+            </button>
+          )}
+        </form>
+
+        {resource.error ? (
           <ContentState
             variant="error"
-            title={listError}
+            title={resource.error}
             action={
-              <button type="button" className="text-button" onClick={() => void reload()}>
+              <button type="button" className="text-button" onClick={resource.refresh}>
                 Tentar novamente
               </button>
             }
           />
-        ) : isLoading ? (
+        ) : resource.isLoading ? (
           <ContentState variant="loading" title="Carregando composições..." />
-        ) : rows.length === 0 ? (
+        ) : resource.rows.length === 0 ? (
           <ContentState
-            variant="empty"
-            title="Nenhuma composição cadastrada"
-            description="Cadastre uma composição para reunir materiais, mão de obra e equipamentos."
+            variant={
+              resource.filters.search || resource.filters.active !== true ? 'no-results' : 'empty'
+            }
+            title={
+              resource.filters.search || resource.filters.active !== true
+                ? 'Nenhuma composição encontrada'
+                : 'Nenhuma composição ativa'
+            }
+            description={
+              resource.filters.search || resource.filters.active !== true
+                ? undefined
+                : 'Cadastre uma composição para reunir materiais, mão de obra e equipamentos.'
+            }
             action={
               <button type="button" className="primary-button" onClick={() => openRegistration()}>
                 Nova composição
@@ -411,7 +455,7 @@ export function CompositionPage() {
           />
         ) : (
           <DataTable
-            rows={rows}
+            rows={resource.rows}
             columns={compositionColumns}
             getRowKey={(composition) => composition.id}
             getRowLabel={(composition) => `Abrir detalhes de ${composition.name}`}
@@ -420,6 +464,17 @@ export function CompositionPage() {
             className="composition-table"
           />
         )}
+        {!resource.isLoading && !resource.error && resource.rows.length > 0 ? (
+          <Pagination
+            currentPage={resource.page}
+            totalPages={resource.totalPages}
+            pageSize={resource.pageSize}
+            pageSizeOptions={[10, 20, 50]}
+            onPageChange={resource.goToPage}
+            onPageSizeChange={resource.changePageSize}
+            ariaLabel="Paginação de composições"
+          />
+        ) : null}
       </Panel>
 
       <button type="button" className="list-create-fab" onClick={() => openRegistration()}>
@@ -510,10 +565,6 @@ export function CompositionPage() {
               <h2>Componentes</h2>
               <p>Informe os recursos e as quantidades necessários para executar o serviço.</p>
             </div>
-
-            <button type="button" onClick={() => setLines((current) => [...current, empty()])}>
-              Adicionar componente
-            </button>
           </div>
 
           <div className="composition-lines">
@@ -682,6 +733,14 @@ export function CompositionPage() {
               </fieldset>
             ))}
           </div>
+
+          <button
+            type="button"
+            className="secondary-button composition-add-component"
+            onClick={() => setLines((current) => [...current, empty()])}
+          >
+            + Adicionar componente
+          </button>
 
           <div className="composition-form-actions">
             <button type="button" onClick={() => handleDialogChange(false)} disabled={pending}>

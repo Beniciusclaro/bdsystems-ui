@@ -13,10 +13,12 @@ vi.mock('../services/planningService', () => ({
   addBudgetStage: vi.fn(),
   approveBudgetAndCreateProject: vi.fn(),
   deleteBudget: vi.fn(),
+  deleteBudgetItem: vi.fn(),
   duplicateBudget: vi.fn(),
   finalizeBudget: vi.fn(),
   getBudget: vi.fn(),
   getBudgets: vi.fn(),
+  getBudgetsPage: vi.fn(),
   getClients: vi.fn(),
   getCompositions: vi.fn(),
   rejectBudget: vi.fn(),
@@ -49,9 +51,43 @@ const makeBudget = (status: Budget['status'] = 'DRAFT'): Budget => ({
   stages: [],
 });
 
+const makeBudgetWithItem = (status: Budget['status'] = 'DRAFT'): Budget => ({
+  ...makeBudget(status),
+  stages: [
+    {
+      id: 'stage-1',
+      name: 'Fundação',
+      description: null,
+      sortOrder: 0,
+      totalCost: 100,
+      totalSalePrice: 150,
+      items: [
+        {
+          id: 'item-1',
+          sourceCompositionId: 'composition-1',
+          code: 'SERV-1',
+          name: 'Escavação',
+          description: null,
+          unitSymbol: 'm³',
+          quantity: 1,
+          unitCost: 100,
+          totalCost: 100,
+          unitSalePrice: 150,
+          totalSalePrice: 150,
+          components: [],
+        },
+      ],
+    },
+  ],
+});
+
 beforeEach(() => {
   vi.resetAllMocks();
   vi.mocked(service.getBudgets).mockResolvedValue([makeBudget()]);
+  vi.mocked(service.getBudgetsPage).mockResolvedValue({
+    content: [makeBudget()],
+    page: { number: 0, size: 10, totalElements: 1, totalPages: 1 },
+  });
   vi.mocked(service.getBudget).mockResolvedValue(makeBudget());
   vi.mocked(service.getCompositions).mockResolvedValue([]);
   vi.mocked(service.getClients).mockResolvedValue([
@@ -70,6 +106,12 @@ beforeEach(() => {
     },
   ]);
   vi.mocked(service.deleteBudget).mockResolvedValue(undefined);
+  vi.mocked(service.deleteBudgetItem).mockResolvedValue({
+    ...makeBudgetWithItem(),
+    totalCost: 0,
+    totalSalePrice: 0,
+    stages: [{ ...makeBudgetWithItem().stages[0], items: [], totalCost: 0, totalSalePrice: 0 }],
+  });
   vi.mocked(service.saveBudget).mockResolvedValue(makeBudget());
 });
 
@@ -91,7 +133,10 @@ describe('budget routes', () => {
   });
 
   it('hides edit and delete actions for finalized budgets', async () => {
-    vi.mocked(service.getBudgets).mockResolvedValue([makeBudget('FINALIZED')]);
+    vi.mocked(service.getBudgetsPage).mockResolvedValue({
+      content: [makeBudget('FINALIZED')],
+      page: { number: 0, size: 10, totalElements: 1, totalPages: 1 },
+    });
     render(
       <MemoryRouter>
         <BudgetPage />
@@ -145,6 +190,79 @@ describe('budget routes', () => {
     expect(screen.getByRole('button', { name: 'Imprimir proposta' })).toBeInTheDocument();
   });
 
+  it('opens budget details over the list and returns to the list when closed', async () => {
+    const user = userEvent.setup();
+
+    render(
+      <MemoryRouter initialEntries={['/budgets']}>
+        <Routes>
+          <Route path="/budgets" element={<BudgetPage />}>
+            <Route path=":budgetId" element={<BudgetDetailsPage />} />
+          </Route>
+        </Routes>
+      </MemoryRouter>,
+    );
+
+    await user.click(
+      await screen.findByRole('row', { name: 'Abrir detalhes do orçamento ORC-10' }),
+    );
+
+    expect(await screen.findByRole('heading', { name: 'ORC-10 · Renovação' })).toBeInTheDocument();
+    expect(screen.getByRole('table', { name: 'Lista de orçamentos' })).toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: 'Fechar orçamento' }));
+
+    expect(screen.queryByRole('heading', { name: 'ORC-10 · Renovação' })).not.toBeInTheDocument();
+    expect(screen.getByRole('table', { name: 'Lista de orçamentos' })).toBeInTheDocument();
+  });
+
+  it('removes a draft service after confirmation and refreshes the budget', async () => {
+    vi.mocked(service.getBudget).mockResolvedValue(makeBudgetWithItem());
+
+    const user = userEvent.setup();
+
+    render(
+      <MemoryRouter initialEntries={['/budgets/budget-1']}>
+        <Routes>
+          <Route path="/budgets" element={<BudgetPage />}>
+            <Route path=":budgetId" element={<BudgetDetailsPage />} />
+          </Route>
+        </Routes>
+      </MemoryRouter>,
+    );
+
+    await user.click(
+      await screen.findByRole('button', { name: 'Remover Escavação da etapa Fundação' }),
+    );
+
+    const dialogs = screen.getAllByRole('dialog');
+
+    const confirmation = dialogs.at(-1)!;
+
+    await user.click(within(confirmation).getByRole('button', { name: 'Remover serviço' }));
+
+    expect(service.deleteBudgetItem).toHaveBeenCalledWith('budget-1', 'item-1');
+    expect(await screen.findByText('Serviço removido com sucesso.')).toBeInTheDocument();
+    expect(
+      screen.queryByRole('button', { name: 'Remover Escavação da etapa Fundação' }),
+    ).not.toBeInTheDocument();
+  });
+
+  it('does not offer service removal outside a draft budget', async () => {
+    vi.mocked(service.getBudget).mockResolvedValue(makeBudgetWithItem('FINALIZED'));
+
+    render(
+      <MemoryRouter initialEntries={['/budgets/budget-1']}>
+        <Routes>
+          <Route path="/budgets/:budgetId" element={<BudgetDetailsPage />} />
+        </Routes>
+      </MemoryRouter>,
+    );
+
+    expect(await screen.findByText('Escavação · 1 m³')).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /Remover Escavação/ })).not.toBeInTheDocument();
+  });
+
   it('keeps finalized approval data for correction after an API failure', async () => {
     const finalized = makeBudget('FINALIZED');
 
@@ -165,7 +283,7 @@ describe('budget routes', () => {
 
     await user.click(await screen.findByRole('button', { name: 'Aprovar e gerar obra' }));
 
-    const dialog = screen.getByRole('dialog');
+    const dialog = screen.getByRole('heading', { name: 'Aprovar e gerar obra' }).closest('dialog')!;
 
     expect(within(dialog).getByLabelText('Código')).toHaveValue('ORC-10');
     expect(within(dialog).getByLabelText('Nome')).toHaveValue('Casa Azul');

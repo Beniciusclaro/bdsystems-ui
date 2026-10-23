@@ -28,6 +28,55 @@
   color: var(--color-muted);
 }
 
+.planning-filters {
+  display: flex;
+  align-items: end;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+.planning-filters label {
+  display: grid;
+  min-width: min(100%, 15rem);
+  flex: 1;
+  gap: 0.35rem;
+  font-weight: 700;
+}
+
+.planning-filters input,
+.planning-filters select {
+  width: 100%;
+  min-height: 42px;
+  padding: 0.65rem 0.75rem;
+  border: 1px solid var(--color-border);
+  border-radius: 0.65rem;
+  background: var(--color-surface-raised);
+  color: var(--color-ink);
+}
+
+.labor-tabs {
+  display: flex;
+  gap: 0.25rem;
+  overflow-x: auto;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.labor-tabs button {
+  min-height: 44px;
+  padding: 0.75rem 1rem;
+  border: 0;
+  border-bottom: 3px solid transparent;
+  background: transparent;
+  color: var(--color-muted);
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.labor-tabs button[aria-selected='true'] {
+  border-bottom-color: var(--color-accent);
+  color: var(--color-ink);
+}
+
 .planning-tabs {
   display: flex;
   gap: 0.25rem;
@@ -65,6 +114,23 @@
 .planning-print {
   justify-self: end;
 }
+
+.budget-details-dialog {
+  display: grid;
+  gap: 1rem;
+}
+
+.budget-details-summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.budget-details-summary p {
+  margin: 0;
+  color: var(--color-muted);
+}
 .planning-page .panel-card {
   display: grid;
   align-content: start;
@@ -79,6 +145,53 @@
 .planning-form {
   display: grid;
   gap: 0.8rem;
+}
+
+.ui-modal.budget-details-registration-dialog {
+  --registration-height: 94vh;
+}
+
+.planning-sectioned-form {
+  gap: 1rem;
+}
+
+.planning-form-section {
+  min-width: 0;
+  margin: 0;
+  padding: 1rem;
+  border: 1px solid var(--color-border);
+  border-radius: 0.75rem;
+  background: var(--color-surface);
+}
+
+.planning-form-section legend {
+  padding: 0 0.4rem;
+  color: var(--color-ink);
+  font-size: 0.95rem;
+  font-weight: 800;
+}
+
+.planning-form-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.8rem;
+}
+
+.planning-form-grid--two {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.planning-form-grid--identity {
+  grid-template-columns: minmax(0, 1.5fr) minmax(9rem, 0.7fr) minmax(0, 1.5fr);
+}
+
+.planning-field--full {
+  grid-column: 1 / -1;
+}
+
+.planning-form-footer {
+  justify-content: flex-end;
+  padding-top: 0.25rem;
 }
 .planning-form label {
   display: grid;
@@ -185,10 +298,28 @@
 }
 .budget-item {
   display: grid;
-  grid-template-columns: 1fr auto auto;
+  grid-template-columns: minmax(0, 1fr) auto auto auto;
+  align-items: center;
   gap: 0.75rem;
   padding: 0.55rem 0;
   border-top: 1px solid var(--color-border);
+}
+
+.budget-item-remove {
+  width: 38px;
+  height: 38px;
+  display: grid;
+  padding: 0;
+  border: 1px solid var(--color-danger-ink);
+  border-radius: 0.6rem;
+  background: var(--color-danger-soft);
+  color: var(--color-danger-ink);
+  place-items: center;
+}
+
+.budget-item-remove svg {
+  width: 18px;
+  height: 18px;
 }
 .proposal {
   background: white;
@@ -227,6 +358,51 @@
   .planning-grid--two,
   .planning-inline-form {
     grid-template-columns: 1fr;
+  }
+
+  .planning-form-grid,
+  .planning-form-grid--two,
+  .planning-form-grid--identity {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 640px) {
+  .planning-filters {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .planning-filters label,
+  .planning-filters button {
+    width: 100%;
+  }
+  .planning-form-grid,
+  .planning-form-grid--two,
+  .planning-form-grid--identity {
+    grid-template-columns: 1fr;
+  }
+
+  .planning-field--full {
+    grid-column: auto;
+  }
+
+  .planning-form-footer,
+  .budget-details-summary {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .planning-form-footer button {
+    width: 100%;
+  }
+
+  .budget-item {
+    grid-template-columns: 1fr auto;
+  }
+
+  .budget-item > span:first-child {
+    grid-column: 1 / -1;
   }
 }
 @media print {

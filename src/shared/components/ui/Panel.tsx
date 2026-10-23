@@ -1,17 +1,17 @@
 import './Panel.scss';
-import type { ReactNode } from 'react';
+import type { HTMLAttributes, ReactNode } from 'react';
 
-interface PanelProps {
+interface PanelProps extends HTMLAttributes<HTMLElement> {
   children: ReactNode;
-  className?: string;
   labelledBy?: string;
 }
 
-export function Panel({ children, className = '', labelledBy }: PanelProps) {
+export function Panel({ children, className = '', labelledBy, ...props }: PanelProps) {
   return (
     <section
       className={['panel-card', className].filter(Boolean).join(' ')}
       aria-labelledby={labelledBy}
+      {...props}
     >
       {children}
     </section>

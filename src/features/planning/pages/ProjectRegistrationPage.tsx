@@ -91,110 +91,135 @@ export function ProjectRegistrationPage() {
       ) : !project ? (
         <ContentState variant="error" title={error || 'Obra não encontrada'} />
       ) : (
-        <form className="planning-form" onSubmit={submit}>
+        <form className="planning-form planning-sectioned-form" onSubmit={submit}>
           {error ? (
             <p role="alert" className="message error">
               {error}
             </p>
           ) : null}
-          <label>
-            Código
-            <input value={project.code} readOnly />
-          </label>
-          <label>
-            Cliente
-            <input value={project.clientName} readOnly />
-          </label>
-          <label>
-            Nome
-            <input
-              required
-              value={project.name}
-              onChange={(event) => setProject({ ...project, name: event.target.value })}
-            />
-          </label>
-          <label>
-            Descrição
-            <textarea
-              value={project.description ?? ''}
-              onChange={(event) =>
-                setProject({ ...project, description: event.target.value || null })
-              }
-            />
-          </label>
-          <label>
-            Morada
-            <input
-              value={project.street ?? ''}
-              onChange={(event) => setProject({ ...project, street: event.target.value || null })}
-            />
-          </label>
-          <label>
-            Cidade
-            <input
-              value={project.city ?? ''}
-              onChange={(event) => setProject({ ...project, city: event.target.value || null })}
-            />
-          </label>
-          <label>
-            Estado
-            <input
-              value={project.state ?? ''}
-              onChange={(event) => setProject({ ...project, state: event.target.value || null })}
-            />
-          </label>
-          <label>
-            Código postal
-            <input
-              value={project.zipCode ?? ''}
-              onChange={(event) => setProject({ ...project, zipCode: event.target.value || null })}
-            />
-          </label>
-          <label>
-            Início planeado
-            <input
-              type="date"
-              value={project.plannedStartDate ?? ''}
-              onChange={(event) =>
-                setProject({ ...project, plannedStartDate: event.target.value || null })
-              }
-            />
-          </label>
-          <label>
-            Fim planeado
-            <input
-              type="date"
-              min={project.plannedStartDate ?? undefined}
-              value={project.plannedEndDate ?? ''}
-              onChange={(event) =>
-                setProject({ ...project, plannedEndDate: event.target.value || null })
-              }
-            />
-          </label>
-          <label>
-            Fase
-            <select
-              value={project.status}
-              onChange={(event) =>
-                setProject({ ...project, status: event.target.value as Project['status'] })
-              }
-            >
-              <option value="PLANNING">Planeamento</option>
-              <option value="ACTIVE">Em execução</option>
-              <option value="ON_HOLD">Pausada</option>
-              <option value="COMPLETED">Concluída</option>
-              <option value="CANCELLED">Cancelada</option>
-            </select>
-          </label>
-          <label className="planning-checkbox">
-            <input
-              type="checkbox"
-              checked={project.active}
-              onChange={(event) => setProject({ ...project, active: event.target.checked })}
-            />
-            Obra ativa
-          </label>
-          <div className="planning-actions">
+          <fieldset className="planning-form-section">
+            <legend>Identificação da obra</legend>
+            <div className="planning-form-grid planning-form-grid--two">
+              <label>
+                Código
+                <input value={project.code} readOnly />
+              </label>
+              <label>
+                Cliente
+                <input value={project.clientName} readOnly />
+              </label>
+              <label>
+                Nome
+                <input
+                  required
+                  value={project.name}
+                  onChange={(event) => setProject({ ...project, name: event.target.value })}
+                />
+              </label>
+              <label className="planning-field--full">
+                Descrição
+                <textarea
+                  rows={3}
+                  value={project.description ?? ''}
+                  onChange={(event) =>
+                    setProject({ ...project, description: event.target.value || null })
+                  }
+                />
+              </label>
+            </div>
+          </fieldset>
+
+          <fieldset className="planning-form-section">
+            <legend>Localização</legend>
+            <div className="planning-form-grid">
+              <label className="planning-field--full">
+                Morada
+                <input
+                  value={project.street ?? ''}
+                  onChange={(event) =>
+                    setProject({ ...project, street: event.target.value || null })
+                  }
+                />
+              </label>
+              <label>
+                Cidade
+                <input
+                  value={project.city ?? ''}
+                  onChange={(event) => setProject({ ...project, city: event.target.value || null })}
+                />
+              </label>
+              <label>
+                Estado
+                <input
+                  value={project.state ?? ''}
+                  onChange={(event) =>
+                    setProject({ ...project, state: event.target.value || null })
+                  }
+                />
+              </label>
+              <label>
+                Código postal
+                <input
+                  value={project.zipCode ?? ''}
+                  onChange={(event) =>
+                    setProject({ ...project, zipCode: event.target.value || null })
+                  }
+                />
+              </label>
+            </div>
+          </fieldset>
+
+          <fieldset className="planning-form-section">
+            <legend>Planeamento e situação</legend>
+            <div className="planning-form-grid planning-form-grid--two">
+              <label>
+                Início planeado
+                <input
+                  type="date"
+                  value={project.plannedStartDate ?? ''}
+                  onChange={(event) =>
+                    setProject({ ...project, plannedStartDate: event.target.value || null })
+                  }
+                />
+              </label>
+              <label>
+                Fim planeado
+                <input
+                  type="date"
+                  min={project.plannedStartDate ?? undefined}
+                  value={project.plannedEndDate ?? ''}
+                  onChange={(event) =>
+                    setProject({ ...project, plannedEndDate: event.target.value || null })
+                  }
+                />
+              </label>
+              <label>
+                Fase
+                <select
+                  value={project.status}
+                  onChange={(event) =>
+                    setProject({ ...project, status: event.target.value as Project['status'] })
+                  }
+                >
+                  <option value="PLANNING">Planeamento</option>
+                  <option value="ACTIVE">Em execução</option>
+                  <option value="ON_HOLD">Pausada</option>
+                  <option value="COMPLETED">Concluída</option>
+                  <option value="CANCELLED">Cancelada</option>
+                </select>
+              </label>
+              <label className="planning-checkbox">
+                <input
+                  type="checkbox"
+                  checked={project.active}
+                  onChange={(event) => setProject({ ...project, active: event.target.checked })}
+                />
+                Obra ativa
+              </label>
+            </div>
+          </fieldset>
+
+          <div className="planning-actions planning-form-footer">
             <button type="button" onClick={close} disabled={pending}>
               Cancelar
             </button>

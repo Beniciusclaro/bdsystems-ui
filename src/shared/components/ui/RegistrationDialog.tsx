@@ -6,11 +6,21 @@ interface RegistrationDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   kind:
-    'employee' | 'client' | 'supplier' | 'tool' | 'material' | 'composition' | 'budget' | 'project';
+    | 'employee'
+    | 'client'
+    | 'supplier'
+    | 'tool'
+    | 'material'
+    | 'composition'
+    | 'budget'
+    | 'budget-details'
+    | 'project'
+    | 'labor';
   eyebrow: string;
   title: string;
   children: ReactNode;
   isSubmitting?: boolean;
+  closeLabel?: string;
 }
 
 export function RegistrationDialog({
@@ -21,6 +31,7 @@ export function RegistrationDialog({
   title,
   children,
   isSubmitting = false,
+  closeLabel = 'Fechar cadastro',
 }: RegistrationDialogProps) {
   const headingId = useId();
   return (
@@ -43,7 +54,7 @@ export function RegistrationDialog({
             type="button"
             className={`ui-registration-dialog__close ${kind}-dialog-close`}
             disabled={isSubmitting}
-            aria-label="Fechar cadastro"
+            aria-label={closeLabel}
             onClick={() => onOpenChange(false)}
           >
             ×

@@ -6,11 +6,11 @@ import {
   type FormEvent,
   type KeyboardEvent,
 } from 'react';
+import { Trash2 } from 'lucide-react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { ConfirmDialog } from '../../../shared/components/ui/ConfirmDialog';
 import { ContentState } from '../../../shared/components/ui/ContentState';
 import { DataTable, type DataTableColumn } from '../../../shared/components/ui/DataTable';
-import { PageHeader } from '../../../shared/components/ui/PageHeader';
 import { Panel } from '../../../shared/components/ui/Panel';
 import { RegistrationDialog } from '../../../shared/components/ui/RegistrationDialog';
 import { StatusBadge } from '../../../shared/components/ui/StatusBadge';
@@ -18,6 +18,7 @@ import {
   addBudgetItem,
   addBudgetStage,
   approveBudgetAndCreateProject,
+  deleteBudgetItem,
   duplicateBudget,
   finalizeBudget,
   getBudget,
@@ -25,7 +26,14 @@ import {
   rejectBudget,
   reloadProjects,
 } from '../services/planningService';
-import type { Budget, BudgetApprovalRequest, Composition, Project } from '../types/planning';
+import type {
+  Budget,
+  BudgetApprovalRequest,
+  BudgetItem,
+  BudgetStage,
+  Composition,
+  Project,
+} from '../types/planning';
 import { budgetStatusLabel, budgetStatusTone, money } from '../presentation';
 import './Planning.scss';
 
@@ -64,6 +72,11 @@ export function BudgetDetailsPage() {
 
   const [duplicateNumber, setDuplicateNumber] = useState('');
 
+  const [removingItem, setRemovingItem] = useState<{
+    item: BudgetItem;
+    stage: BudgetStage;
+  } | null>(null);
+
   const [loading, setLoading] = useState(true);
 
   const [pending, setPending] = useState(false);
@@ -71,6 +84,10 @@ export function BudgetDetailsPage() {
   const [error, setError] = useState('');
 
   const [success, setSuccess] = useState('');
+
+  const close = () => {
+    if (!pending) navigate('/budgets', { replace: true });
+  };
 
   useEffect(() => {
     if (!budgetId) return;
@@ -151,181 +168,229 @@ export function BudgetDetailsPage() {
     }
   };
 
-  if (loading)
+  if (loading || !budget) {
     return (
-      <main className="dashboard-content planning-page">
-        <ContentState variant="loading" title="Carregando orçamento..." />
-      </main>
+      <RegistrationDialog
+        open
+        onOpenChange={(open) => {
+          if (!open) close();
+        }}
+        kind="budget"
+        eyebrow="Orçamentos"
+        title={loading ? 'Carregando orçamento' : 'Orçamento não encontrado'}
+        closeLabel="Fechar orçamento"
+      >
+        {loading ? (
+          <ContentState variant="loading" title="Carregando orçamento..." />
+        ) : (
+          <ContentState
+            variant="error"
+            title={error || 'Orçamento não encontrado'}
+            action={
+              <button type="button" className="text-button" onClick={close}>
+                Voltar aos orçamentos
+              </button>
+            }
+          />
+        )}
+      </RegistrationDialog>
     );
-  if (!budget)
-    return (
-      <main className="dashboard-content planning-page">
-        <ContentState
-          variant="error"
-          title={error || 'Orçamento não encontrado'}
-          action={<Link to="/budgets">Voltar aos orçamentos</Link>}
-        />
-      </main>
-    );
+  }
 
   return (
-    <main className="dashboard-content planning-page">
-      <PageHeader
-        eyebrow="Orçamentos"
-        title={`${budget.number} · ${budget.title}`}
-        action={
+    <RegistrationDialog
+      open
+      onOpenChange={(open) => {
+        if (!open) close();
+      }}
+      kind="budget-details"
+      eyebrow="Orçamentos"
+      title={`${budget.number} · ${budget.title}`}
+      isSubmitting={pending}
+      closeLabel="Fechar orçamento"
+    >
+      <div className="budget-details-dialog">
+        <div className="budget-details-summary">
+          <p>
+            {budget.clientName} · {budget.projectName ?? budget.proposedProjectName}
+          </p>
           <StatusBadge tone={budgetStatusTone[budget.status]}>
             {budgetStatusLabel[budget.status]}
           </StatusBadge>
-        }
-      />
-      <p>
-        {budget.clientName} · {budget.projectName ?? budget.proposedProjectName}
-      </p>
-      {error ? (
-        <p className="planning-alert" role="alert">
-          {error}
-        </p>
-      ) : null}
-      {success ? (
-        <p className="message success" role="status">
-          {success}
-        </p>
-      ) : null}
-      <div className="planning-tabs" role="tablist" aria-label="Visualização do orçamento">
-        <button
-          ref={budgetTab}
-          type="button"
-          role="tab"
-          aria-selected={activeTab === 'budget'}
-          aria-controls="budget-panel"
-          tabIndex={activeTab === 'budget' ? 0 : -1}
-          onClick={() => setActiveTab('budget')}
-          onKeyDown={changeTab}
-        >
-          Orçamento
-        </button>
-        <button
-          ref={proposalTab}
-          type="button"
-          role="tab"
-          aria-selected={activeTab === 'proposal'}
-          aria-controls="proposal-panel"
-          tabIndex={activeTab === 'proposal' ? 0 : -1}
-          onClick={() => setActiveTab('proposal')}
-          onKeyDown={changeTab}
-        >
-          Proposta
-        </button>
-      </div>
-      <section id="budget-panel" role="tabpanel" hidden={activeTab !== 'budget'}>
-        <BudgetWorkspace
-          budget={budget}
-          compositions={compositions}
-          itemDraft={itemDraft}
-          stageName={stageName}
-          pending={pending}
-          linkedProject={linkedProject}
-          onItemDraftChange={setItemDraft}
-          onStageNameChange={setStageName}
-          onRun={run}
-          onFinalize={() =>
-            void run(() => finalizeBudget(budget.id), 'Orçamento finalizado e bloqueado.')
-          }
-          onApprove={openApproval}
-          onReject={() => setRejectOpen(true)}
-          onDuplicate={() => setDuplicateOpen(true)}
-        />
-      </section>
-      <section id="proposal-panel" role="tabpanel" hidden={activeTab !== 'proposal'}>
-        <Proposal budget={budget} />
-      </section>
-      {activeTab === 'proposal' ? (
-        <button className="primary-button planning-print" onClick={() => window.print()}>
-          Imprimir proposta
-        </button>
-      ) : null}
-      <RegistrationDialog
-        open={approvalOpen}
-        onOpenChange={setApprovalOpen}
-        kind="project"
-        eyebrow="Orçamento finalizado"
-        title={
-          budget.projectLinkOrigin === 'LEGACY'
-            ? 'Aprovar e vincular obra existente'
-            : 'Aprovar e gerar obra'
-        }
-        isSubmitting={pending}
-      >
-        {budget.projectLinkOrigin === 'LEGACY' ? (
-          <p className="planning-notice">
-            Já existe uma obra vinculada; nenhuma segunda obra será criada.
+        </div>
+        {error ? (
+          <p className="planning-alert" role="alert">
+            {error}
           </p>
         ) : null}
-        {approval ? (
-          <ApprovalForm
-            value={approval}
-            onChange={setApproval}
-            onSubmit={approve}
+        {success ? (
+          <p className="message success" role="status">
+            {success}
+          </p>
+        ) : null}
+        <div className="planning-tabs" role="tablist" aria-label="Visualização do orçamento">
+          <button
+            ref={budgetTab}
+            type="button"
+            role="tab"
+            aria-selected={activeTab === 'budget'}
+            aria-controls="budget-panel"
+            tabIndex={activeTab === 'budget' ? 0 : -1}
+            onClick={() => setActiveTab('budget')}
+            onKeyDown={changeTab}
+          >
+            Orçamento
+          </button>
+          <button
+            ref={proposalTab}
+            type="button"
+            role="tab"
+            aria-selected={activeTab === 'proposal'}
+            aria-controls="proposal-panel"
+            tabIndex={activeTab === 'proposal' ? 0 : -1}
+            onClick={() => setActiveTab('proposal')}
+            onKeyDown={changeTab}
+          >
+            Proposta
+          </button>
+        </div>
+        <section id="budget-panel" role="tabpanel" hidden={activeTab !== 'budget'}>
+          <BudgetWorkspace
+            budget={budget}
+            compositions={compositions}
+            itemDraft={itemDraft}
+            stageName={stageName}
             pending={pending}
+            linkedProject={linkedProject}
+            onItemDraftChange={setItemDraft}
+            onStageNameChange={setStageName}
+            onRun={run}
+            onFinalize={() =>
+              void run(() => finalizeBudget(budget.id), 'Orçamento finalizado e bloqueado.')
+            }
+            onApprove={openApproval}
+            onReject={() => setRejectOpen(true)}
+            onDuplicate={() => setDuplicateOpen(true)}
+            onRemoveItem={(item, stage) => setRemovingItem({ item, stage })}
+          />
+        </section>
+        <section id="proposal-panel" role="tabpanel" hidden={activeTab !== 'proposal'}>
+          <Proposal budget={budget} />
+        </section>
+        {activeTab === 'proposal' ? (
+          <button className="primary-button planning-print" onClick={() => window.print()}>
+            Imprimir proposta
+          </button>
+        ) : null}
+        <RegistrationDialog
+          open={approvalOpen}
+          onOpenChange={setApprovalOpen}
+          kind="project"
+          eyebrow="Orçamento finalizado"
+          title={
+            budget.projectLinkOrigin === 'LEGACY'
+              ? 'Aprovar e vincular obra existente'
+              : 'Aprovar e gerar obra'
+          }
+          isSubmitting={pending}
+        >
+          {budget.projectLinkOrigin === 'LEGACY' ? (
+            <p className="planning-notice">
+              Já existe uma obra vinculada; nenhuma segunda obra será criada.
+            </p>
+          ) : null}
+          {approval ? (
+            <ApprovalForm
+              value={approval}
+              onChange={setApproval}
+              onSubmit={approve}
+              pending={pending}
+            />
+          ) : null}
+        </RegistrationDialog>
+        <ConfirmDialog
+          open={rejectOpen}
+          onOpenChange={setRejectOpen}
+          title="Marcar orçamento como recusado?"
+          description="O orçamento ficará bloqueado e poderá ser duplicado para revisão."
+          onConfirm={async () => {
+            const result = await run(
+              () => rejectBudget(budget.id),
+              'Orçamento marcado como recusado.',
+            );
+            if (result) setRejectOpen(false);
+          }}
+          confirmLabel="Marcar como recusado"
+          confirmingLabel="A recusar..."
+          isConfirming={pending}
+        />
+        {removingItem ? (
+          <ConfirmDialog
+            open
+            onOpenChange={(open) => {
+              if (!open && !pending) setRemovingItem(null);
+            }}
+            eyebrow="Orçamento em rascunho"
+            title="Remover serviço?"
+            description={
+              <>
+                <strong>{removingItem.item.name}</strong> será removido da etapa{' '}
+                <strong>{removingItem.stage.name}</strong> e os totais serão recalculados.
+              </>
+            }
+            onConfirm={async () => {
+              const result = await run(
+                () => deleteBudgetItem(budget.id, removingItem.item.id),
+                'Serviço removido com sucesso.',
+              );
+              if (result) setRemovingItem(null);
+            }}
+            confirmLabel="Remover serviço"
+            confirmingLabel="Removendo..."
+            isConfirming={pending}
+            error={removingItem && error ? error : undefined}
           />
         ) : null}
-      </RegistrationDialog>
-      <ConfirmDialog
-        open={rejectOpen}
-        onOpenChange={setRejectOpen}
-        title="Marcar orçamento como recusado?"
-        description="O orçamento ficará bloqueado e poderá ser duplicado para revisão."
-        onConfirm={async () => {
-          const result = await run(
-            () => rejectBudget(budget.id),
-            'Orçamento marcado como recusado.',
-          );
-          if (result) setRejectOpen(false);
-        }}
-        confirmLabel="Marcar como recusado"
-        confirmingLabel="A recusar..."
-        isConfirming={pending}
-      />
-      <RegistrationDialog
-        open={duplicateOpen}
-        onOpenChange={setDuplicateOpen}
-        kind="budget"
-        eyebrow="Nova revisão"
-        title="Duplicar orçamento recusado"
-        isSubmitting={pending}
-      >
-        <form
-          className="planning-form"
-          onSubmit={async (event) => {
-            event.preventDefault();
-            if (!duplicateNumber.trim() || duplicateNumber.trim() === budget.number) return;
-            const result = await run(
-              () => duplicateBudget(budget.id, { number: duplicateNumber.trim() }),
-              'Revisão criada.',
-            );
-            if (result) navigate(`/budgets/${result.id}`);
-          }}
+        <RegistrationDialog
+          open={duplicateOpen}
+          onOpenChange={setDuplicateOpen}
+          kind="budget"
+          eyebrow="Nova revisão"
+          title="Duplicar orçamento recusado"
+          isSubmitting={pending}
         >
-          <label>
-            Novo número
-            <input
-              required
-              value={duplicateNumber}
-              onChange={(event) => setDuplicateNumber(event.target.value)}
-            />
-          </label>
-          <button
-            className="primary-button"
-            disabled={
-              pending || !duplicateNumber.trim() || duplicateNumber.trim() === budget.number
-            }
+          <form
+            className="planning-form"
+            onSubmit={async (event) => {
+              event.preventDefault();
+              if (!duplicateNumber.trim() || duplicateNumber.trim() === budget.number) return;
+              const result = await run(
+                () => duplicateBudget(budget.id, { number: duplicateNumber.trim() }),
+                'Revisão criada.',
+              );
+              if (result) navigate(`/budgets/${result.id}`);
+            }}
           >
-            Criar revisão
-          </button>
-        </form>
-      </RegistrationDialog>
-    </main>
+            <label>
+              Novo número
+              <input
+                required
+                value={duplicateNumber}
+                onChange={(event) => setDuplicateNumber(event.target.value)}
+              />
+            </label>
+            <button
+              className="primary-button"
+              disabled={
+                pending || !duplicateNumber.trim() || duplicateNumber.trim() === budget.number
+              }
+            >
+              Criar revisão
+            </button>
+          </form>
+        </RegistrationDialog>
+      </div>
+    </RegistrationDialog>
   );
 }
 
@@ -343,6 +408,7 @@ interface WorkspaceProps {
   onApprove: () => void;
   onReject: () => void;
   onDuplicate: () => void;
+  onRemoveItem: (item: BudgetItem, stage: BudgetStage) => void;
 }
 
 function BudgetWorkspace({
@@ -359,6 +425,7 @@ function BudgetWorkspace({
   onApprove,
   onReject,
   onDuplicate,
+  onRemoveItem,
 }: WorkspaceProps) {
   const draft = budget.status === 'DRAFT';
   return (
@@ -412,6 +479,17 @@ function BudgetWorkspace({
                 </span>
                 <span>Custo {money(item.totalCost)}</span>
                 <strong>Venda {money(item.totalSalePrice)}</strong>
+                {draft ? (
+                  <button
+                    type="button"
+                    className="budget-item-remove"
+                    aria-label={`Remover ${item.name} da etapa ${stage.name}`}
+                    disabled={pending}
+                    onClick={() => onRemoveItem(item, stage)}
+                  >
+                    <Trash2 aria-hidden="true" />
+                  </button>
+                ) : null}
               </div>
             ))}
             {draft ? (
@@ -509,55 +587,69 @@ function ApprovalForm({ value, onChange, onSubmit, pending }: ApprovalProps) {
     (event: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) =>
       onChange({ ...value, [key]: event.target.value || (key.startsWith('planned') ? null : '') });
   return (
-    <form className="planning-form" onSubmit={onSubmit}>
-      <label>
-        Código
-        <input required value={value.code} onChange={field('code')} />
-      </label>
-      <label>
-        Nome
-        <input required value={value.name} onChange={field('name')} />
-      </label>
-      <label>
-        Descrição
-        <textarea value={value.description} onChange={field('description')} />
-      </label>
-      <label>
-        Morada
-        <input value={value.street} onChange={field('street')} />
-      </label>
-      <label>
-        Cidade
-        <input value={value.city} onChange={field('city')} />
-      </label>
-      <label>
-        Estado
-        <input value={value.state} onChange={field('state')} />
-      </label>
-      <label>
-        Código postal
-        <input value={value.zipCode} onChange={field('zipCode')} />
-      </label>
-      <label>
-        Data inicial
-        <input
-          type="date"
-          value={value.plannedStartDate ?? ''}
-          onChange={field('plannedStartDate')}
-        />
-      </label>
-      <label>
-        Data final
-        <input
-          type="date"
-          min={value.plannedStartDate ?? undefined}
-          value={value.plannedEndDate ?? ''}
-          onChange={field('plannedEndDate')}
-        />
-      </label>
-      <button className="primary-button" disabled={pending}>
-        {pending ? 'A aprovar...' : 'Confirmar aprovação'}
-      </button>
+    <form className="planning-form planning-sectioned-form" onSubmit={onSubmit}>
+      <fieldset className="planning-form-section">
+        <legend>Identificação da obra</legend>
+        <div className="planning-form-grid planning-form-grid--two">
+          <label>
+            Código
+            <input required value={value.code} onChange={field('code')} />
+          </label>
+          <label>
+            Nome
+            <input required value={value.name} onChange={field('name')} />
+          </label>
+          <label className="planning-field--full">
+            Descrição
+            <textarea rows={3} value={value.description} onChange={field('description')} />
+          </label>
+        </div>
+      </fieldset>
+
+      <fieldset className="planning-form-section">
+        <legend>Localização e planeamento</legend>
+        <div className="planning-form-grid">
+          <label className="planning-field--full">
+            Morada
+            <input value={value.street} onChange={field('street')} />
+          </label>
+          <label>
+            Cidade
+            <input value={value.city} onChange={field('city')} />
+          </label>
+          <label>
+            Estado
+            <input value={value.state} onChange={field('state')} />
+          </label>
+          <label>
+            Código postal
+            <input value={value.zipCode} onChange={field('zipCode')} />
+          </label>
+          <label>
+            Data inicial
+            <input
+              type="date"
+              value={value.plannedStartDate ?? ''}
+              onChange={field('plannedStartDate')}
+            />
+          </label>
+          <label>
+            Data final
+            <input
+              type="date"
+              min={value.plannedStartDate ?? undefined}
+              value={value.plannedEndDate ?? ''}
+              onChange={field('plannedEndDate')}
+            />
+          </label>
+        </div>
+      </fieldset>
+
+      <div className="planning-actions planning-form-footer">
+        <button className="primary-button" disabled={pending}>
+          {pending ? 'A aprovar...' : 'Confirmar aprovação'}
+        </button>
+      </div>
     </form>
   );
 }

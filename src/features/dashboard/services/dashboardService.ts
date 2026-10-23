@@ -38,12 +38,12 @@ export async function getDashboardData(): Promise<DashboardData> {
   const metrics: DashboardMetric[] = [
     {
       id: 'active-projects',
-      label: 'Obras em execução',
+      label: 'Obras ativas',
       value:
         projectsResult.status === 'fulfilled'
-          ? projects.filter((project) => project.status === 'ACTIVE').length
+          ? projects.filter((project) => project.active).length
           : null,
-      hint: 'Projetos com atividade em curso',
+      hint: 'Em planeamento, execução ou pausa',
       ...(projectsResult.status === 'rejected'
         ? { error: errorMessage(projectsResult.reason, 'Não foi possível carregar as obras.') }
         : {}),

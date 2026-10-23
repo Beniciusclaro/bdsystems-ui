@@ -1,46 +1,40 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useState } from 'react';
 import { Outlet, useNavigate } from 'react-router-dom';
 import { ContentState } from '../../../shared/components/ui/ContentState';
 import { DataTable, type DataTableColumn } from '../../../shared/components/ui/DataTable';
 import { PageHeader } from '../../../shared/components/ui/PageHeader';
+import { Pagination } from '../../../shared/components/ui/Pagination';
 import { Panel } from '../../../shared/components/ui/Panel';
 import { IconActionButton, RowActions } from '../../../shared/components/ui/RowActions';
 import { StatusBadge } from '../../../shared/components/ui/StatusBadge';
+import { usePaginatedResource } from '../../../shared/hooks/usePaginatedResource';
 import { ProjectDetailsDialog } from '../components/ProjectDetailsDialog';
 import { projectStatusLabel, projectStatusTone } from '../presentation';
-import { getProjects } from '../services/planningService';
-import type { Project } from '../types/planning';
+import { getProjectsPage } from '../services/planningService';
+import type { Project, ProjectFilters } from '../types/planning';
 import './Planning.scss';
 
 export function ProjectListPage() {
   const navigate = useNavigate();
 
-  const [projects, setProjects] = useState<Project[]>([]);
+  const resource = usePaginatedResource<Project, ProjectFilters>(
+    getProjectsPage,
+    {},
+    'Não foi possível carregar as obras.',
+  );
+
+  const [draft, setDraft] = useState({ search: '', status: '' });
 
   const [selected, setSelected] = useState<Project | null>(null);
 
-  const [loading, setLoading] = useState(true);
-
-  const [error, setError] = useState('');
-
   const [success, setSuccess] = useState('');
 
-  const load = useCallback(() => {
-    setLoading(true);
-    setError('');
-    getProjects()
-      .then(setProjects)
-      .catch((cause) =>
-        setError(cause instanceof Error ? cause.message : 'Não foi possível carregar as obras.'),
-      )
-      .finally(() => setLoading(false));
-  }, []);
+  const hasFilters = Boolean(resource.filters.search || resource.filters.status);
 
-  useEffect(() => {
-    // Synchronize the list with the planning API on route entry.
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    load();
-  }, [load]);
+  const clear = () => {
+    setDraft({ search: '', status: '' });
+    resource.applyFilters({});
+  };
 
   const columns: DataTableColumn<Project>[] = [
     { key: 'code', header: 'Código', mobileLabel: 'Código', renderCell: (project) => project.code },
@@ -56,12 +50,7 @@ export function ProjectListPage() {
       mobileLabel: 'Cliente',
       renderCell: (project) => project.clientName,
     },
-    {
-      key: 'period',
-      header: 'Período planeado',
-      mobileLabel: 'Período',
-      renderCell: (project) => formatPeriod(project),
-    },
+    { key: 'period', header: 'Período planeado', mobileLabel: 'Período', renderCell: formatPeriod },
     {
       key: 'status',
       header: 'Fase',
@@ -107,7 +96,7 @@ export function ProjectListPage() {
         title="Obras"
         action={
           <span>
-            {projects.length} {projects.length === 1 ? 'obra' : 'obras'}
+            {resource.totalElements} {resource.totalElements === 1 ? 'obra' : 'obras'}
           </span>
         }
       />
@@ -123,27 +112,76 @@ export function ProjectListPage() {
             <p>Acompanhe a fase e os dados operacionais das obras geradas por orçamentos.</p>
           </div>
         </div>
-        {error ? (
+        <form
+          className="planning-filters"
+          aria-label="Filtros de obras"
+          onSubmit={(event) => {
+            event.preventDefault();
+            resource.applyFilters({
+              search: draft.search.trim() || undefined,
+              status: (draft.status || undefined) as Project['status'] | undefined,
+            });
+          }}
+        >
+          <label>
+            Código, obra ou cliente
+            <input
+              type="search"
+              value={draft.search}
+              onChange={(event) => setDraft({ ...draft, search: event.target.value })}
+            />
+          </label>
+          <label>
+            Fase
+            <select
+              value={draft.status}
+              onChange={(event) => setDraft({ ...draft, status: event.target.value })}
+            >
+              <option value="">Todas</option>
+              <option value="PLANNING">Planeamento</option>
+              <option value="ACTIVE">Em execução</option>
+              <option value="ON_HOLD">Suspensa</option>
+              <option value="COMPLETED">Concluída</option>
+              <option value="CANCELLED">Cancelada</option>
+            </select>
+          </label>
+          <button className="primary-button">Buscar</button>
+          {(hasFilters || draft.search || draft.status) && (
+            <button type="button" className="text-button" onClick={clear}>
+              Limpar filtros
+            </button>
+          )}
+        </form>
+        {resource.error ? (
           <ContentState
             variant="error"
-            title={error}
+            title={resource.error}
             action={
-              <button className="text-button" onClick={load}>
+              <button className="text-button" onClick={resource.refresh}>
                 Tentar novamente
               </button>
             }
           />
-        ) : loading ? (
+        ) : resource.isLoading ? (
           <ContentState variant="loading" title="Carregando obras..." />
-        ) : projects.length === 0 ? (
+        ) : resource.rows.length === 0 ? (
           <ContentState
-            variant="empty"
-            title="Nenhuma obra gerada"
-            description="As obras aparecerão aqui após a aprovação de um orçamento."
+            variant={hasFilters ? 'no-results' : 'empty'}
+            title={hasFilters ? 'Nenhuma obra encontrada' : 'Nenhuma obra gerada'}
+            description={
+              hasFilters ? undefined : 'As obras aparecerão aqui após a aprovação de um orçamento.'
+            }
+            action={
+              hasFilters ? (
+                <button className="text-button" onClick={clear}>
+                  Limpar filtros
+                </button>
+              ) : undefined
+            }
           />
         ) : (
           <DataTable
-            rows={projects}
+            rows={resource.rows}
             columns={columns}
             getRowKey={(project) => project.id}
             getRowLabel={(project) => `Abrir detalhes de ${project.name}`}
@@ -151,8 +189,19 @@ export function ProjectListPage() {
             ariaLabel="Lista de obras"
           />
         )}
+        {!resource.isLoading && !resource.error && resource.rows.length > 0 && (
+          <Pagination
+            currentPage={resource.page}
+            totalPages={resource.totalPages}
+            pageSize={resource.pageSize}
+            pageSizeOptions={[10, 20, 50]}
+            onPageChange={resource.goToPage}
+            onPageSizeChange={resource.changePageSize}
+            ariaLabel="Paginação de obras"
+          />
+        )}
       </Panel>
-      <Outlet context={{ refreshProjects: load, notify: setSuccess }} />
+      <Outlet context={{ refreshProjects: resource.refresh, notify: setSuccess }} />
       {selected ? (
         <ProjectDetailsDialog project={selected} onClose={() => setSelected(null)} />
       ) : null}
@@ -160,9 +209,5 @@ export function ProjectListPage() {
   );
 }
 
-const formatPeriod = (project: Project) => {
-  const start = project.plannedStartDate ?? 'A definir';
-
-  const end = project.plannedEndDate ?? 'A definir';
-  return `${start} — ${end}`;
-};
+const formatPeriod = (project: Project) =>
+  `${project.plannedStartDate ?? 'A definir'} — ${project.plannedEndDate ?? 'A definir'}`;
