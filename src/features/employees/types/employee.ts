@@ -41,11 +41,11 @@ export interface EmployeeResponse {
   phoneNumber: string | null;
   documentNumber: string | null;
   birthDate: string | null;
-  address: EmployeeAddressRequest;
+  address: EmployeeAddressRequest | null;
   companyId: string;
-  employeeNumber: string;
-  position: string;
-  department: string;
+  employeeNumber: string | null;
+  position: string | null;
+  department: string | null;
   admissionDate: string | null;
   paymentMethod?: EmployeePaymentMethod | null;
   paymentAmount?: number | null;

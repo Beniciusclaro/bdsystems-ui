@@ -32,7 +32,6 @@ export function RegisterForm({ isSubmitting, onSubmit }: RegisterFormProps) {
       name: form.name,
       email: form.email,
       password: form.password,
-      companyName: form.companyName,
       company: {
         name: form.companyName,
         address: {

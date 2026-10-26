@@ -1,4 +1,5 @@
-import { useState, type FormEvent, type KeyboardEvent } from 'react';
+import { useEffect, useState, type FormEvent, type KeyboardEvent } from 'react';
+import { Pencil, Trash2 } from 'lucide-react';
 import { ConfirmDialog } from '../../../shared/components/ui/ConfirmDialog';
 import { ContentState } from '../../../shared/components/ui/ContentState';
 import { DataTable, type DataTableColumn } from '../../../shared/components/ui/DataTable';
@@ -9,30 +10,13 @@ import { RegistrationDialog } from '../../../shared/components/ui/RegistrationDi
 import { IconActionButton, RowActions } from '../../../shared/components/ui/RowActions';
 import { StatusBadge } from '../../../shared/components/ui/StatusBadge';
 import { usePaginatedResource } from '../../../shared/hooks/usePaginatedResource';
-import {
-  getLaborProfiles,
-  getLaborRolesPage,
-  saveLaborProfile,
-  saveLaborRole,
-} from '../services/planningService';
-import type {
-  LaborCostProfile,
-  LaborCostProfileFilters,
-  LaborRole,
-  LaborRoleFilters,
-} from '../types/planning';
+import { getEmployees } from '../../employees/services/employeeService';
+import type { EmployeeResponse } from '../../employees/types/employee';
+import { getLaborRolesPage, saveLaborProfile, saveLaborRole } from '../services/planningService';
+import type { LaborRole, LaborRoleFilters } from '../types/planning';
 import './Planning.scss';
 
-type Tab = 'profiles' | 'roles';
-const profileDefaults = {
-  employeeId: '',
-  laborRoleId: '',
-  productiveHoursMonth: '160',
-  workDaysMonth: '22',
-  employerChargesPercent: '0',
-  monthlyBenefits: '0',
-  otherMonthlyCosts: '0',
-};
+type DialogTab = 'role' | 'cost';
 
 const roleDefaults = {
   code: '',
@@ -43,34 +27,37 @@ const roleDefaults = {
   active: true,
 };
 
+const costDefaults = {
+  employeeId: '',
+  productiveHoursMonth: '160',
+  workDaysMonth: '22',
+  employerChargesPercent: '0',
+  monthlyBenefits: '0',
+  otherMonthlyCosts: '0',
+};
+
 export function LaborPage() {
-  const [tab, setTab] = useState<Tab>('profiles');
-
-  const profiles = usePaginatedResource<LaborCostProfile, LaborCostProfileFilters>(
-    getLaborProfiles,
-    {},
-    'Não foi possível carregar os custos por funcionário.',
-  );
-
-  const roles = usePaginatedResource<LaborRole, LaborRoleFilters>(
+  const resource = usePaginatedResource<LaborRole, LaborRoleFilters>(
     getLaborRolesPage,
     { active: true },
     'Não foi possível carregar as funções de mão de obra.',
   );
 
-  const [profileDraft, setProfileDraft] = useState({ search: '', configured: '' });
+  const [draft, setDraft] = useState({ search: '', active: 'true' });
 
-  const [roleDraft, setRoleDraft] = useState({ search: '', active: 'true' });
+  const [employees, setEmployees] = useState<EmployeeResponse[]>([]);
 
-  const [profileForm, setProfileForm] = useState(profileDefaults);
+  const [employeeError, setEmployeeError] = useState('');
+
+  const [dialogOpen, setDialogOpen] = useState(false);
+
+  const [dialogTab, setDialogTab] = useState<DialogTab>('role');
+
+  const [editingRole, setEditingRole] = useState<LaborRole | null>(null);
 
   const [roleForm, setRoleForm] = useState(roleDefaults);
 
-  const [profileDialog, setProfileDialog] = useState(false);
-
-  const [roleDialog, setRoleDialog] = useState(false);
-
-  const [editingRole, setEditingRole] = useState<LaborRole | null>(null);
+  const [costForm, setCostForm] = useState(costDefaults);
 
   const [statusTarget, setStatusTarget] = useState<LaborRole | null>(null);
 
@@ -78,47 +65,38 @@ export function LaborPage() {
 
   const [formError, setFormError] = useState('');
 
+  const [dialogSuccess, setDialogSuccess] = useState('');
+
   const [success, setSuccess] = useState('');
 
-  const activeRoles = roles.rows.filter((role) => role.active);
+  const hasFilters = Boolean(resource.filters.search || resource.filters.active !== true);
 
-  const profileHasFilters = Boolean(
-    profiles.filters.search || profiles.filters.configured !== undefined,
-  );
+  useEffect(() => {
+    let active = true;
 
-  const roleHasFilters = Boolean(roles.filters.search || roles.filters.active !== true);
+    getEmployees(0, 200, { status: 'ACTIVE' })
+      .then((result) => {
+        if (active) setEmployees(result.content);
+      })
+      .catch((cause: unknown) => {
+        if (active) {
+          setEmployeeError(
+            cause instanceof Error ? cause.message : 'Não foi possível carregar os funcionários.',
+          );
+        }
+      });
 
-  const selectTab = (next: Tab) => {
-    setTab(next);
-    setSuccess('');
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  const clear = () => {
+    setDraft({ search: '', active: 'true' });
+    resource.applyFilters({ active: true });
   };
 
-  const onTabKeyDown = (event: KeyboardEvent<HTMLButtonElement>) => {
-    if (event.key === 'ArrowLeft' || event.key === 'ArrowRight') {
-      event.preventDefault();
-      selectTab(tab === 'profiles' ? 'roles' : 'profiles');
-      document
-        .getElementById(tab === 'profiles' ? 'labor-roles-tab' : 'labor-profiles-tab')
-        ?.focus();
-    }
-  };
-
-  const editProfile = (profile: LaborCostProfile) => {
-    setFormError('');
-    setProfileForm({
-      employeeId: profile.employeeId,
-      laborRoleId: profile.laborRoleId ?? '',
-      productiveHoursMonth: String(profile.productiveHoursMonth ?? 160),
-      workDaysMonth: String(profile.workDaysMonth ?? 22),
-      employerChargesPercent: String(profile.employerChargesPercent ?? 0),
-      monthlyBenefits: String(profile.monthlyBenefits ?? 0),
-      otherMonthlyCosts: String(profile.otherMonthlyCosts ?? 0),
-    });
-    setProfileDialog(true);
-  };
-
-  const editRole = (role?: LaborRole) => {
-    setFormError('');
+  const openRole = (role?: LaborRole) => {
     setEditingRole(role ?? null);
     setRoleForm(
       role
@@ -132,41 +110,45 @@ export function LaborPage() {
           }
         : roleDefaults,
     );
-    setRoleDialog(true);
+    setCostForm(costDefaults);
+    setDialogTab('role');
+    setFormError('');
+    setDialogSuccess('');
+    setSuccess('');
+    setDialogOpen(true);
   };
 
-  const submitProfile = async (event: FormEvent) => {
-    event.preventDefault();
-    if (pending) return;
-    setPending(true);
+  const closeDialog = () => {
+    if (!pending) setDialogOpen(false);
+  };
+
+  const switchDialogTab = (nextTab: DialogTab) => {
+    setDialogTab(nextTab);
     setFormError('');
-    try {
-      await saveLaborProfile(profileForm.employeeId, {
-        laborRoleId: profileForm.laborRoleId,
-        productiveHoursMonth: Number(profileForm.productiveHoursMonth),
-        workDaysMonth: profileForm.workDaysMonth ? Number(profileForm.workDaysMonth) : null,
-        employerChargesPercent: Number(profileForm.employerChargesPercent),
-        monthlyBenefits: Number(profileForm.monthlyBenefits),
-        otherMonthlyCosts: Number(profileForm.otherMonthlyCosts),
-      });
-      setProfileDialog(false);
-      setSuccess('Custo do funcionário atualizado com sucesso.');
-      profiles.refresh();
-      roles.refresh();
-    } catch (cause) {
-      setFormError(cause instanceof Error ? cause.message : 'Não foi possível salvar o custo.');
-    } finally {
-      setPending(false);
-    }
+    setDialogSuccess('');
+  };
+
+  const handleTabKeyDown = (event: KeyboardEvent<HTMLButtonElement>) => {
+    if (event.key !== 'ArrowLeft' && event.key !== 'ArrowRight') return;
+
+    event.preventDefault();
+
+    const nextTab: DialogTab = dialogTab === 'role' ? 'cost' : 'role';
+
+    switchDialogTab(nextTab);
+    document.getElementById(`labor-dialog-${nextTab}-tab`)?.focus();
   };
 
   const submitRole = async (event: FormEvent) => {
     event.preventDefault();
     if (pending) return;
+
     setPending(true);
     setFormError('');
+    setDialogSuccess('');
+
     try {
-      await saveLaborRole(
+      const saved = await saveLaborRole(
         {
           code: roleForm.code,
           name: roleForm.name,
@@ -178,9 +160,18 @@ export function LaborPage() {
         },
         editingRole?.id,
       );
-      setRoleDialog(false);
-      setSuccess(editingRole ? 'Função atualizada com sucesso.' : 'Função cadastrada com sucesso.');
-      roles.refresh();
+
+      setEditingRole(saved);
+      setRoleForm({
+        code: saved.code,
+        name: saved.name,
+        description: saved.description ?? '',
+        costingMode: saved.costingMode,
+        manualHourlyCost: saved.manualHourlyCost == null ? '' : String(saved.manualHourlyCost),
+        active: saved.active,
+      });
+      setDialogSuccess('Função salva. Agora pode adicionar um custo por funcionário.');
+      resource.refresh();
     } catch (cause) {
       setFormError(cause instanceof Error ? cause.message : 'Não foi possível salvar a função.');
     } finally {
@@ -188,10 +179,62 @@ export function LaborPage() {
     }
   };
 
-  const toggleRole = async () => {
-    if (!statusTarget || pending) return;
+  const submitCost = async (event: FormEvent) => {
+    event.preventDefault();
+    if (pending) return;
+
     setPending(true);
     setFormError('');
+    setDialogSuccess('');
+
+    try {
+      let targetRole = editingRole;
+
+      if (!targetRole) {
+        if (!roleForm.code.trim() || !roleForm.name.trim()) {
+          throw new Error('Preencha o código e a função antes de adicionar o custo.');
+        }
+
+        if (roleForm.costingMode === 'MANUAL' && !roleForm.manualHourlyCost) {
+          throw new Error('Informe o custo por hora antes de adicionar o custo do funcionário.');
+        }
+
+        targetRole = await saveLaborRole({
+          code: roleForm.code,
+          name: roleForm.name,
+          description: roleForm.description,
+          costingMode: roleForm.costingMode,
+          manualHourlyCost:
+            roleForm.costingMode === 'MANUAL' ? Number(roleForm.manualHourlyCost) : null,
+          active: roleForm.active,
+        });
+        setEditingRole(targetRole);
+      }
+
+      await saveLaborProfile(costForm.employeeId, {
+        laborRoleId: targetRole.id,
+        productiveHoursMonth: Number(costForm.productiveHoursMonth),
+        workDaysMonth: costForm.workDaysMonth ? Number(costForm.workDaysMonth) : null,
+        employerChargesPercent: Number(costForm.employerChargesPercent),
+        monthlyBenefits: Number(costForm.monthlyBenefits),
+        otherMonthlyCosts: Number(costForm.otherMonthlyCosts),
+      });
+      setCostForm(costDefaults);
+      setDialogSuccess('Custo por funcionário adicionado à função.');
+      resource.refresh();
+    } catch (cause) {
+      setFormError(cause instanceof Error ? cause.message : 'Não foi possível adicionar o custo.');
+    } finally {
+      setPending(false);
+    }
+  };
+
+  const toggleRole = async () => {
+    if (!statusTarget || pending) return;
+
+    setPending(true);
+    setFormError('');
+
     try {
       await saveLaborRole(
         {
@@ -204,74 +247,21 @@ export function LaborPage() {
         },
         statusTarget.id,
       );
-      setSuccess(`Função ${statusTarget.active ? 'desativada' : 'ativada'} com sucesso.`);
+      setSuccess(
+        `Função ${statusTarget.active ? 'removida da listagem ativa' : 'ativada'} com sucesso.`,
+      );
       setStatusTarget(null);
-      roles.refresh();
+      resource.refresh();
     } catch (cause) {
-      setFormError(cause instanceof Error ? cause.message : 'Não foi possível alterar a função.');
+      setFormError(
+        cause instanceof Error ? cause.message : 'Não foi possível alterar o status da função.',
+      );
     } finally {
       setPending(false);
     }
   };
 
-  const profileColumns: DataTableColumn<LaborCostProfile>[] = [
-    {
-      key: 'number',
-      header: 'Número',
-      mobileLabel: 'Número',
-      renderCell: (row) => row.employeeNumber,
-    },
-    {
-      key: 'employee',
-      header: 'Funcionário',
-      mobileLabel: 'Funcionário',
-      renderCell: (row) => <strong>{row.employeeName}</strong>,
-    },
-    { key: 'position', header: 'Cargo', mobileLabel: 'Cargo', renderCell: (row) => row.position },
-    {
-      key: 'payment',
-      header: 'Pagamento',
-      mobileLabel: 'Pagamento',
-      renderCell: (row) =>
-        row.paymentAmount == null
-          ? 'Não informado'
-          : `${paymentLabels[row.paymentMethod ?? 'MONTHLY']} · ${money(row.paymentAmount)}`,
-    },
-    {
-      key: 'role',
-      header: 'Função',
-      mobileLabel: 'Função',
-      renderCell: (row) => row.laborRoleName ?? 'Não vinculada',
-    },
-    {
-      key: 'cost',
-      header: 'Custo/h',
-      mobileLabel: 'Custo/h',
-      renderCell: (row) => (row.effectiveHourlyCost == null ? '—' : money(row.effectiveHourlyCost)),
-    },
-    {
-      key: 'status',
-      header: 'Status',
-      mobileLabel: 'Status',
-      renderCell: (row) => (
-        <StatusBadge tone={row.configured ? 'success' : 'warning'}>
-          {row.configured ? 'Configurado' : 'Não configurado'}
-        </StatusBadge>
-      ),
-    },
-    {
-      key: 'actions',
-      header: 'Ações',
-      mobileLabel: 'Ações',
-      renderCell: (row) => (
-        <button type="button" className="text-button" onClick={() => editProfile(row)}>
-          {row.configured ? 'Editar' : 'Configurar'}
-        </button>
-      ),
-    },
-  ];
-
-  const roleColumns: DataTableColumn<LaborRole>[] = [
+  const columns: DataTableColumn<LaborRole>[] = [
     { key: 'code', header: 'Código', mobileLabel: 'Código', renderCell: (row) => row.code },
     {
       key: 'name',
@@ -283,12 +273,13 @@ export function LaborPage() {
       key: 'mode',
       header: 'Modo',
       mobileLabel: 'Modo',
-      renderCell: (row) => (row.costingMode === 'MANUAL' ? 'Manual' : 'Média dos funcionários'),
+      renderCell: (row) =>
+        row.costingMode === 'MANUAL' ? 'Custo manual' : 'Média dos funcionários',
     },
     {
       key: 'eligible',
-      header: 'Elegíveis',
-      mobileLabel: 'Elegíveis',
+      header: 'Funcionários',
+      mobileLabel: 'Funcionários',
       renderCell: (row) => row.eligibleEmployees,
     },
     {
@@ -317,20 +308,33 @@ export function LaborPage() {
           <IconActionButton
             label={`Editar ${row.name}`}
             variant="accent"
-            onClick={() => editRole(row)}
+            onClick={() => openRole(row)}
           >
-            <span aria-hidden="true">✎</span>
+            <Pencil aria-hidden="true" />
           </IconActionButton>
-          <button
-            type="button"
-            className="text-button"
-            onClick={() => {
-              setFormError('');
-              setStatusTarget(row);
-            }}
-          >
-            {row.active ? 'Desativar' : 'Ativar'}
-          </button>
+          {row.active ? (
+            <IconActionButton
+              label={`Remover ${row.name}`}
+              variant="danger"
+              onClick={() => {
+                setFormError('');
+                setStatusTarget(row);
+              }}
+            >
+              <Trash2 aria-hidden="true" />
+            </IconActionButton>
+          ) : (
+            <button
+              type="button"
+              className="text-button"
+              onClick={() => {
+                setFormError('');
+                setStatusTarget(row);
+              }}
+            >
+              Ativar
+            </button>
+          )}
         </RowActions>
       ),
     },
@@ -338,383 +342,307 @@ export function LaborPage() {
 
   return (
     <main className="dashboard-content planning-page labor-page">
-      <PageHeader eyebrow="Planeamento" title="Mão de obra" />
+      <PageHeader
+        eyebrow="Planeamento"
+        title="Mão de obra"
+        action={
+          <span>
+            {resource.totalElements} {resource.totalElements === 1 ? 'função' : 'funções'}
+          </span>
+        }
+      />
+
       {success ? (
         <p className="message success" role="status">
           {success}
         </p>
       ) : null}
-      <div className="labor-tabs" role="tablist" aria-label="Gestão de mão de obra">
-        <button
-          id="labor-profiles-tab"
-          role="tab"
-          aria-selected={tab === 'profiles'}
-          aria-controls="labor-profiles-panel"
-          tabIndex={tab === 'profiles' ? 0 : -1}
-          onClick={() => selectTab('profiles')}
-          onKeyDown={onTabKeyDown}
-        >
-          Custos por funcionário
-        </button>
-        <button
-          id="labor-roles-tab"
-          role="tab"
-          aria-selected={tab === 'roles'}
-          aria-controls="labor-roles-panel"
-          tabIndex={tab === 'roles' ? 0 : -1}
-          onClick={() => selectTab('roles')}
-          onKeyDown={onTabKeyDown}
-        >
-          Funções de mão de obra
-        </button>
-      </div>
-      {tab === 'profiles' ? (
-        <Panel
-          id="labor-profiles-panel"
-          role="tabpanel"
-          aria-labelledby="labor-profiles-tab"
-          labelledBy="labor-profiles-heading"
-        >
-          <div className="planning-list-heading">
-            <div>
-              <h2 id="labor-profiles-heading">Custos por funcionário</h2>
-              <p>Configure os custos de todos os funcionários ativos.</p>
-            </div>
-            <span>{profiles.totalElements} funcionários</span>
+
+      <Panel labelledBy="labor-roles-heading">
+        <div className="planning-list-heading">
+          <div>
+            <h2 id="labor-roles-heading">Funções de mão de obra</h2>
+            <p>Gerencie as funções e os custos por funcionário usados nas composições.</p>
           </div>
-          {!roles.isLoading && activeRoles.length === 0 ? (
-            <p className="message warning" role="status">
-              Cadastre ou ative uma função de mão de obra antes de configurar funcionários.
-            </p>
-          ) : null}
-          <form
-            className="planning-filters"
-            aria-label="Filtros de custos por funcionário"
-            onSubmit={(event) => {
-              event.preventDefault();
-              profiles.applyFilters({
-                search: profileDraft.search.trim() || undefined,
-                configured:
-                  profileDraft.configured === '' ? undefined : profileDraft.configured === 'true',
-              });
-            }}
-          >
-            <label>
-              Nome ou número
-              <input
-                type="search"
-                value={profileDraft.search}
-                onChange={(event) =>
-                  setProfileDraft({ ...profileDraft, search: event.target.value })
-                }
-              />
-            </label>
-            <label>
-              Status
-              <select
-                value={profileDraft.configured}
-                onChange={(event) =>
-                  setProfileDraft({ ...profileDraft, configured: event.target.value })
-                }
-              >
-                <option value="">Todos</option>
-                <option value="true">Configurados</option>
-                <option value="false">Não configurados</option>
-              </select>
-            </label>
-            <button className="primary-button">Buscar</button>
-            {(profileHasFilters || profileDraft.search || profileDraft.configured) && (
-              <button
-                type="button"
-                className="text-button"
-                onClick={() => {
-                  setProfileDraft({ search: '', configured: '' });
-                  profiles.applyFilters({});
-                }}
-              >
-                Limpar filtros
-              </button>
-            )}
-          </form>
-          {profiles.error ? (
-            <ContentState
-              variant="error"
-              title={profiles.error}
-              action={
-                <button className="text-button" onClick={profiles.refresh}>
-                  Tentar novamente
-                </button>
-              }
-            />
-          ) : profiles.isLoading ? (
-            <ContentState variant="loading" title="Carregando funcionários..." />
-          ) : profiles.rows.length === 0 ? (
-            <ContentState
-              variant={profileHasFilters ? 'no-results' : 'empty'}
-              title={
-                profileHasFilters ? 'Nenhum funcionário encontrado' : 'Nenhum funcionário ativo'
-              }
-            />
-          ) : (
-            <DataTable
-              rows={profiles.rows}
-              columns={profileColumns}
-              getRowKey={(row) => row.employeeId}
-              ariaLabel="Custos por funcionário"
-            />
-          )}
-          {!profiles.isLoading && !profiles.error && profiles.rows.length > 0 ? (
-            <Pagination
-              currentPage={profiles.page}
-              totalPages={profiles.totalPages}
-              pageSize={profiles.pageSize}
-              pageSizeOptions={[10, 20, 50]}
-              onPageChange={profiles.goToPage}
-              onPageSizeChange={profiles.changePageSize}
-              ariaLabel="Paginação de custos por funcionário"
-            />
-          ) : null}
-        </Panel>
-      ) : (
-        <Panel
-          id="labor-roles-panel"
-          role="tabpanel"
-          aria-labelledby="labor-roles-tab"
-          labelledBy="labor-roles-heading"
+          <button type="button" className="primary-button" onClick={() => openRole()}>
+            Nova função
+          </button>
+        </div>
+
+        <form
+          className="planning-filters"
+          aria-label="Filtros de funções"
+          onSubmit={(event) => {
+            event.preventDefault();
+            resource.applyFilters({
+              search: draft.search.trim() || undefined,
+              active: draft.active === '' ? undefined : draft.active === 'true',
+            });
+          }}
         >
-          <div className="planning-list-heading">
-            <div>
-              <h2 id="labor-roles-heading">Funções de mão de obra</h2>
-              <p>Gerencie as funções usadas nas composições.</p>
-            </div>
-            <button className="primary-button" onClick={() => editRole()}>
-              Nova função
+          <label>
+            Código ou função
+            <input
+              type="search"
+              value={draft.search}
+              onChange={(event) => setDraft({ ...draft, search: event.target.value })}
+            />
+          </label>
+          <label>
+            Status
+            <select
+              value={draft.active}
+              onChange={(event) => setDraft({ ...draft, active: event.target.value })}
+            >
+              <option value="true">Ativas</option>
+              <option value="false">Inativas</option>
+              <option value="">Todas</option>
+            </select>
+          </label>
+          <button className="primary-button">Buscar</button>
+          {(hasFilters || draft.search || draft.active !== 'true') && (
+            <button type="button" className="text-button" onClick={clear}>
+              Limpar filtros
             </button>
-          </div>
+          )}
+        </form>
+
+        {resource.error ? (
+          <ContentState
+            variant="error"
+            title={resource.error}
+            action={
+              <button className="text-button" onClick={resource.refresh}>
+                Tentar novamente
+              </button>
+            }
+          />
+        ) : resource.isLoading ? (
+          <ContentState variant="loading" title="Carregando funções..." />
+        ) : resource.rows.length === 0 ? (
+          <ContentState
+            variant={hasFilters ? 'no-results' : 'empty'}
+            title={hasFilters ? 'Nenhuma função encontrada' : 'Nenhuma função ativa'}
+            action={
+              hasFilters ? (
+                <button className="text-button" onClick={clear}>
+                  Limpar filtros
+                </button>
+              ) : (
+                <button className="primary-button" onClick={() => openRole()}>
+                  Cadastrar função
+                </button>
+              )
+            }
+          />
+        ) : (
+          <DataTable
+            rows={resource.rows}
+            columns={columns}
+            getRowKey={(row) => row.id}
+            ariaLabel="Funções de mão de obra"
+          />
+        )}
+
+        {!resource.isLoading && !resource.error && resource.rows.length > 0 ? (
+          <Pagination
+            currentPage={resource.page}
+            totalPages={resource.totalPages}
+            pageSize={resource.pageSize}
+            pageSizeOptions={[10, 20, 50]}
+            onPageChange={resource.goToPage}
+            onPageSizeChange={resource.changePageSize}
+            ariaLabel="Paginação de funções"
+          />
+        ) : null}
+      </Panel>
+
+      <RegistrationDialog
+        open={dialogOpen}
+        onOpenChange={(open) => {
+          if (!open) closeDialog();
+        }}
+        kind="labor"
+        eyebrow="Mão de obra"
+        title={editingRole ? `Editar ${editingRole.name}` : 'Nova função'}
+        isSubmitting={pending}
+      >
+        <div className="planning-tabs" role="tablist" aria-label="Cadastro da função">
+          <button
+            id="labor-dialog-role-tab"
+            type="button"
+            role="tab"
+            aria-selected={dialogTab === 'role'}
+            aria-controls="labor-dialog-role-panel"
+            tabIndex={dialogTab === 'role' ? 0 : -1}
+            onClick={() => switchDialogTab('role')}
+            onKeyDown={handleTabKeyDown}
+          >
+            Função de mão de obra
+          </button>
+          <button
+            id="labor-dialog-cost-tab"
+            type="button"
+            role="tab"
+            aria-selected={dialogTab === 'cost'}
+            aria-controls="labor-dialog-cost-panel"
+            tabIndex={dialogTab === 'cost' ? 0 : -1}
+            onClick={() => switchDialogTab('cost')}
+            onKeyDown={handleTabKeyDown}
+          >
+            Custo por funcionário
+          </button>
+        </div>
+
+        {dialogSuccess ? (
+          <p className="message success" role="status">
+            {dialogSuccess}
+          </p>
+        ) : null}
+        {formError ? (
+          <p className="message error" role="alert">
+            {formError}
+          </p>
+        ) : null}
+
+        {dialogTab === 'role' ? (
           <form
-            className="planning-filters"
-            aria-label="Filtros de funções"
-            onSubmit={(event) => {
-              event.preventDefault();
-              roles.applyFilters({
-                search: roleDraft.search.trim() || undefined,
-                active: roleDraft.active === '' ? undefined : roleDraft.active === 'true',
-              });
-            }}
+            id="labor-dialog-role-panel"
+            className="planning-form"
+            role="tabpanel"
+            aria-labelledby="labor-dialog-role-tab"
+            onSubmit={submitRole}
           >
             <label>
-              Código ou função
+              Código
               <input
-                type="search"
-                value={roleDraft.search}
-                onChange={(event) => setRoleDraft({ ...roleDraft, search: event.target.value })}
+                required
+                value={roleForm.code}
+                onChange={(event) => setRoleForm({ ...roleForm, code: event.target.value })}
               />
             </label>
             <label>
-              Status
+              Função
+              <input
+                required
+                value={roleForm.name}
+                onChange={(event) => setRoleForm({ ...roleForm, name: event.target.value })}
+              />
+            </label>
+            <label>
+              Descrição
+              <textarea
+                rows={3}
+                value={roleForm.description}
+                onChange={(event) => setRoleForm({ ...roleForm, description: event.target.value })}
+              />
+            </label>
+            <label>
+              Modo de cálculo
               <select
-                value={roleDraft.active}
-                onChange={(event) => setRoleDraft({ ...roleDraft, active: event.target.value })}
+                value={roleForm.costingMode}
+                onChange={(event) =>
+                  setRoleForm({
+                    ...roleForm,
+                    costingMode: event.target.value as LaborRole['costingMode'],
+                  })
+                }
               >
-                <option value="true">Ativas</option>
-                <option value="false">Inativas</option>
-                <option value="">Todas</option>
+                <option value="MANUAL">Custo/hora manual</option>
+                <option value="EMPLOYEE_AVERAGE">Média dos funcionários</option>
               </select>
             </label>
-            <button className="primary-button">Buscar</button>
-            {(roleHasFilters || roleDraft.search || roleDraft.active !== 'true') && (
-              <button
-                type="button"
-                className="text-button"
-                onClick={() => {
-                  setRoleDraft({ search: '', active: 'true' });
-                  roles.applyFilters({ active: true });
-                }}
-              >
-                Limpar filtros
-              </button>
-            )}
+            {roleForm.costingMode === 'MANUAL' ? (
+              <NumberField
+                label="Custo por hora"
+                value={roleForm.manualHourlyCost}
+                onChange={(value) => setRoleForm({ ...roleForm, manualHourlyCost: value })}
+              />
+            ) : null}
+            <button className="primary-button" disabled={pending}>
+              {pending ? 'Salvando...' : 'Salvar função'}
+            </button>
           </form>
-          {roles.error ? (
-            <ContentState
-              variant="error"
-              title={roles.error}
-              action={
-                <button className="text-button" onClick={roles.refresh}>
-                  Tentar novamente
-                </button>
-              }
-            />
-          ) : roles.isLoading ? (
-            <ContentState variant="loading" title="Carregando funções..." />
-          ) : roles.rows.length === 0 ? (
-            <ContentState
-              variant={roleHasFilters ? 'no-results' : 'empty'}
-              title={roleHasFilters ? 'Nenhuma função encontrada' : 'Nenhuma função ativa'}
-              action={
-                !roleHasFilters ? (
-                  <button className="primary-button" onClick={() => editRole()}>
-                    Cadastrar função
-                  </button>
-                ) : undefined
-              }
-            />
-          ) : (
-            <DataTable
-              rows={roles.rows}
-              columns={roleColumns}
-              getRowKey={(row) => row.id}
-              ariaLabel="Funções de mão de obra"
-            />
-          )}
-          {!roles.isLoading && !roles.error && roles.rows.length > 0 ? (
-            <Pagination
-              currentPage={roles.page}
-              totalPages={roles.totalPages}
-              pageSize={roles.pageSize}
-              pageSizeOptions={[10, 20, 50]}
-              onPageChange={roles.goToPage}
-              onPageSizeChange={roles.changePageSize}
-              ariaLabel="Paginação de funções"
-            />
-          ) : null}
-        </Panel>
-      )}
-      <RegistrationDialog
-        open={profileDialog}
-        onOpenChange={(open) => !pending && setProfileDialog(open)}
-        kind="labor"
-        eyebrow="Mão de obra"
-        title="Configurar custo do funcionário"
-        isSubmitting={pending}
-      >
-        <form className="planning-form" onSubmit={submitProfile}>
-          {formError ? (
-            <p className="message error" role="alert">
-              {formError}
+        ) : (
+          <form
+            id="labor-dialog-cost-panel"
+            className="planning-form"
+            role="tabpanel"
+            aria-labelledby="labor-dialog-cost-tab"
+            onSubmit={submitCost}
+          >
+            <p className="planning-dialog-help">
+              {editingRole
+                ? `Adicione o custo de um funcionário à função ${editingRole.name}.`
+                : 'Preencha os dados da função na outra aba. Ao adicionar o custo, a função será salva automaticamente.'}
             </p>
-          ) : null}
-          <label>
-            Função
-            <select
-              required
-              value={profileForm.laborRoleId}
-              onChange={(event) =>
-                setProfileForm({ ...profileForm, laborRoleId: event.target.value })
-              }
-            >
-              <option value="">Selecione</option>
-              {activeRoles.map((role) => (
-                <option key={role.id} value={role.id}>
-                  {role.code} · {role.name}
-                </option>
-              ))}
-            </select>
-          </label>
-          <NumberField
-            label="Horas produtivas/mês"
-            value={profileForm.productiveHoursMonth}
-            onChange={(value) => setProfileForm({ ...profileForm, productiveHoursMonth: value })}
-            min="0.01"
-          />
-          <NumberField
-            label="Dias trabalhados/mês"
-            value={profileForm.workDaysMonth}
-            onChange={(value) => setProfileForm({ ...profileForm, workDaysMonth: value })}
-            required={false}
-          />
-          <NumberField
-            label="Encargos (%)"
-            value={profileForm.employerChargesPercent}
-            onChange={(value) => setProfileForm({ ...profileForm, employerChargesPercent: value })}
-          />
-          <NumberField
-            label="Benefícios mensais"
-            value={profileForm.monthlyBenefits}
-            onChange={(value) => setProfileForm({ ...profileForm, monthlyBenefits: value })}
-          />
-          <NumberField
-            label="Outros custos mensais"
-            value={profileForm.otherMonthlyCosts}
-            onChange={(value) => setProfileForm({ ...profileForm, otherMonthlyCosts: value })}
-          />
-          <button className="primary-button" disabled={pending || activeRoles.length === 0}>
-            {pending ? 'Salvando...' : 'Salvar configuração'}
-          </button>
-        </form>
-      </RegistrationDialog>
-      <RegistrationDialog
-        open={roleDialog}
-        onOpenChange={(open) => !pending && setRoleDialog(open)}
-        kind="labor"
-        eyebrow="Mão de obra"
-        title={editingRole ? 'Editar função' : 'Nova função'}
-        isSubmitting={pending}
-      >
-        <form className="planning-form" onSubmit={submitRole}>
-          {formError ? (
-            <p className="message error" role="alert">
-              {formError}
-            </p>
-          ) : null}
-          <label>
-            Código
-            <input
-              required
-              value={roleForm.code}
-              onChange={(event) => setRoleForm({ ...roleForm, code: event.target.value })}
-            />
-          </label>
-          <label>
-            Função
-            <input
-              required
-              value={roleForm.name}
-              onChange={(event) => setRoleForm({ ...roleForm, name: event.target.value })}
-            />
-          </label>
-          <label>
-            Descrição
-            <textarea
-              value={roleForm.description}
-              onChange={(event) => setRoleForm({ ...roleForm, description: event.target.value })}
-            />
-          </label>
-          <label>
-            Modo
-            <select
-              value={roleForm.costingMode}
-              onChange={(event) =>
-                setRoleForm({
-                  ...roleForm,
-                  costingMode: event.target.value as LaborRole['costingMode'],
-                })
-              }
-            >
-              <option value="MANUAL">Custo/hora manual</option>
-              <option value="EMPLOYEE_AVERAGE">Média dos funcionários</option>
-            </select>
-          </label>
-          {roleForm.costingMode === 'MANUAL' ? (
+            {employeeError ? (
+              <p className="message error" role="alert">
+                {employeeError}
+              </p>
+            ) : null}
+            <label>
+              Funcionário
+              <select
+                required
+                value={costForm.employeeId}
+                onChange={(event) => setCostForm({ ...costForm, employeeId: event.target.value })}
+              >
+                <option value="">Selecione</option>
+                {employees.map((employee) => (
+                  <option key={employee.id} value={employee.id}>
+                    {employee.employeeNumber} · {employee.fullName}
+                  </option>
+                ))}
+              </select>
+            </label>
             <NumberField
-              label="Custo por hora"
-              value={roleForm.manualHourlyCost}
-              onChange={(value) => setRoleForm({ ...roleForm, manualHourlyCost: value })}
+              label="Horas produtivas/mês"
+              value={costForm.productiveHoursMonth}
+              min="0.01"
+              onChange={(value) => setCostForm({ ...costForm, productiveHoursMonth: value })}
             />
-          ) : null}
-          <button className="primary-button" disabled={pending}>
-            {pending ? 'Salvando...' : 'Salvar função'}
-          </button>
-        </form>
+            <NumberField
+              label="Dias trabalhados/mês"
+              value={costForm.workDaysMonth}
+              required={false}
+              onChange={(value) => setCostForm({ ...costForm, workDaysMonth: value })}
+            />
+            <NumberField
+              label="Encargos (%)"
+              value={costForm.employerChargesPercent}
+              onChange={(value) => setCostForm({ ...costForm, employerChargesPercent: value })}
+            />
+            <NumberField
+              label="Benefícios mensais"
+              value={costForm.monthlyBenefits}
+              onChange={(value) => setCostForm({ ...costForm, monthlyBenefits: value })}
+            />
+            <NumberField
+              label="Outros custos mensais"
+              value={costForm.otherMonthlyCosts}
+              onChange={(value) => setCostForm({ ...costForm, otherMonthlyCosts: value })}
+            />
+            <button
+              className="primary-button"
+              disabled={pending || Boolean(employeeError) || employees.length === 0}
+            >
+              {pending ? 'Adicionando...' : 'Adicionar custo'}
+            </button>
+          </form>
+        )}
       </RegistrationDialog>
+
       {statusTarget ? (
         <ConfirmDialog
           open
-          title={`${statusTarget.active ? 'Desativar' : 'Ativar'} função?`}
+          title={`${statusTarget.active ? 'Remover' : 'Ativar'} função?`}
           description={`${statusTarget.name} ficará ${statusTarget.active ? 'indisponível' : 'disponível'} para as composições.`}
-          onOpenChange={(open) => !open && !pending && setStatusTarget(null)}
+          onOpenChange={(open) => {
+            if (!open && !pending) setStatusTarget(null);
+          }}
           onConfirm={toggleRole}
-          confirmLabel={statusTarget.active ? 'Desativar função' : 'Ativar função'}
+          confirmLabel={statusTarget.active ? 'Remover função' : 'Ativar função'}
           confirmingLabel="Salvando..."
           isConfirming={pending}
           error={formError}
@@ -724,19 +652,15 @@ export function LaborPage() {
   );
 }
 
-function NumberField({
-  label,
-  value,
-  onChange,
-  min = '0',
-  required = true,
-}: {
+interface NumberFieldProps {
   label: string;
   value: string;
   onChange: (value: string) => void;
   min?: string;
   required?: boolean;
-}) {
+}
+
+function NumberField({ label, value, onChange, min = '0', required = true }: NumberFieldProps) {
   return (
     <label>
       {label}
@@ -751,7 +675,6 @@ function NumberField({
     </label>
   );
 }
-const paymentLabels = { MONTHLY: 'Mensal', WEEKLY: 'Semanal', DAILY: 'Diário', HOURLY: 'Hora' };
 
 const money = (value: number) =>
   new Intl.NumberFormat('pt-PT', { style: 'currency', currency: 'EUR' }).format(value);

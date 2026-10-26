@@ -54,4 +54,38 @@ describe('employee API contract', () => {
       page: { totalElements: 1 },
     });
   });
+
+  it('accepts an automatically created employee with an incomplete profile', async () => {
+    fetchMock.mockResolvedValue(
+      new Response(
+        JSON.stringify({
+          content: [
+            {
+              id: 'employee-2',
+              fullName: 'João Costa',
+              email: 'joao@example.com',
+              phoneNumber: null,
+              documentNumber: null,
+              birthDate: null,
+              address: null,
+              companyId: 'company-1',
+              employeeNumber: null,
+              position: null,
+              department: null,
+              admissionDate: null,
+              paymentMethod: null,
+              paymentAmount: null,
+              terminationDate: null,
+              status: null,
+            },
+          ],
+          page: { size: 10, number: 0, totalElements: 1, totalPages: 1 },
+        }),
+      ),
+    );
+
+    await expect(getEmployees(0, 10)).resolves.toMatchObject({
+      content: [{ id: 'employee-2', address: null, position: null }],
+    });
+  });
 });

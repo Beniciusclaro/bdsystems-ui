@@ -1,15 +1,17 @@
 import { render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { beforeEach, expect, it, vi } from 'vitest';
-import { LaborPage } from './LaborPage';
+import { getEmployees } from '../../employees/services/employeeService';
 import * as service from '../services/planningService';
+import { LaborPage } from './LaborPage';
 
 vi.mock('../services/planningService', () => ({
-  getLaborProfiles: vi.fn(),
   getLaborRolesPage: vi.fn(),
   saveLaborProfile: vi.fn(),
   saveLaborRole: vi.fn(),
 }));
+
+vi.mock('../../employees/services/employeeService', () => ({ getEmployees: vi.fn() }));
 
 const page = <T,>(content: T[]) => ({
   content,
@@ -28,54 +30,61 @@ const role = {
   active: true,
 };
 
-const profile = {
-  employeeId: 'employee-1',
-  employeeNumber: 'F-001',
-  employeeName: 'Ana Silva',
-  position: 'Pedreira',
-  paymentMethod: 'MONTHLY' as const,
-  paymentAmount: 1800,
-  configured: false,
-  laborRoleId: null,
-  laborRoleName: null,
-  effectiveHourlyCost: null,
-};
-
 beforeEach(() => {
   vi.resetAllMocks();
-  vi.mocked(service.getLaborProfiles).mockResolvedValue(page([profile]));
   vi.mocked(service.getLaborRolesPage).mockResolvedValue(page([role]));
   vi.mocked(service.saveLaborProfile).mockResolvedValue(undefined);
   vi.mocked(service.saveLaborRole).mockResolvedValue(role);
+  vi.mocked(getEmployees).mockResolvedValue(
+    page([
+      {
+        id: 'employee-1',
+        fullName: 'Ana Silva',
+        email: 'ana@example.com',
+        phoneNumber: null,
+        documentNumber: null,
+        birthDate: null,
+        address: { street: '', city: '', state: '', zipCode: '' },
+        companyId: 'company-1',
+        employeeNumber: 'F-001',
+        position: 'Pedreira',
+        department: 'Obras',
+        admissionDate: null,
+        paymentMethod: 'MONTHLY',
+        paymentAmount: 1800,
+        terminationDate: null,
+        status: 'ACTIVE',
+      },
+    ]),
+  );
 });
 
-it('switches accessible tabs with keyboard and opens role registration', async () => {
+it('shows only the labor role list and keeps cost tabs inside the dialog', async () => {
   const user = userEvent.setup();
   render(<LaborPage />);
 
-  const profilesTab = screen.getByRole('tab', { name: 'Custos por funcionário' });
-  expect(profilesTab).toHaveAttribute('aria-selected', 'true');
+  expect(await screen.findByRole('table', { name: 'Funções de mão de obra' })).toBeInTheDocument();
+  expect(screen.queryByRole('tab')).not.toBeInTheDocument();
 
-  await user.type(profilesTab, '{ArrowRight}');
-  expect(screen.getByRole('tab', { name: 'Funções de mão de obra' })).toHaveAttribute(
+  await user.click(screen.getByRole('button', { name: 'Nova função' }));
+  const dialog = screen.getByRole('dialog');
+
+  expect(within(dialog).getByRole('tab', { name: 'Função de mão de obra' })).toHaveAttribute(
     'aria-selected',
     'true',
   );
-
-  await user.click(await screen.findByRole('button', { name: 'Nova função' }));
-  expect(
-    within(screen.getByRole('dialog')).getByRole('heading', { name: 'Nova função' }),
-  ).toBeInTheDocument();
+  expect(within(dialog).getByRole('tab', { name: 'Custo por funcionário' })).toBeEnabled();
 });
 
-it('configures an employee from the paginated profile table', async () => {
+it('adds an employee cost from the edit-role dialog', async () => {
   const user = userEvent.setup();
   render(<LaborPage />);
 
-  await user.click(await screen.findByRole('button', { name: 'Configurar' }));
+  await user.click(await screen.findByRole('button', { name: 'Editar Pedreiro' }));
   const dialog = screen.getByRole('dialog');
-  await user.selectOptions(within(dialog).getByLabelText('Função'), 'role-1');
-  await user.click(within(dialog).getByRole('button', { name: 'Salvar configuração' }));
+  await user.click(within(dialog).getByRole('tab', { name: 'Custo por funcionário' }));
+  await user.selectOptions(within(dialog).getByLabelText('Funcionário'), 'employee-1');
+  await user.click(within(dialog).getByRole('button', { name: 'Adicionar custo' }));
 
   expect(service.saveLaborProfile).toHaveBeenCalledWith(
     'employee-1',
@@ -83,20 +92,20 @@ it('configures an employee from the paginated profile table', async () => {
   );
 });
 
-it('applies filters only after Buscar and clears them to defaults', async () => {
+it('applies role filters only after Buscar and clears to active roles', async () => {
   const user = userEvent.setup();
   render(<LaborPage />);
 
-  await screen.findByText('Ana Silva');
-  await user.type(screen.getByLabelText('Nome ou número'), 'Ana');
-  expect(service.getLaborProfiles).toHaveBeenCalledTimes(1);
+  await screen.findByText('Pedreiro');
+  await user.type(screen.getByLabelText('Código ou função'), 'PED');
+  expect(service.getLaborRolesPage).toHaveBeenCalledTimes(1);
 
   await user.click(screen.getByRole('button', { name: 'Buscar' }));
-  expect(service.getLaborProfiles).toHaveBeenLastCalledWith(0, 10, {
-    search: 'Ana',
-    configured: undefined,
+  expect(service.getLaborRolesPage).toHaveBeenLastCalledWith(0, 10, {
+    search: 'PED',
+    active: true,
   });
 
   await user.click(screen.getByRole('button', { name: 'Limpar filtros' }));
-  expect(service.getLaborProfiles).toHaveBeenLastCalledWith(0, 10, {});
+  expect(service.getLaborRolesPage).toHaveBeenLastCalledWith(0, 10, { active: true });
 });

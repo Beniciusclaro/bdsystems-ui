@@ -22,8 +22,18 @@ function isEmployeePaymentMethod(value: unknown): value is EmployeePaymentMethod
   return value === 'MONTHLY' || value === 'WEEKLY' || value === 'DAILY' || value === 'HOURLY';
 }
 
+function isEmployeeAddress(value: unknown): boolean {
+  return (
+    isRecord(value) &&
+    typeof value.street === 'string' &&
+    typeof value.city === 'string' &&
+    typeof value.state === 'string' &&
+    typeof value.zipCode === 'string'
+  );
+}
+
 function isEmployee(value: unknown): value is EmployeeResponse {
-  if (!isRecord(value) || !isRecord(value.address)) {
+  if (!isRecord(value)) {
     return false;
   }
 
@@ -34,14 +44,11 @@ function isEmployee(value: unknown): value is EmployeeResponse {
     (typeof value.phoneNumber === 'string' || value.phoneNumber === null) &&
     (typeof value.documentNumber === 'string' || value.documentNumber === null) &&
     (typeof value.birthDate === 'string' || value.birthDate === null) &&
-    typeof value.address.street === 'string' &&
-    typeof value.address.city === 'string' &&
-    typeof value.address.state === 'string' &&
-    typeof value.address.zipCode === 'string' &&
+    (value.address === null || isEmployeeAddress(value.address)) &&
     typeof value.companyId === 'string' &&
-    typeof value.employeeNumber === 'string' &&
-    typeof value.position === 'string' &&
-    typeof value.department === 'string' &&
+    (typeof value.employeeNumber === 'string' || value.employeeNumber === null) &&
+    (typeof value.position === 'string' || value.position === null) &&
+    (typeof value.department === 'string' || value.department === null) &&
     (typeof value.admissionDate === 'string' || value.admissionDate === null) &&
     (!('paymentMethod' in value) ||
       value.paymentMethod === null ||

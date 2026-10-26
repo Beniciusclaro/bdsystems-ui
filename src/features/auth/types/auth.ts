@@ -1,5 +1,3 @@
-export type Role = 'ADMIN' | 'USER' | 'MANAGER' | string;
-
 export interface AddressRequest {
   street: string;
   city: string;
@@ -8,20 +6,15 @@ export interface AddressRequest {
 }
 
 export interface CompanyRequest {
-  name?: string;
-  id?: string;
-  address?: AddressRequest;
+  name: string;
+  address: AddressRequest;
 }
 
 export interface UserRequest {
   name: string;
   email: string;
   password: string;
-  companyName: string;
-  company: CompanyRequest & {
-    name: string;
-    address: AddressRequest;
-  };
+  company: CompanyRequest;
 }
 
 export interface LoginRequest {

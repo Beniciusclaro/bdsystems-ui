@@ -19,8 +19,14 @@ export const paymentMethodLabels = {
   HOURLY: 'Hora',
 } as const;
 
+export const missingEmployeeValue = 'Não informado';
+
+export function formatEmployeeValue(value: string | null | undefined): string {
+  return value?.trim() || missingEmployeeValue;
+}
+
 export function getStatusLabel(status: EmployeeStatus | null): string {
-  return status ? statusLabels[status] : 'Não informado';
+  return status ? statusLabels[status] : missingEmployeeValue;
 }
 export function getStatusTone(status: EmployeeStatus | null) {
   return status ? statusTones[status] : 'neutral';
@@ -29,7 +35,7 @@ export function isEmployeeStatus(value: string): value is EmployeeStatus {
   return Object.prototype.hasOwnProperty.call(statusLabels, value);
 }
 export function formatDate(value: string | null): string {
-  if (!value) return '—';
+  if (!value) return missingEmployeeValue;
   const [year, month, day] = value.split('-');
   return year && month && day ? `${day}/${month}/${year}` : value;
 }

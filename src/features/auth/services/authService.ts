@@ -9,12 +9,27 @@ const AUTH_ERROR_MESSAGES: Partial<Record<number, string>> = {
 };
 
 export async function registerUser(payload: UserRequest): Promise<UserResponse> {
+  const request: UserRequest = {
+    name: payload.name,
+    email: payload.email,
+    password: payload.password,
+    company: {
+      name: payload.company.name,
+      address: {
+        street: payload.company.address.street,
+        city: payload.company.address.city,
+        state: payload.company.address.state,
+        zipcode: payload.company.address.zipcode,
+      },
+    },
+  };
+
   const response = await publicApiFetch(`/api/auth/register`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
     },
-    body: JSON.stringify(payload),
+    body: JSON.stringify(request),
   });
 
   if (!response.ok) {

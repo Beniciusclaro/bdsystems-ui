@@ -14,6 +14,7 @@ import type { EmployeeFilters, EmployeeResponse, EmployeeStatus } from '../types
 import { EmployeeDetailsDialog } from '../components/EmployeeDetailsDialog';
 import {
   formatDate,
+  formatEmployeeValue,
   getStatusLabel,
   getStatusTone,
   isEmployeeStatus,
@@ -62,17 +63,19 @@ export function EmployeeListPage() {
 
   const positions = useMemo(
     () =>
-      [...new Set(employees.map((employee) => employee.position))].sort((a, b) =>
-        a.localeCompare(b, 'pt'),
-      ),
+      [
+        ...new Set(employees.flatMap((employee) => (employee.position ? [employee.position] : []))),
+      ].sort((a, b) => a.localeCompare(b, 'pt')),
     [employees],
   );
 
   const departments = useMemo(
     () =>
-      [...new Set(employees.map((employee) => employee.department))].sort((a, b) =>
-        a.localeCompare(b, 'pt'),
-      ),
+      [
+        ...new Set(
+          employees.flatMap((employee) => (employee.department ? [employee.department] : [])),
+        ),
+      ].sort((a, b) => a.localeCompare(b, 'pt')),
     [employees],
   );
 
@@ -112,7 +115,7 @@ export function EmployeeListPage() {
             {employee.fullName}
           </button>
           <span className="employee-meta">
-            {employee.employeeNumber} · {employee.email}
+            {formatEmployeeValue(employee.employeeNumber)} · {employee.email}
           </span>
         </>
       ),
@@ -121,13 +124,13 @@ export function EmployeeListPage() {
       key: 'position',
       header: 'Cargo',
       mobileLabel: 'Cargo',
-      renderCell: (employee) => employee.position,
+      renderCell: (employee) => formatEmployeeValue(employee.position),
     },
     {
       key: 'department',
       header: 'Departamento',
       mobileLabel: 'Departamento',
-      renderCell: (employee) => employee.department,
+      renderCell: (employee) => formatEmployeeValue(employee.department),
     },
     {
       key: 'admissionDate',
