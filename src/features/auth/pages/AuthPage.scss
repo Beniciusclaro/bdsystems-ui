@@ -155,6 +155,16 @@
   margin-top: 20px;
 }
 
+.password-reset-form {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.password-reset-form .form-grid {
+  grid-template-columns: 1fr;
+}
+
 @media (max-width: 980px) {
   .login-page,
   .register-page {

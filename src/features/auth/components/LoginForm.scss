@@ -5,3 +5,12 @@
   flex-direction: column;
   gap: 18px;
 }
+
+.forgot-password-link {
+  width: fit-content;
+  margin-top: -10px;
+  margin-left: auto;
+  color: var(--color-action);
+  font-size: 0.82rem;
+  font-weight: 700;
+}

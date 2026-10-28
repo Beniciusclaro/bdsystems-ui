@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react';
+import { Link } from 'react-router-dom';
 import type { LoginRequest } from '../types/auth';
 import './LoginForm.scss';
 
@@ -48,7 +49,7 @@ export function LoginForm({ isSubmitting, onSubmit }: LoginProps) {
           />
         </label>
         <label>
-          Password
+          Senha
           <input
             type="password"
             name="password"
@@ -58,6 +59,9 @@ export function LoginForm({ isSubmitting, onSubmit }: LoginProps) {
             required
           />
         </label>
+        <Link className="forgot-password-link" to="/forgot-password">
+          Esqueceu a senha?
+        </Link>
       </div>
       <button type="submit" className="primary-button" disabled={isSubmitting}>
         {isSubmitting ? 'Entrando...' : 'Entrar'}

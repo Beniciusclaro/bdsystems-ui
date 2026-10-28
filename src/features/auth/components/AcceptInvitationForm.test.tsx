@@ -11,17 +11,24 @@ describe('AcceptInvitationForm', () => {
 
     render(<AcceptInvitationForm token="invite-token" isSubmitting={false} onSubmit={onSubmit} />);
 
-    await user.type(screen.getByLabelText('Nova senha'), 'abc');
-    await user.type(screen.getByLabelText('Confirmar senha'), 'xyz');
+    await user.type(screen.getByLabelText('Nova senha'), 'abcdefgh');
+    await user.type(screen.getByLabelText('Confirmar senha'), 'abcdefghx');
     await user.click(screen.getByRole('button', { name: 'Definir senha' }));
 
     expect(screen.getByRole('alert')).toHaveTextContent('As senhas não coincidem.');
     expect(onSubmit).not.toHaveBeenCalled();
 
     await user.clear(screen.getByLabelText('Confirmar senha'));
-    await user.type(screen.getByLabelText('Confirmar senha'), 'abc');
+    await user.type(screen.getByLabelText('Confirmar senha'), 'abcdefgh');
     await user.click(screen.getByRole('button', { name: 'Definir senha' }));
 
-    expect(onSubmit).toHaveBeenCalledWith({ token: 'invite-token', password: 'abc' });
+    expect(onSubmit).toHaveBeenCalledWith({ token: 'invite-token', password: 'abcdefgh' });
+  });
+
+  it('requires at least eight characters', () => {
+    render(<AcceptInvitationForm token="invite-token" isSubmitting={false} onSubmit={vi.fn()} />);
+
+    expect(screen.getByLabelText('Nova senha')).toHaveAttribute('minLength', '8');
+    expect(screen.getByLabelText('Confirmar senha')).toHaveAttribute('minLength', '8');
   });
 });

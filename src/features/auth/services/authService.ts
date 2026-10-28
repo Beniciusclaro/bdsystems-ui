@@ -2,6 +2,8 @@ import { getApiErrorMessage } from '../../../shared/api/apiError';
 import { publicApiFetch } from '../../../shared/api/client';
 import type {
   AcceptInvitationRequest,
+  PasswordResetConfirmRequest,
+  PasswordResetRequest,
   UserRequest,
   UserResponse,
   LoginRequest,
@@ -95,6 +97,41 @@ export async function acceptInvitation(payload: AcceptInvitationRequest): Promis
     await getApiErrorMessage(response, 'Não foi possível aceitar o convite.', {
       400: 'Este convite é inválido ou já foi utilizado.',
       410: 'Este convite expirou. Solicite um novo convite ao administrador.',
+    }),
+  );
+}
+
+export async function requestPasswordReset(payload: PasswordResetRequest): Promise<void> {
+  const response = await publicApiFetch('/api/auth/password-reset/request', {
+    method: 'POST',
+    body: JSON.stringify(payload),
+  });
+
+  if (response.ok) {
+    return;
+  }
+
+  throw new Error(
+    await getApiErrorMessage(response, 'Não foi possível enviar as instruções de recuperação.', {
+      400: 'Informe um email válido.',
+    }),
+  );
+}
+
+export async function confirmPasswordReset(payload: PasswordResetConfirmRequest): Promise<void> {
+  const response = await publicApiFetch('/api/auth/password-reset/confirm', {
+    method: 'POST',
+    body: JSON.stringify(payload),
+  });
+
+  if (response.ok) {
+    return;
+  }
+
+  throw new Error(
+    await getApiErrorMessage(response, 'Não foi possível redefinir a senha.', {
+      400: 'Este link é inválido ou já foi utilizado.',
+      410: 'Este link expirou. Solicite uma nova recuperação de senha.',
     }),
   );
 }

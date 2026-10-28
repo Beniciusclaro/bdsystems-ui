@@ -11,6 +11,8 @@ import { LandingPage } from '../features/marketing/pages/LandingPage';
 import { LoginPage } from '../features/auth/pages/LoginPage';
 import { RegisterPage } from '../features/auth/pages/RegisterPage';
 import { AcceptInvitationPage } from '../features/auth/pages/AcceptInvitationPage';
+import { ForgotPasswordPage } from '../features/auth/pages/ForgotPasswordPage';
+import { ResetPasswordPage } from '../features/auth/pages/ResetPasswordPage';
 import { SupplierListPage } from '../features/suppliers/pages/SupplierListPage';
 import { SupplierRegistrationPage } from '../features/suppliers/pages/SupplierRegistrationPage';
 import { ToolListPage } from '../features/tools/pages/ToolListPage';
@@ -37,6 +39,8 @@ function App() {
       <Route path="/login" element={<LoginPage />} />
       <Route path="/register" element={<RegisterPage />} />
       <Route path="/accept-invitation" element={<AcceptInvitationPage />} />
+      <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+      <Route path="/reset-password" element={<ResetPasswordPage />} />
       <Route element={<ProtectedLayout />}>
         <Route
           path="/dashboard"

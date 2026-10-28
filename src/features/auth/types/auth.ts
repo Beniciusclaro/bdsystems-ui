@@ -34,3 +34,12 @@ export interface AcceptInvitationRequest {
   token: string;
   password: string;
 }
+
+export interface PasswordResetRequest {
+  email: string;
+}
+
+export interface PasswordResetConfirmRequest {
+  token: string;
+  password: string;
+}

@@ -1,6 +1,11 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { UserRequest } from '../types/auth';
-import { acceptInvitation, registerUser } from './authService';
+import {
+  acceptInvitation,
+  confirmPasswordReset,
+  registerUser,
+  requestPasswordReset,
+} from './authService';
 
 vi.mock('../../../shared/api/client', () => ({ publicApiFetch: vi.fn() }));
 
@@ -71,5 +76,40 @@ describe('invitation API contract', () => {
       method: 'POST',
       body: JSON.stringify({ token: 'one-time-token', password: 'segredo123' }),
     });
+  });
+});
+
+describe('password reset API contract', () => {
+  it('requests a reset without authentication and accepts the neutral 204 response', async () => {
+    fetchMock.mockResolvedValue(new Response(null, { status: 204 }));
+
+    await expect(requestPasswordReset({ email: 'ana@example.com' })).resolves.toBeUndefined();
+    expect(fetchMock).toHaveBeenCalledWith('/api/auth/password-reset/request', {
+      method: 'POST',
+      body: JSON.stringify({ email: 'ana@example.com' }),
+    });
+  });
+
+  it('confirms a reset with exactly the token and password', async () => {
+    fetchMock.mockResolvedValue(new Response(null, { status: 204 }));
+
+    await expect(
+      confirmPasswordReset({ token: 'reset-token', password: 'novaSenha123' }),
+    ).resolves.toBeUndefined();
+    expect(fetchMock).toHaveBeenCalledWith('/api/auth/password-reset/confirm', {
+      method: 'POST',
+      body: JSON.stringify({ token: 'reset-token', password: 'novaSenha123' }),
+    });
+  });
+
+  it.each([
+    [400, 'Este link é inválido ou já foi utilizado.'],
+    [410, 'Este link expirou. Solicite uma nova recuperação de senha.'],
+  ])('maps a %s confirmation response to an actionable message', async (status, message) => {
+    fetchMock.mockResolvedValue(new Response(null, { status }));
+
+    await expect(
+      confirmPasswordReset({ token: 'reset-token', password: 'novaSenha123' }),
+    ).rejects.toThrow(message);
   });
 });

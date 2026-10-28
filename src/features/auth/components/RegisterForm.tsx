@@ -24,7 +24,12 @@ export function RegisterForm({ isSubmitting, onSubmit }: RegisterFormProps) {
 
   const passwordsMatch = form.password === form.confirmPassword;
 
+  const passwordIsLongEnough = form.password.length >= 8;
+
   const passwordError =
+    form.password && !passwordIsLongEnough ? 'Use pelo menos 8 caracteres.' : null;
+
+  const confirmationError =
     form.confirmPassword && !passwordsMatch ? 'As senhas devem ser iguais.' : null;
 
   const payload = useMemo<UserRequest>(
@@ -53,7 +58,7 @@ export function RegisterForm({ isSubmitting, onSubmit }: RegisterFormProps) {
   const handleSubmit = async (event: React.SubmitEvent<HTMLFormElement>) => {
     event.preventDefault();
 
-    if (!passwordsMatch) {
+    if (!passwordIsLongEnough || !passwordsMatch) {
       return;
     }
 
@@ -96,9 +101,17 @@ export function RegisterForm({ isSubmitting, onSubmit }: RegisterFormProps) {
             autoComplete="new-password"
             value={form.password}
             onChange={handleChange}
-            placeholder="Mínimo 6 caracteres"
+            placeholder="Mínimo 8 caracteres"
+            minLength={8}
+            aria-invalid={Boolean(passwordError)}
+            aria-describedby={passwordError ? 'password-error' : undefined}
             required
           />
+          {passwordError ? (
+            <span id="password-error" className="password-error" role="alert">
+              {passwordError}
+            </span>
+          ) : null}
         </label>
 
         <label>
@@ -109,14 +122,15 @@ export function RegisterForm({ isSubmitting, onSubmit }: RegisterFormProps) {
             autoComplete="new-password"
             value={form.confirmPassword}
             onChange={handleChange}
-            placeholder="Mínimo 6 caracteres"
-            aria-invalid={Boolean(passwordError)}
-            aria-describedby={passwordError ? 'confirm-password-error' : undefined}
+            placeholder="Mínimo 8 caracteres"
+            minLength={8}
+            aria-invalid={Boolean(confirmationError)}
+            aria-describedby={confirmationError ? 'confirm-password-error' : undefined}
             required
           />
-          {passwordError ? (
+          {confirmationError ? (
             <span id="confirm-password-error" className="password-error" role="alert">
-              {passwordError}
+              {confirmationError}
             </span>
           ) : null}
         </label>

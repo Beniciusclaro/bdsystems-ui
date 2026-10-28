@@ -18,6 +18,11 @@ export function AcceptInvitationForm({ token, isSubmitting, onSubmit }: AcceptIn
     event.preventDefault();
     setValidationError(null);
 
+    if (password.length < 8) {
+      setValidationError('A senha deve ter pelo menos 8 caracteres.');
+      return;
+    }
+
     if (password !== confirmation) {
       setValidationError('As senhas não coincidem.');
       return;
@@ -43,6 +48,7 @@ export function AcceptInvitationForm({ token, isSubmitting, onSubmit }: AcceptIn
             autoComplete="new-password"
             value={password}
             onChange={(event) => setPassword(event.target.value)}
+            minLength={8}
             required
           />
         </label>
@@ -55,6 +61,7 @@ export function AcceptInvitationForm({ token, isSubmitting, onSubmit }: AcceptIn
             autoComplete="new-password"
             value={confirmation}
             onChange={(event) => setConfirmation(event.target.value)}
+            minLength={8}
             required
           />
         </label>
