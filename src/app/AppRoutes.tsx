@@ -10,6 +10,7 @@ import { ClientRegistrationPage } from '../features/clients/pages/ClientRegistra
 import { LandingPage } from '../features/marketing/pages/LandingPage';
 import { LoginPage } from '../features/auth/pages/LoginPage';
 import { RegisterPage } from '../features/auth/pages/RegisterPage';
+import { AcceptInvitationPage } from '../features/auth/pages/AcceptInvitationPage';
 import { SupplierListPage } from '../features/suppliers/pages/SupplierListPage';
 import { SupplierRegistrationPage } from '../features/suppliers/pages/SupplierRegistrationPage';
 import { ToolListPage } from '../features/tools/pages/ToolListPage';
@@ -35,6 +36,7 @@ function App() {
       <Route path="/" element={<LandingPage />} />
       <Route path="/login" element={<LoginPage />} />
       <Route path="/register" element={<RegisterPage />} />
+      <Route path="/accept-invitation" element={<AcceptInvitationPage />} />
       <Route element={<ProtectedLayout />}>
         <Route
           path="/dashboard"

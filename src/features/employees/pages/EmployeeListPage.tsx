@@ -9,7 +9,11 @@ import type { DataTableColumn } from '../../../shared/components/ui/DataTable';
 import { IconActionButton, RowActions } from '../../../shared/components/ui/RowActions';
 import { Pagination } from '../../../shared/components/ui/Pagination';
 import { StatusBadge } from '../../../shared/components/ui/StatusBadge';
-import { deleteEmployee, getEmployees } from '../services/employeeService';
+import {
+  deleteEmployee,
+  getEmployees,
+  resendEmployeeInvitation,
+} from '../services/employeeService';
 import type { EmployeeFilters, EmployeeResponse, EmployeeStatus } from '../types/employee';
 import { EmployeeDetailsDialog } from '../components/EmployeeDetailsDialog';
 import {
@@ -17,6 +21,8 @@ import {
   formatEmployeeValue,
   getStatusLabel,
   getStatusTone,
+  getUserAccessLabel,
+  getUserAccessTone,
   isEmployeeStatus,
   statusLabels,
 } from '../presentation';
@@ -60,6 +66,13 @@ export function EmployeeListPage() {
   const [employeeToDelete, setEmployeeToDelete] = useState<EmployeeResponse | null>(null);
 
   const [deleteError, setDeleteError] = useState<string | null>(null);
+
+  const [invitationFeedback, setInvitationFeedback] = useState<{
+    tone: 'success' | 'error';
+    message: string;
+  } | null>(null);
+
+  const [resendingEmployeeId, setResendingEmployeeId] = useState<string | null>(null);
 
   const positions = useMemo(
     () =>
@@ -149,6 +162,16 @@ export function EmployeeListPage() {
       ),
     },
     {
+      key: 'access',
+      header: 'Acesso',
+      mobileLabel: 'Acesso',
+      renderCell: (employee) => (
+        <StatusBadge tone={getUserAccessTone(employee.userAccessStatus)}>
+          {getUserAccessLabel(employee.userAccessStatus, employee.userRole)}
+        </StatusBadge>
+      ),
+    },
+    {
       key: 'actions',
       header: 'Ações',
       mobileLabel: 'Ações',
@@ -156,6 +179,21 @@ export function EmployeeListPage() {
       cellClassName: 'employee-actions-cell',
       renderCell: (employee) => (
         <RowActions>
+          {employee.userAccessStatus === 'PENDING' || employee.userAccessStatus === 'EXPIRED' ? (
+            <IconActionButton
+              label={`Reenviar convite para ${employee.fullName}`}
+              variant="accent"
+              onClick={() => void handleResendInvitation(employee)}
+              disabled={resendingEmployeeId === employee.id}
+            >
+              <svg aria-hidden="true" viewBox="0 0 24 24" fill="none">
+                <path d="M21 12a9 9 0 0 1-15.2 6.5L3 16" />
+                <path d="M3 21v-5h5" />
+                <path d="M3 12A9 9 0 0 1 18.2 5.5L21 8" />
+                <path d="M21 3v5h-5" />
+              </svg>
+            </IconActionButton>
+          ) : null}
           <IconActionButton
             label={`Editar ${employee.fullName}`}
             variant="accent"
@@ -186,6 +224,30 @@ export function EmployeeListPage() {
       ),
     },
   ];
+
+  const handleResendInvitation = async (employee: EmployeeResponse) => {
+    setInvitationFeedback(null);
+    setResendingEmployeeId(employee.id);
+
+    try {
+      await resendEmployeeInvitation(employee.id);
+      setInvitationFeedback({
+        tone: 'success',
+        message: `Convite reenviado para ${employee.email}.`,
+      });
+      refreshEmployees();
+    } catch (requestError) {
+      setInvitationFeedback({
+        tone: 'error',
+        message:
+          requestError instanceof Error
+            ? requestError.message
+            : 'Não foi possível reenviar o convite.',
+      });
+    } finally {
+      setResendingEmployeeId(null);
+    }
+  };
 
   const handleConfirmDeleteEmployee = async () => {
     if (!employeeToDelete) {
@@ -230,6 +292,15 @@ export function EmployeeListPage() {
       />
 
       <Panel className="employee-list-card" labelledBy="employee-list-heading">
+        {invitationFeedback ? (
+          <div
+            className={`message ${invitationFeedback.tone} employee-invitation-feedback`}
+            role={invitationFeedback.tone === 'error' ? 'alert' : 'status'}
+          >
+            {invitationFeedback.message}
+          </div>
+        ) : null}
+
         <div className="employee-list-heading">
           <div>
             <h2 id="employee-list-heading">Lista de funcionários</h2>

@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { UserRequest } from '../types/auth';
-import { registerUser } from './authService';
+import { acceptInvitation, registerUser } from './authService';
 
 vi.mock('../../../shared/api/client', () => ({ publicApiFetch: vi.fn() }));
 
@@ -56,6 +56,20 @@ describe('registration API contract', () => {
           zipcode: '1000-001',
         },
       },
+    });
+  });
+});
+
+describe('invitation API contract', () => {
+  it('accepts an invitation without authentication', async () => {
+    fetchMock.mockResolvedValue(new Response(null, { status: 204 }));
+
+    await expect(
+      acceptInvitation({ token: 'one-time-token', password: 'segredo123' }),
+    ).resolves.toBeUndefined();
+    expect(fetchMock).toHaveBeenCalledWith('/api/auth/invitations/accept', {
+      method: 'POST',
+      body: JSON.stringify({ token: 'one-time-token', password: 'segredo123' }),
     });
   });
 });

@@ -1,6 +1,12 @@
 import { getApiErrorMessage } from '../../../shared/api/apiError';
 import { publicApiFetch } from '../../../shared/api/client';
-import type { UserRequest, UserResponse, LoginRequest, LoginResponse } from '../types/auth';
+import type {
+  AcceptInvitationRequest,
+  UserRequest,
+  UserResponse,
+  LoginRequest,
+  LoginResponse,
+} from '../types/auth';
 
 const AUTH_ERROR_MESSAGES: Partial<Record<number, string>> = {
   409: 'Já existe um usuário ou empresa com estes dados.',
@@ -73,4 +79,22 @@ export async function loginUser(payload: LoginRequest): Promise<LoginResponse> {
   }
 
   return (await response.json()) as LoginResponse;
+}
+
+export async function acceptInvitation(payload: AcceptInvitationRequest): Promise<void> {
+  const response = await publicApiFetch('/api/auth/invitations/accept', {
+    method: 'POST',
+    body: JSON.stringify(payload),
+  });
+
+  if (response.ok) {
+    return;
+  }
+
+  throw new Error(
+    await getApiErrorMessage(response, 'Não foi possível aceitar o convite.', {
+      400: 'Este convite é inválido ou já foi utilizado.',
+      410: 'Este convite expirou. Solicite um novo convite ao administrador.',
+    }),
+  );
 }

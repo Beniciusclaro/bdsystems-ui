@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { getEmployees } from './employeeService';
+import { getEmployees, resendEmployeeInvitation } from './employeeService';
 
 vi.mock('../../../shared/api/client', () => ({ apiFetch: vi.fn() }));
 
@@ -37,6 +37,8 @@ describe('employee API contract', () => {
               paymentAmount: 3500,
               terminationDate: null,
               status: 'ACTIVE',
+              userRole: 'MANAGER',
+              userAccessStatus: 'ACTIVE',
             },
           ],
           page: {
@@ -77,6 +79,8 @@ describe('employee API contract', () => {
               paymentAmount: null,
               terminationDate: null,
               status: null,
+              userRole: null,
+              userAccessStatus: 'NONE',
             },
           ],
           page: { size: 10, number: 0, totalElements: 1, totalPages: 1 },
@@ -86,6 +90,15 @@ describe('employee API contract', () => {
 
     await expect(getEmployees(0, 10)).resolves.toMatchObject({
       content: [{ id: 'employee-2', address: null, position: null }],
+    });
+  });
+
+  it('resends the invitation for an employee', async () => {
+    fetchMock.mockResolvedValue(new Response(null, { status: 204 }));
+
+    await expect(resendEmployeeInvitation('employee/1')).resolves.toBeUndefined();
+    expect(fetchMock).toHaveBeenCalledWith('/api/employees/employee%2F1/user-invitation/resend', {
+      method: 'POST',
     });
   });
 });

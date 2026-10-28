@@ -4,7 +4,9 @@ import type {
   EmployeeResponse,
   EmployeePaymentMethod,
   EmployeeStatus,
+  UserRole,
 } from '../types/employee';
+import { userRoleLabels } from '../presentation';
 
 interface EmployeeFormProps {
   isSubmitting: boolean;
@@ -12,6 +14,7 @@ interface EmployeeFormProps {
   submitLabel?: string;
   submittingLabel?: string;
   onSubmit: (payload: EmployeeRequest) => Promise<void> | void;
+  allowUserAccess?: boolean;
 }
 
 interface EmployeeFormState {
@@ -32,6 +35,8 @@ interface EmployeeFormState {
   paymentAmount: string;
   terminationDate: string;
   status: EmployeeStatus | '';
+  createUser: boolean;
+  userRole: UserRole;
 }
 
 type EmployeeFormTab = 'personal' | 'professional';
@@ -45,6 +50,7 @@ const professionalFieldNames = new Set([
   'paymentAmount',
   'terminationDate',
   'status',
+  'userRole',
 ]);
 
 function isEmployeePaymentMethod(value: string): value is EmployeePaymentMethod {
@@ -69,6 +75,8 @@ const initialForm: EmployeeFormState = {
   paymentAmount: '',
   terminationDate: '',
   status: 'ACTIVE',
+  createUser: false,
+  userRole: 'USER',
 };
 
 function toFormState(employee?: EmployeeResponse): EmployeeFormState {
@@ -97,6 +105,8 @@ function toFormState(employee?: EmployeeResponse): EmployeeFormState {
         : String(employee.paymentAmount),
     terminationDate: employee.terminationDate ?? '',
     status: employee.status ?? '',
+    createUser: false,
+    userRole: 'USER',
   };
 }
 
@@ -106,6 +116,7 @@ export function EmployeeForm({
   submitLabel = 'Cadastrar funcionário',
   submittingLabel = 'Cadastrando...',
   onSubmit,
+  allowUserAccess = false,
 }: EmployeeFormProps) {
   const [form, setForm] = useState(() => toFormState(initialValues));
 
@@ -117,7 +128,13 @@ export function EmployeeForm({
 
   const handleChange = (event: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = event.target;
-    setForm((current) => ({ ...current, [name]: value }));
+
+    const nextValue =
+      event.target instanceof HTMLInputElement && event.target.type === 'checkbox'
+        ? event.target.checked
+        : value;
+
+    setForm((current) => ({ ...current, [name]: nextValue }));
   };
 
   const handleSubmit = async (event: React.SubmitEvent<HTMLFormElement>) => {
@@ -163,6 +180,7 @@ export function EmployeeForm({
       paymentAmount: Number(form.paymentAmount),
       ...(form.terminationDate ? { terminationDate: form.terminationDate } : {}),
       status: form.status,
+      ...(allowUserAccess && form.createUser ? { userRole: form.userRole } : {}),
     };
 
     await onSubmit(payload);
@@ -449,6 +467,41 @@ export function EmployeeForm({
             </label>
           </div>
         </section>
+
+        {allowUserAccess ? (
+          <section
+            className="employee-form-section employee-user-access"
+            aria-labelledby="employee-access-heading"
+          >
+            <div>
+              <h2 id="employee-access-heading">Acesso ao sistema</h2>
+              <p>Envie um convite válido por 24 horas para o funcionário definir a senha.</p>
+            </div>
+
+            <label className="employee-access-toggle">
+              <input
+                type="checkbox"
+                name="createUser"
+                checked={form.createUser}
+                onChange={handleChange}
+              />
+              Criar usuário do sistema
+            </label>
+
+            {form.createUser ? (
+              <label className="employee-role-field">
+                Perfil de acesso
+                <select name="userRole" value={form.userRole} onChange={handleChange} required>
+                  {Object.entries(userRoleLabels).map(([value, label]) => (
+                    <option key={value} value={value}>
+                      {label}
+                    </option>
+                  ))}
+                </select>
+              </label>
+            ) : null}
+          </section>
+        ) : null}
       </div>
 
       <button type="submit" className="primary-button" disabled={isSubmitting}>

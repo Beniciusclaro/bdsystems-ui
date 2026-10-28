@@ -8,6 +8,8 @@ import type {
   EmployeeRequest,
   EmployeeResponse,
   EmployeeStatus,
+  UserAccessStatus,
+  UserRole,
 } from '../types/employee';
 
 function isRecord(value: unknown): value is Record<string, unknown> {
@@ -20,6 +22,14 @@ function isEmployeeStatus(value: unknown): value is EmployeeStatus {
 
 function isEmployeePaymentMethod(value: unknown): value is EmployeePaymentMethod {
   return value === 'MONTHLY' || value === 'WEEKLY' || value === 'DAILY' || value === 'HOURLY';
+}
+
+function isUserRole(value: unknown): value is UserRole {
+  return value === 'USER' || value === 'MANAGER' || value === 'ADMIN';
+}
+
+function isUserAccessStatus(value: unknown): value is UserAccessStatus {
+  return value === 'NONE' || value === 'PENDING' || value === 'EXPIRED' || value === 'ACTIVE';
 }
 
 function isEmployeeAddress(value: unknown): boolean {
@@ -57,7 +67,9 @@ function isEmployee(value: unknown): value is EmployeeResponse {
       value.paymentAmount === null ||
       typeof value.paymentAmount === 'number') &&
     (typeof value.terminationDate === 'string' || value.terminationDate === null) &&
-    (value.status === null || isEmployeeStatus(value.status))
+    (value.status === null || isEmployeeStatus(value.status)) &&
+    (value.userRole === null || isUserRole(value.userRole)) &&
+    isUserAccessStatus(value.userAccessStatus)
   );
 }
 
@@ -137,4 +149,17 @@ export async function deleteEmployee(employeeId: string): Promise<void> {
   }
 
   throw new Error(await getApiErrorMessage(response, 'Não foi possível excluir o funcionário.'));
+}
+
+export async function resendEmployeeInvitation(employeeId: string): Promise<void> {
+  const response = await apiFetch(
+    `/api/employees/${encodeURIComponent(employeeId)}/user-invitation/resend`,
+    { method: 'POST' },
+  );
+
+  if (response.ok) {
+    return;
+  }
+
+  throw new Error(await getApiErrorMessage(response, 'Não foi possível reenviar o convite.'));
 }

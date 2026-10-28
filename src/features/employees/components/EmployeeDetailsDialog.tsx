@@ -5,6 +5,7 @@ import {
   formatDate,
   formatEmployeeValue,
   getStatusLabel,
+  getUserAccessLabel,
   missingEmployeeValue,
   paymentMethodLabels,
 } from '../presentation';
@@ -19,6 +20,11 @@ export function EmployeeDetailsDialog({ employee, onClose }: EmployeeDetailsDial
     ? [
         { key: 'number', label: 'Matrícula', value: formatEmployeeValue(employee.employeeNumber) },
         { key: 'status', label: 'Status', value: getStatusLabel(employee.status) },
+        {
+          key: 'access',
+          label: 'Acesso ao sistema',
+          value: getUserAccessLabel(employee.userAccessStatus, employee.userRole),
+        },
         { key: 'email', label: 'Email', value: employee.email },
         { key: 'phone', label: 'Telefone', value: formatEmployeeValue(employee.phoneNumber) },
         {

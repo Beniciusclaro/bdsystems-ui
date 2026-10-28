@@ -54,6 +54,8 @@ beforeEach(() => {
         paymentAmount: 1800,
         terminationDate: null,
         status: 'ACTIVE',
+        userRole: null,
+        userAccessStatus: 'NONE',
       },
     ]),
   );

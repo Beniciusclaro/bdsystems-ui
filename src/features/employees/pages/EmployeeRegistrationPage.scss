@@ -77,6 +77,37 @@
   margin-bottom: 0;
 }
 
+.employee-user-access {
+  padding: 18px;
+  border: 1px solid var(--color-border);
+  border-radius: 12px;
+  background: var(--color-surface);
+}
+
+.employee-user-access p {
+  margin: 5px 0 0;
+  color: var(--color-muted);
+  font-size: 0.86rem;
+}
+
+.employee-access-toggle {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+}
+
+.employee-access-toggle input {
+  width: 18px;
+  height: 18px;
+  margin: 0;
+}
+
+.employee-role-field {
+  width: min(100%, 360px);
+}
+
 @media (max-width: 520px) {
   .employee-registration-dialog {
     width: calc(100% - 20px);

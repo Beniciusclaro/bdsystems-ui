@@ -29,3 +29,8 @@ export interface UserResponse {
 export interface LoginResponse {
   token?: string;
 }
+
+export interface AcceptInvitationRequest {
+  token: string;
+  password: string;
+}

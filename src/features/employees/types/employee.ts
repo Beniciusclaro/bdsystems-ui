@@ -9,6 +9,10 @@ export interface EmployeeAddressRequest {
 
 export type EmployeePaymentMethod = 'MONTHLY' | 'WEEKLY' | 'DAILY' | 'HOURLY';
 
+export type UserRole = 'USER' | 'MANAGER' | 'ADMIN';
+
+export type UserAccessStatus = 'NONE' | 'PENDING' | 'EXPIRED' | 'ACTIVE';
+
 export interface EmployeeRequest {
   fullName: string;
   email: string;
@@ -24,6 +28,7 @@ export interface EmployeeRequest {
   paymentAmount: number;
   terminationDate?: string;
   status: EmployeeStatus;
+  userRole?: UserRole;
 }
 
 export type EmployeeStatus = 'ACTIVE' | 'INACTIVE' | 'TERMINATED' | 'LEASED';
@@ -51,6 +56,8 @@ export interface EmployeeResponse {
   paymentAmount?: number | null;
   terminationDate: string | null;
   status: EmployeeStatus | null;
+  userRole: UserRole | null;
+  userAccessStatus: UserAccessStatus;
 }
 
 export type EmployeePage = PageResult<EmployeeResponse>;

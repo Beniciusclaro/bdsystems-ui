@@ -126,6 +126,35 @@
   font-weight: 700;
 }
 
+.invitation-success {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  text-align: center;
+}
+
+.invitation-success svg {
+  width: 56px;
+  height: 56px;
+  color: var(--color-success-ink);
+}
+
+.invitation-success p {
+  margin: 0;
+  color: var(--color-muted);
+}
+
+.invitation-success .primary-button,
+.invitation-login-link {
+  width: 100%;
+  text-align: center;
+}
+
+.accept-invitation-form .primary-button {
+  margin-top: 20px;
+}
+
 @media (max-width: 980px) {
   .login-page,
   .register-page {

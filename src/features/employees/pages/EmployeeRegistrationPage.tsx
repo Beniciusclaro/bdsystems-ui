@@ -108,6 +108,7 @@ export function EmployeeRegistrationPage() {
           <EmployeeForm
             key={employeeId ?? 'new'}
             initialValues={employee}
+            allowUserAccess={!isEditing}
             isSubmitting={isSubmitting}
             submitLabel={isEditing ? 'Atualizar funcionário' : 'Cadastrar funcionário'}
             submittingLabel={isEditing ? 'Atualizando...' : 'Cadastrando...'}
