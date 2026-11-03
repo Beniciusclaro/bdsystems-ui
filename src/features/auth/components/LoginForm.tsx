@@ -11,6 +11,7 @@ interface LoginProps {
 const initialState = {
   email: '',
   password: '',
+  rememberMe: false,
 };
 
 export function LoginForm({ isSubmitting, onSubmit }: LoginProps) {
@@ -20,13 +21,17 @@ export function LoginForm({ isSubmitting, onSubmit }: LoginProps) {
     () => ({
       email: form.email,
       password: form.password,
+      rememberMe: form.rememberMe,
     }),
     [form],
   );
 
   const handleChange = (event: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-    const { name, value } = event.target;
-    setForm((current) => ({ ...current, [name]: value }));
+    const { name, value, type } = event.target;
+
+    const nextValue = type === 'checkbox' ? (event.target as HTMLInputElement).checked : value;
+
+    setForm((current) => ({ ...current, [name]: nextValue }));
   };
 
   const handleSubmit = async (event: React.SubmitEvent<HTMLFormElement>) => {
@@ -59,9 +64,21 @@ export function LoginForm({ isSubmitting, onSubmit }: LoginProps) {
             required
           />
         </label>
-        <Link className="forgot-password-link" to="/forgot-password">
-          Esqueceu a senha?
-        </Link>
+        <div className="login-form__options">
+          <label className="remember-session">
+            <input
+              type="checkbox"
+              name="rememberMe"
+              checked={form.rememberMe}
+              onChange={handleChange}
+            />
+            <span>Manter conectado</span>
+          </label>
+
+          <Link className="forgot-password-link" to="/forgot-password">
+            Esqueceu a senha?
+          </Link>
+        </div>
       </div>
       <button type="submit" className="primary-button" disabled={isSubmitting}>
         {isSubmitting ? 'Entrando...' : 'Entrar'}

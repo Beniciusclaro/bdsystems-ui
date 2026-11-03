@@ -6,11 +6,35 @@
   gap: 18px;
 }
 
+.login-form__options {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
 .forgot-password-link {
   width: fit-content;
-  margin-top: -10px;
-  margin-left: auto;
   color: var(--color-action);
   font-size: 0.82rem;
   font-weight: 700;
+}
+
+.remember-session {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+
+  input {
+    width: 18px;
+    height: 18px;
+    margin: 0;
+    accent-color: var(--color-action);
+  }
+
+  span {
+    font-size: 0.9rem;
+  }
 }

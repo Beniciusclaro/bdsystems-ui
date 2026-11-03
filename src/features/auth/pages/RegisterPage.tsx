@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { BrandLogo } from '../../../shared/components/brand/BrandLogo';
 import { RegisterForm } from '../components/RegisterForm';
-import { saveAuthToken } from '../../../shared/auth/session';
+import { useAuth } from '../../../shared/auth/useAuth';
 import { registerUser } from '../services/authService';
 import type { UserRequest } from '../types/auth';
 import { CheckCircle2, ClipboardCheck, UsersRound } from 'lucide-react';
@@ -14,6 +14,8 @@ interface RegisterPageProps {
 
 export function RegisterPage({ onBack }: RegisterPageProps) {
   const navigate = useNavigate();
+
+  const { startSession } = useAuth();
 
   const [error, setError] = useState<string | null>(null);
 
@@ -38,13 +40,8 @@ export function RegisterPage({ onBack }: RegisterPageProps) {
     try {
       const response = await registerUser(payload);
 
-      if (response?.token) {
-        saveAuthToken(response.token);
-        navigate('/login');
-        return;
-      }
-
-      setSuccess('Cadastro realizado com sucesso.');
+      startSession(response);
+      navigate('/dashboard', { replace: true });
     } catch (requestError) {
       setError(
         requestError instanceof Error

@@ -13,6 +13,10 @@ vi.mock('../services/authService', () => ({
   confirmPasswordReset: vi.fn(),
 }));
 
+vi.mock('../../../shared/auth/useAuth', () => ({
+  useAuth: () => ({ startSession: vi.fn() }),
+}));
+
 const requestPasswordResetMock = vi.mocked(requestPasswordReset);
 
 const confirmPasswordResetMock = vi.mocked(confirmPasswordReset);

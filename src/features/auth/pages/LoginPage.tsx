@@ -1,8 +1,8 @@
 import { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { BrandLogo } from '../../../shared/components/brand/BrandLogo';
 import { LoginForm } from '../components/LoginForm';
-import { saveAuthToken } from '../../../shared/auth/session';
+import { useAuth } from '../../../shared/auth/useAuth';
 import { loginUser } from '../services/authService';
 import type { LoginRequest } from '../types/auth';
 import { BarChart3, CheckCircle2, HardHat } from 'lucide-react';
@@ -15,7 +15,13 @@ interface LoginPageProps {
 export function LoginPage({ onBack }: LoginPageProps) {
   const navigate = useNavigate();
 
-  const [error, setError] = useState<string | null>(null);
+  const location = useLocation();
+
+  const { startSession } = useAuth();
+
+  const [error, setError] = useState<string | null>(() =>
+    location.state?.sessionExpired ? 'A sua sessão expirou. Entre novamente para continuar.' : null,
+  );
 
   const [success, setSuccess] = useState<string | null>(null);
 
@@ -36,13 +42,15 @@ export function LoginPage({ onBack }: LoginPageProps) {
     setIsSubmitting(true);
     try {
       const response = await loginUser(payload);
-      if (response?.token) {
-        saveAuthToken(response.token);
-        navigate('/dashboard');
-        return;
-      }
+      startSession(response);
 
-      setSuccess('Login realizado com sucesso.');
+      const intendedLocation = location.state?.from;
+
+      const destination = intendedLocation
+        ? `${intendedLocation.pathname}${intendedLocation.search}${intendedLocation.hash}`
+        : '/dashboard';
+
+      navigate(destination, { replace: true });
     } catch (requestError) {
       setError(
         requestError instanceof Error ? requestError.message : 'Não foi possível concluir o login.',

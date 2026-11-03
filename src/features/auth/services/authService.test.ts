@@ -4,6 +4,7 @@ import {
   acceptInvitation,
   confirmPasswordReset,
   registerUser,
+  loginUser,
   requestPasswordReset,
 } from './authService';
 
@@ -61,6 +62,29 @@ describe('registration API contract', () => {
           zipcode: '1000-001',
         },
       },
+    });
+  });
+});
+
+describe('login API contract', () => {
+  it('sends the remember-me choice unchanged', async () => {
+    fetchMock.mockResolvedValue(
+      new Response(JSON.stringify({ token: 'token-1', expiresInSeconds: 900 }), {
+        status: 200,
+        headers: { 'Content-Type': 'application/json' },
+      }),
+    );
+
+    await loginUser({ email: 'ana@example.com', password: 'segredo123', rememberMe: false });
+
+    expect(fetchMock).toHaveBeenCalledWith('/api/auth/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        email: 'ana@example.com',
+        password: 'segredo123',
+        rememberMe: false,
+      }),
     });
   });
 });

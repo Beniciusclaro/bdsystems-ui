@@ -20,15 +20,16 @@ export interface UserRequest {
 export interface LoginRequest {
   email: string;
   password: string;
+  rememberMe: boolean;
 }
 
-export interface UserResponse {
-  token?: string;
+export interface AuthResponse {
+  token: string;
+  expiresInSeconds: number;
 }
 
-export interface LoginResponse {
-  token?: string;
-}
+export type UserResponse = AuthResponse;
+export type LoginResponse = AuthResponse;
 
 export interface AcceptInvitationRequest {
   token: string;
