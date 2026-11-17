@@ -5,6 +5,7 @@ import type { Client, ClientRequest } from '../../planning/types/planning';
 import { ClientForm } from '../components/ClientForm';
 import { createClient, updateClient } from '../services/clientService';
 import './ClientRegistrationPage.scss';
+import { useToast } from '../../../shared/feedback/useToast';
 
 interface ClientListOutletContext {
   refreshClients: () => void;
@@ -13,6 +14,8 @@ interface ClientListOutletContext {
 
 export function ClientRegistrationPage() {
   const navigate = useNavigate();
+
+  const { showSuccess } = useToast();
 
   const { clientId } = useParams();
 
@@ -24,24 +27,24 @@ export function ClientRegistrationPage() {
 
   const [error, setError] = useState('');
 
-  const [success, setSuccess] = useState('');
-
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const [formRevision, setFormRevision] = useState(0);
 
   const closeModal = () => navigate('/clients', { replace: true });
 
   const handleSubmit = async (payload: ClientRequest) => {
     setError('');
-    setSuccess('');
     setIsSubmitting(true);
 
     try {
       if (clientId) {
         await updateClient(clientId, payload);
-        setSuccess('Cliente atualizado com sucesso.');
+        showSuccess('Cliente atualizado com sucesso.');
       } else {
         await createClient(payload);
-        setSuccess('Cliente cadastrado com sucesso.');
+        showSuccess('Cliente cadastrado com sucesso.');
+        setFormRevision((value) => value + 1);
       }
 
       refreshClients();
@@ -87,15 +90,9 @@ export function ClientRegistrationPage() {
             {error}
           </div>
         ) : null}
-        {success ? (
-          <div className="message success" role="status">
-            {success}
-          </div>
-        ) : null}
-
         {!isEditing || client ? (
           <ClientForm
-            key={clientId ?? 'new'}
+            key={`${clientId ?? 'new'}-${formRevision}`}
             initialValues={client}
             isSubmitting={isSubmitting}
             submitLabel={isEditing ? 'Atualizar cliente' : 'Cadastrar cliente'}

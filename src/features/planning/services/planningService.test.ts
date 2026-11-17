@@ -3,7 +3,7 @@ import { apiFetch } from '../../../shared/api/client';
 import {
   getBudgetsPage,
   getCompositionsPage,
-  getLaborProfiles,
+  getLaborReferencePositions,
   getLaborRolesPage,
   getProjectsPage,
 } from './planningService';
@@ -44,11 +44,6 @@ describe('planning paginated API contract', () => {
       () => getLaborRolesPage(0, 10, { search: 'PED', active: true }),
       { page: '0', size: '10', sort: 'name,asc', search: 'PED', active: 'true' },
     ],
-    [
-      'labor-cost-profiles',
-      () => getLaborProfiles(0, 10, { search: 'Ana', configured: false }),
-      { page: '0', size: '10', sort: 'employeeName,asc', search: 'Ana', configured: 'false' },
-    ],
   ])('sends pagination and filters to /%s', async (pathName, request, expected) => {
     fetchMock.mockResolvedValue(emptyPage());
     await request();
@@ -59,5 +54,14 @@ describe('planning paginated API contract', () => {
 
     expect(url.pathname).toBe(`/api/${pathName}`);
     expect(Object.fromEntries(url.searchParams)).toEqual(expected);
+  });
+});
+
+it('loads labor reference positions from the dedicated endpoint', async () => {
+  fetchMock.mockResolvedValue(new Response(JSON.stringify(['Pedreiro', 'Servente'])));
+
+  await expect(getLaborReferencePositions()).resolves.toEqual(['Pedreiro', 'Servente']);
+  expect(fetchMock).toHaveBeenCalledWith('/api/labor-roles/reference-positions', {
+    method: 'GET',
   });
 });

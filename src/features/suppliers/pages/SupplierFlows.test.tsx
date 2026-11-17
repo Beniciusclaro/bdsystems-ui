@@ -5,6 +5,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { SupplierListPage } from './SupplierListPage';
 import { SupplierRegistrationPage } from './SupplierRegistrationPage';
 import { deleteSupplier, getSupplier, getSuppliers } from '../services/supplierService';
+import { ToastProvider } from '../../../shared/feedback/ToastProvider';
 
 vi.mock('../services/supplierService', async (importOriginal) => ({
   ...(await importOriginal<typeof import('../services/supplierService')>()),
@@ -40,18 +41,20 @@ beforeEach(() => {
 describe('supplier flows', () => {
   it('loads a supplier by ID when an edit URL is opened directly', async () => {
     render(
-      <MemoryRouter initialEntries={['/suppliers/supplier-1/edit']}>
-        <Routes>
-          <Route
-            path="/suppliers"
-            element={
-              <Outlet context={{ refreshSuppliers: vi.fn(), suppliers: [], isLoading: false }} />
-            }
-          >
-            <Route path=":supplierId/edit" element={<SupplierRegistrationPage />} />
-          </Route>
-        </Routes>
-      </MemoryRouter>,
+      <ToastProvider>
+        <MemoryRouter initialEntries={['/suppliers/supplier-1/edit']}>
+          <Routes>
+            <Route
+              path="/suppliers"
+              element={
+                <Outlet context={{ refreshSuppliers: vi.fn(), suppliers: [], isLoading: false }} />
+              }
+            >
+              <Route path=":supplierId/edit" element={<SupplierRegistrationPage />} />
+            </Route>
+          </Routes>
+        </MemoryRouter>
+      </ToastProvider>,
     );
     expect(await screen.findByRole('heading', { name: 'Editar fornecedor' })).toBeInTheDocument();
     expect(await screen.findByDisplayValue('Oficina Central')).toBeInTheDocument();

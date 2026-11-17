@@ -5,15 +5,17 @@ import { RegistrationDialog } from '../../../shared/components/ui/RegistrationDi
 import { getProject, saveProject } from '../services/planningService';
 import type { Project } from '../types/planning';
 import './Planning.scss';
+import { useToast } from '../../../shared/feedback/useToast';
 
 export function ProjectRegistrationPage() {
   const { projectId } = useParams();
 
   const navigate = useNavigate();
 
-  const { refreshProjects, notify } = useOutletContext<{
+  const { showSuccess } = useToast();
+
+  const { refreshProjects } = useOutletContext<{
     refreshProjects: () => void;
-    notify: (message: string) => void;
   }>();
 
   const [project, setProject] = useState<Project | null>(null);
@@ -65,8 +67,7 @@ export function ProjectRegistrationPage() {
         project.id,
       );
       refreshProjects();
-      notify('Obra atualizada com sucesso.');
-      navigate('/projects', { replace: true });
+      showSuccess('Obra atualizada com sucesso.');
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : 'Não foi possível atualizar a obra.');
     } finally {

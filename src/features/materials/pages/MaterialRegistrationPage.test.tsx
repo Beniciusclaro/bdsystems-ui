@@ -5,6 +5,7 @@ import { beforeEach, expect, it, vi } from 'vitest';
 import { MaterialRegistrationPage } from './MaterialRegistrationPage';
 import * as service from '../services/materialService';
 import { getAllSuppliers } from '../../suppliers/services/supplierService';
+import { ToastProvider } from '../../../shared/feedback/ToastProvider';
 vi.mock('../services/materialService', () => ({
   getCategories: vi.fn(),
   getUnits: vi.fn(),
@@ -27,21 +28,23 @@ const material = {
 };
 function mount() {
   render(
-    <MemoryRouter initialEntries={['/materials/material/edit']}>
-      <Routes>
-        <Route
-          path="/materials"
-          element={
-            <>
-              <p>Lista</p>
-              <Outlet context={{ refreshMaterials: vi.fn(), notify: vi.fn() }} />
-            </>
-          }
-        >
-          <Route path=":materialId/edit" element={<MaterialRegistrationPage />} />
-        </Route>
-      </Routes>
-    </MemoryRouter>,
+    <ToastProvider>
+      <MemoryRouter initialEntries={['/materials/material/edit']}>
+        <Routes>
+          <Route
+            path="/materials"
+            element={
+              <>
+                <p>Lista</p>
+                <Outlet context={{ refreshMaterials: vi.fn() }} />
+              </>
+            }
+          >
+            <Route path=":materialId/edit" element={<MaterialRegistrationPage />} />
+          </Route>
+        </Routes>
+      </MemoryRouter>
+    </ToastProvider>,
   );
 }
 beforeEach(() => {
@@ -76,7 +79,8 @@ it('loads an edit and deletes omitted associations only after saving', async () 
   expect(vi.mocked(service.saveMaterial).mock.invocationCallOrder[0]).toBeLessThan(
     vi.mocked(service.removeMaterialSupplier).mock.invocationCallOrder[0],
   );
-  expect(screen.queryByRole('heading', { name: 'Editar material' })).not.toBeInTheDocument();
+  expect(screen.getByRole('heading', { name: 'Editar material' })).toBeInTheDocument();
+  expect(screen.getByText('Material atualizado com sucesso.')).toBeInTheDocument();
 });
 it('preserves edits after a partial failure and allows retrying removals', async () => {
   vi.mocked(service.removeMaterialSupplier).mockRejectedValueOnce(new Error('Falha na remoção'));

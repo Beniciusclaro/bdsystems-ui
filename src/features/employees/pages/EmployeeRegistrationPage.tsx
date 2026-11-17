@@ -5,6 +5,7 @@ import { EmployeeForm } from '../components/EmployeeForm';
 import { createEmployee, updateEmployee } from '../services/employeeService';
 import type { EmployeeRequest, EmployeeResponse } from '../types/employee';
 import './EmployeeRegistrationPage.scss';
+import { useToast } from '../../../shared/feedback/useToast';
 
 interface EmployeeListOutletContext {
   refreshEmployees: () => void;
@@ -14,6 +15,8 @@ interface EmployeeListOutletContext {
 
 export function EmployeeRegistrationPage() {
   const navigate = useNavigate();
+
+  const { showSuccess } = useToast();
 
   const { employeeId } = useParams();
 
@@ -29,9 +32,9 @@ export function EmployeeRegistrationPage() {
 
   const [error, setError] = useState<string | null>(null);
 
-  const [success, setSuccess] = useState<string | null>(null);
-
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const [formRevision, setFormRevision] = useState(0);
 
   const closeModal = () => {
     navigate('/employees', { replace: true });
@@ -39,16 +42,16 @@ export function EmployeeRegistrationPage() {
 
   const handleSubmit = async (payload: EmployeeRequest) => {
     setError(null);
-    setSuccess(null);
     setIsSubmitting(true);
 
     try {
       if (employeeId) {
         await updateEmployee(employeeId, payload);
-        setSuccess('Funcionário atualizado com sucesso.');
+        showSuccess('Funcionário atualizado com sucesso.');
       } else {
         await createEmployee(payload);
-        setSuccess('Funcionário cadastrado com sucesso.');
+        showSuccess('Funcionário cadastrado com sucesso.');
+        setFormRevision((value) => value + 1);
       }
       refreshEmployees();
     } catch (requestError) {
@@ -98,15 +101,9 @@ export function EmployeeRegistrationPage() {
             {error}
           </div>
         ) : null}
-        {success ? (
-          <div className="message success" role="status">
-            {success}
-          </div>
-        ) : null}
-
         {!isEditing || employee ? (
           <EmployeeForm
-            key={employeeId ?? 'new'}
+            key={`${employeeId ?? 'new'}-${formRevision}`}
             initialValues={employee}
             allowUserAccess={!isEditing}
             isSubmitting={isSubmitting}

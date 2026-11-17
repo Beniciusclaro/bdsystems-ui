@@ -15,6 +15,7 @@ import {
   type ToolRentalResponse,
 } from '../../rentals/types/toolRental';
 import './ToolRegistrationPage.scss';
+import { useToast } from '../../../shared/feedback/useToast';
 
 interface ToolListOutletContext {
   refreshTools: () => void;
@@ -25,6 +26,8 @@ interface ToolListOutletContext {
 
 export function ToolRegistrationPage() {
   const navigate = useNavigate();
+
+  const { showSuccess } = useToast();
 
   const { toolId } = useParams();
 
@@ -47,9 +50,9 @@ export function ToolRegistrationPage() {
 
   const [error, setError] = useState<string | null>(null);
 
-  const [success, setSuccess] = useState<string | null>(null);
-
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const [formRevision, setFormRevision] = useState(0);
 
   const [addRentalAfterSave, setAddRentalAfterSave] = useState(false);
 
@@ -165,15 +168,24 @@ export function ToolRegistrationPage() {
     navigate('/tools', { replace: true });
   };
 
+  const resetCreationForm = () => {
+    setCreatedTool(null);
+    setAddRentalAfterSave(false);
+    setRentalDraft(EMPTY_TOOL_RENTAL_DRAFT);
+    setRentalRecords(null);
+    setRentalError(null);
+    setFormRevision((value) => value + 1);
+  };
+
   const handleSubmit = async (payload: ToolRequest) => {
     setError(null);
-    setSuccess(null);
     setIsSubmitting(true);
 
     try {
       if (toolId) {
         await updateTool(toolId, payload);
-        setSuccess('Ferramenta atualizada com sucesso.');
+        refreshTools();
+        showSuccess('Ferramenta atualizada com sucesso.');
       } else {
         const created = await createTool(payload);
         setCreatedTool(created);
@@ -190,7 +202,9 @@ export function ToolRegistrationPage() {
               rentalEndDate: rentalDraft.rentalEndDate || null,
             });
             setRentalRecords(null);
-            setSuccess('Ferramenta e registo de aluguer cadastrados com sucesso.');
+            refreshTools();
+            showSuccess('Ferramenta e registo de aluguer cadastrados com sucesso.');
+            resetCreationForm();
           } catch (rentalRequestError: unknown) {
             setError(
               `A ferramenta foi cadastrada, mas não foi possível criar o registo de aluguer. ${
@@ -201,11 +215,10 @@ export function ToolRegistrationPage() {
             );
           }
         } else {
-          setSuccess('Ferramenta cadastrada com sucesso.');
+          refreshTools();
+          showSuccess('Ferramenta cadastrada com sucesso.');
+          resetCreationForm();
         }
-      }
-      if (toolId || !addRentalAfterSave) {
-        refreshTools();
       }
     } catch (requestError: unknown) {
       setError(
@@ -247,15 +260,9 @@ export function ToolRegistrationPage() {
             {error}
           </div>
         ) : null}
-        {success ? (
-          <div className="message success" role="status">
-            {success}
-          </div>
-        ) : null}
-
         {(!isEditing && !createdTool) || (isEditing && tool) ? (
           <ToolForm
-            key={toolId ?? 'new'}
+            key={`${toolId ?? 'new'}-${formRevision}`}
             initialValues={tool ?? undefined}
             showRentalOption={!isEditing}
             addRental={addRentalAfterSave}

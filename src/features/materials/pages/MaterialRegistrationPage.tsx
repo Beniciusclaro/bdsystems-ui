@@ -22,6 +22,7 @@ import type {
   UnitOfMeasure,
 } from '../types/material';
 import './MaterialRegistrationPage.scss';
+import { useToast } from '../../../shared/feedback/useToast';
 
 interface Data {
   material?: Material;
@@ -37,9 +38,10 @@ export function MaterialRegistrationPage() {
 function MaterialRegistration({ materialId }: { materialId?: string }) {
   const navigate = useNavigate();
 
-  const { refreshMaterials, notify } = useOutletContext<{
+  const { showSuccess } = useToast();
+
+  const { refreshMaterials } = useOutletContext<{
     refreshMaterials: () => void;
-    notify: (message: string) => void;
   }>();
 
   const [data, setData] = useState<Data | null>(null);
@@ -117,8 +119,21 @@ function MaterialRegistration({ materialId }: { materialId?: string }) {
         }
       }
       refreshMaterials();
-      notify(materialId ? 'Material atualizado com sucesso.' : 'Material cadastrado com sucesso.');
-      navigate('/materials', { replace: true });
+      showSuccess(
+        materialId ? 'Material atualizado com sucesso.' : 'Material cadastrado com sucesso.',
+      );
+      if (!materialId) {
+        setData((current) =>
+          current
+            ? {
+                ...current,
+                material: undefined,
+                associations: [],
+              }
+            : current,
+        );
+        setRevision((value) => value + 1);
+      }
     } catch (cause) {
       if (saved) refreshMaterials();
       setError(
@@ -169,6 +184,7 @@ function MaterialRegistration({ materialId }: { materialId?: string }) {
               </p>
             )}
             <MaterialForm
+              key={revision}
               material={data.material}
               associations={data.associations}
               categories={data.categories}

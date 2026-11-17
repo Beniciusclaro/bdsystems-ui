@@ -6,6 +6,7 @@ import { ProjectListPage } from './ProjectListPage';
 import { ProjectRegistrationPage } from './ProjectRegistrationPage';
 import * as service from '../services/planningService';
 import type { Project } from '../types/planning';
+import { ToastProvider } from '../../../shared/feedback/ToastProvider';
 
 vi.mock('../services/planningService', () => ({
   getProjects: vi.fn(),
@@ -58,13 +59,15 @@ describe('project flows', () => {
   it('edits operational data while keeping code and client read-only', async () => {
     const user = userEvent.setup();
     render(
-      <MemoryRouter initialEntries={['/projects/project-1/edit']}>
-        <Routes>
-          <Route path="/projects" element={<ProjectListPage />}>
-            <Route path=":projectId/edit" element={<ProjectRegistrationPage />} />
-          </Route>
-        </Routes>
-      </MemoryRouter>,
+      <ToastProvider>
+        <MemoryRouter initialEntries={['/projects/project-1/edit']}>
+          <Routes>
+            <Route path="/projects" element={<ProjectListPage />}>
+              <Route path=":projectId/edit" element={<ProjectRegistrationPage />} />
+            </Route>
+          </Routes>
+        </MemoryRouter>
+      </ToastProvider>,
     );
     const dialog = await screen.findByRole('dialog');
     expect(within(dialog).getByLabelText('Código')).toHaveAttribute('readonly');

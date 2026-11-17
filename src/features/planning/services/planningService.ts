@@ -14,8 +14,6 @@ import type {
   LaborRole,
   LaborRoleFilters,
   LaborRoleRequest,
-  LaborCostProfile,
-  LaborCostProfileFilters,
   Project,
   ProjectFilters,
   ProjectRequest,
@@ -58,25 +56,9 @@ export const saveProject = (value: ProjectRequest, id?: string) =>
 export const getLaborRoles = () => all<LaborRole>('/labor-roles');
 export const getLaborRolesPage = (index: number, size: number, filters: LaborRoleFilters) =>
   page<LaborRole>('/labor-roles', index, size, { sort: 'name,asc', ...filters });
+export const getLaborReferencePositions = () => call<string[]>('/labor-roles/reference-positions');
 export const saveLaborRole = (value: LaborRoleRequest, id?: string) =>
   call<LaborRole>(id ? `/labor-roles/${id}` : '/labor-roles', id ? 'PUT' : 'POST', value);
-export interface LaborProfileRequest {
-  laborRoleId: string;
-  productiveHoursMonth: number;
-  workDaysMonth: number | null;
-  employerChargesPercent: number;
-  monthlyBenefits: number;
-  otherMonthlyCosts: number;
-}
-export const saveLaborProfile = (employeeId: string, value: LaborProfileRequest) =>
-  call(`/labor-roles/employees/${employeeId}/cost-profile`, 'PUT', value);
-export const getLaborProfiles = (index: number, size: number, filters: LaborCostProfileFilters) =>
-  page<LaborCostProfile>('/labor-cost-profiles', index, size, {
-    sort: 'employeeName,asc',
-    ...filters,
-  });
-export const getLaborProfile = (employeeId: string) =>
-  call<LaborCostProfile>(`/labor-roles/employees/${employeeId}/cost-profile`);
 export const getCompositions = () =>
   page<Composition>('/compositions', 0, 200, { active: true, sort: 'name,asc' }).then(
     (result) => result.content,

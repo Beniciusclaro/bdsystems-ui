@@ -1,7 +1,7 @@
 .ui-modal.ui-registration-dialog {
-  width: min(calc(100% - 32px), 860px);
-  max-width: 860px;
-  max-height: min(92vh, var(--registration-height, 900px));
+  width: min(calc(100% - 32px), var(--registration-width, 960px));
+  max-width: var(--registration-width, 960px);
+  max-height: calc(100dvh - 24px);
   padding: 0;
   overflow: hidden;
   background: var(--color-canvas);
@@ -13,9 +13,11 @@
 }
 
 .ui-registration-dialog__content {
-  max-height: min(92vh, var(--registration-height, 900px));
+  box-sizing: border-box;
+  max-height: calc(100dvh - 24px);
   padding: 24px;
   overflow-y: auto;
+  overscroll-behavior: contain;
 }
 
 .ui-registration-dialog__header {

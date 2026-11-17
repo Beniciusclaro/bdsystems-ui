@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 import type { PageResult } from '../types/pagination';
 
@@ -26,11 +26,14 @@ export function usePaginatedResource<T, F>(
 
   const [revision, setRevision] = useState(0);
 
+  const latestRequest = useRef(0);
+
   useEffect(() => {
-    let active = true;
+    const request = ++latestRequest.current;
+
     loadPage(page, pageSize, filters)
       .then((result) => {
-        if (!active) return;
+        if (request !== latestRequest.current) return;
         if (page > 0 && page >= result.page.totalPages) {
           setPage(Math.max(0, result.page.totalPages - 1));
           return;
@@ -40,17 +43,25 @@ export function usePaginatedResource<T, F>(
         setTotalPages(result.page.totalPages);
       })
       .catch((cause: unknown) => {
-        if (active) setError(cause instanceof Error ? cause.message : fallbackError);
+        if (request === latestRequest.current) {
+          setError(cause instanceof Error ? cause.message : fallbackError);
+        }
       })
       .finally(() => {
-        if (active) setIsLoading(false);
+        if (request === latestRequest.current) setIsLoading(false);
       });
+
     return () => {
-      active = false;
+      if (request === latestRequest.current) latestRequest.current += 1;
     };
   }, [loadPage, page, pageSize, filters, revision, fallbackError]);
 
+  const invalidateCurrentRequest = () => {
+    latestRequest.current += 1;
+  };
+
   const applyFilters = (nextFilters: F) => {
+    invalidateCurrentRequest();
     setIsLoading(true);
     setError(null);
     setPage(0);
@@ -58,12 +69,14 @@ export function usePaginatedResource<T, F>(
   };
 
   const goToPage = (nextPage: number) => {
+    invalidateCurrentRequest();
     setIsLoading(true);
     setError(null);
     setPage(nextPage);
   };
 
   const changePageSize = (nextSize: number) => {
+    invalidateCurrentRequest();
     setIsLoading(true);
     setError(null);
     setPage(0);
@@ -71,6 +84,7 @@ export function usePaginatedResource<T, F>(
   };
 
   const refresh = () => {
+    invalidateCurrentRequest();
     setIsLoading(true);
     setError(null);
     setRevision((current) => current + 1);

@@ -43,6 +43,7 @@ export interface LaborRole {
   name: string;
   description: string | null;
   costingMode: 'EMPLOYEE_AVERAGE' | 'MANUAL';
+  referencePosition: string | null;
   manualHourlyCost: number | null;
   currentHourlyCost: number | null;
   eligibleEmployees: number;
@@ -53,35 +54,13 @@ export interface LaborRoleRequest {
   name: string;
   description: string;
   costingMode: LaborRole['costingMode'];
+  referencePosition: string | null;
   manualHourlyCost: number | null;
   active: boolean;
 }
 export interface LaborRoleFilters {
   search?: string;
   active?: boolean;
-  sort?: string;
-}
-export interface LaborCostProfile {
-  employeeId: string;
-  employeeNumber: string;
-  employeeName: string;
-  position: string;
-  paymentMethod: 'MONTHLY' | 'WEEKLY' | 'DAILY' | 'HOURLY' | null;
-  paymentAmount: number | null;
-  configured: boolean;
-  laborRoleId?: string | null;
-  laborRoleCode?: string | null;
-  laborRoleName?: string | null;
-  productiveHoursMonth?: number | null;
-  workDaysMonth?: number | null;
-  employerChargesPercent?: number | null;
-  monthlyBenefits?: number | null;
-  otherMonthlyCosts?: number | null;
-  effectiveHourlyCost?: number | null;
-}
-export interface LaborCostProfileFilters {
-  search?: string;
-  configured?: boolean;
   sort?: string;
 }
 export type ComponentType = 'MATERIAL' | 'LABOR' | 'EQUIPMENT' | 'CUSTOM';

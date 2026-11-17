@@ -1,6 +1,6 @@
-import { useState } from 'react';
+import { useLayoutEffect, useRef, useState } from 'react';
 import { Trash2 } from 'lucide-react';
-import { Link, Outlet, useNavigate } from 'react-router-dom';
+import { Link, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { ConfirmDialog } from '../../../shared/components/ui/ConfirmDialog';
 import { ContentState } from '../../../shared/components/ui/ContentState';
 import { DataTable, type DataTableColumn } from '../../../shared/components/ui/DataTable';
@@ -10,21 +10,39 @@ import { Pagination } from '../../../shared/components/ui/Pagination';
 import { IconActionButton, RowActions } from '../../../shared/components/ui/RowActions';
 import { StatusBadge } from '../../../shared/components/ui/StatusBadge';
 import { usePaginatedResource } from '../../../shared/hooks/usePaginatedResource';
+import { BudgetDetailsDialog } from '../components/BudgetDetailsDialog';
 import { deleteBudget, getBudgetsPage } from '../services/planningService';
 import type { Budget, BudgetFilters } from '../types/planning';
 import { budgetStatusLabel, budgetStatusTone, money } from '../presentation';
 import './Planning.scss';
 
+const BUDGET_PAGE_SIZE_KEY = 'builder-ui:budgets-page-size';
+
+const BUDGET_PAGE_SIZE_OPTIONS = [10, 20, 50];
+
+function getInitialBudgetPageSize() {
+  const storedPageSize = Number(localStorage.getItem(BUDGET_PAGE_SIZE_KEY));
+
+  return BUDGET_PAGE_SIZE_OPTIONS.includes(storedPageSize) ? storedPageSize : 50;
+}
+
 export function BudgetPage() {
   const navigate = useNavigate();
+
+  const location = useLocation();
 
   const resource = usePaginatedResource<Budget, BudgetFilters>(
     getBudgetsPage,
     {},
     'Não foi possível carregar os orçamentos.',
+    getInitialBudgetPageSize(),
   );
 
+  const refreshBudgets = resource.refresh;
+
   const [draft, setDraft] = useState({ search: '', status: '' });
+
+  const [selectedBudget, setSelectedBudget] = useState<Budget | null>(null);
 
   const [deleting, setDeleting] = useState<Budget | null>(null);
 
@@ -34,11 +52,29 @@ export function BudgetPage() {
 
   const [success, setSuccess] = useState('');
 
+  const previousPathname = useRef(location.pathname);
+
   const hasFilters = Boolean(resource.filters.search || resource.filters.status);
+
+  useLayoutEffect(() => {
+    const returnedToList =
+      previousPathname.current !== '/budgets' && location.pathname === '/budgets';
+
+    previousPathname.current = location.pathname;
+
+    if (returnedToList) {
+      refreshBudgets();
+    }
+  }, [location.pathname, refreshBudgets]);
 
   const clear = () => {
     setDraft({ search: '', status: '' });
     resource.applyFilters({});
+  };
+
+  const changePageSize = (nextPageSize: number) => {
+    localStorage.setItem(BUDGET_PAGE_SIZE_KEY, String(nextPageSize));
+    resource.changePageSize(nextPageSize);
   };
 
   const remove = async () => {
@@ -107,15 +143,13 @@ export function BudgetPage() {
       mobileLabel: 'Ações',
       renderCell: (budget) => (
         <RowActions>
-          {budget.status === 'DRAFT' ? (
-            <IconActionButton
-              label={`Editar ${budget.number}`}
-              variant="accent"
-              onClick={() => navigate(`/budgets/${budget.id}/edit`)}
-            >
-              <span aria-hidden="true">✎</span>
-            </IconActionButton>
-          ) : null}
+          <IconActionButton
+            label={`Editar ${budget.number}`}
+            variant="accent"
+            onClick={() => navigate(`/budgets/${budget.id}/edit`)}
+          >
+            <span aria-hidden="true">✎</span>
+          </IconActionButton>
           {budget.status === 'DRAFT' ? (
             <IconActionButton
               label={`Excluir ${budget.number}`}
@@ -229,7 +263,7 @@ export function BudgetPage() {
             columns={columns}
             getRowKey={(budget) => budget.id}
             getRowLabel={(budget) => `Abrir detalhes do orçamento ${budget.number}`}
-            onRowActivate={(budget) => navigate(`/budgets/${budget.id}`)}
+            onRowActivate={setSelectedBudget}
             ariaLabel="Lista de orçamentos"
           />
         )}
@@ -238,9 +272,9 @@ export function BudgetPage() {
             currentPage={resource.page}
             totalPages={resource.totalPages}
             pageSize={resource.pageSize}
-            pageSizeOptions={[10, 20, 50]}
+            pageSizeOptions={BUDGET_PAGE_SIZE_OPTIONS}
             onPageChange={resource.goToPage}
-            onPageSizeChange={resource.changePageSize}
+            onPageSizeChange={changePageSize}
             ariaLabel="Paginação de orçamentos"
           />
         )}
@@ -248,7 +282,8 @@ export function BudgetPage() {
       <Link className="list-create-fab" to="/budgets/new">
         <span aria-hidden="true">+</span>Novo orçamento
       </Link>
-      <Outlet context={{ refreshBudgets: resource.refresh, notify: setSuccess }} />
+      <Outlet context={{ refreshBudgets, notify: setSuccess }} />
+      <BudgetDetailsDialog budget={selectedBudget} onClose={() => setSelectedBudget(null)} />
       {deleting ? (
         <ConfirmDialog
           open

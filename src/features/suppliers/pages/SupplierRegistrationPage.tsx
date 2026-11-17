@@ -5,6 +5,7 @@ import { SupplierForm } from '../components/SupplierForm';
 import { createSupplier, getSupplier, updateSupplier } from '../services/supplierService';
 import type { SupplierRequest, SupplierResponse } from '../types/supplier';
 import './SupplierRegistrationPage.scss';
+import { useToast } from '../../../shared/feedback/useToast';
 
 interface SupplierListOutletContext {
   refreshSuppliers: () => void;
@@ -13,6 +14,8 @@ interface SupplierListOutletContext {
 
 export function SupplierRegistrationPage() {
   const navigate = useNavigate();
+
+  const { showSuccess } = useToast();
 
   const { supplierId } = useParams();
 
@@ -32,9 +35,9 @@ export function SupplierRegistrationPage() {
 
   const [error, setError] = useState<string | null>(null);
 
-  const [success, setSuccess] = useState<string | null>(null);
-
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const [formRevision, setFormRevision] = useState(0);
 
   useEffect(() => {
     if (!supplierId || supplierInList) return;
@@ -62,16 +65,16 @@ export function SupplierRegistrationPage() {
 
   const handleSubmit = async (payload: SupplierRequest) => {
     setError(null);
-    setSuccess(null);
     setIsSubmitting(true);
 
     try {
       if (supplierId) {
         await updateSupplier(supplierId, payload);
-        setSuccess('Fornecedor atualizado com sucesso.');
+        showSuccess('Fornecedor atualizado com sucesso.');
       } else {
         await createSupplier(payload);
-        setSuccess('Fornecedor cadastrado com sucesso.');
+        showSuccess('Fornecedor cadastrado com sucesso.');
+        setFormRevision((value) => value + 1);
       }
       refreshSuppliers();
     } catch (requestError) {
@@ -121,15 +124,9 @@ export function SupplierRegistrationPage() {
             {error}
           </div>
         ) : null}
-        {success ? (
-          <div className="message success" role="status">
-            {success}
-          </div>
-        ) : null}
-
         {!isEditing || supplier ? (
           <SupplierForm
-            key={supplierId ?? 'new'}
+            key={`${supplierId ?? 'new'}-${formRevision}`}
             initialValues={supplier}
             isSubmitting={isSubmitting}
             submitLabel={isEditing ? 'Atualizar fornecedor' : 'Cadastrar fornecedor'}

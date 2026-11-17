@@ -97,6 +97,11 @@
   color: var(--color-ink);
 }
 
+.planning-tabs button[aria-disabled='true'] {
+  color: var(--color-muted);
+  opacity: 0.6;
+}
+
 .planning-inline-form {
   grid-template-columns: minmax(0, 1fr) auto;
   align-items: end;

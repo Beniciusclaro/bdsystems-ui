@@ -21,12 +21,19 @@ function getSystemTheme(): ResolvedTheme {
     : 'light';
 }
 
-export function ThemeProvider({ children }: { children: ReactNode }) {
+interface ThemeProviderProps {
+  children: ReactNode;
+  forcedTheme?: ResolvedTheme;
+}
+
+export function ThemeProvider({ children, forcedTheme }: ThemeProviderProps) {
   const [mode, setMode] = useState<ThemeMode>(getStoredMode);
 
   const [systemTheme, setSystemTheme] = useState<ResolvedTheme>(getSystemTheme);
 
-  const resolvedTheme = mode === 'system' ? systemTheme : mode;
+  const preferredTheme = mode === 'system' ? systemTheme : mode;
+
+  const resolvedTheme = forcedTheme ?? preferredTheme;
 
   useEffect(() => {
     if (typeof window.matchMedia !== 'function') return;
@@ -53,9 +60,9 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
       mode,
       resolvedTheme,
       setMode,
-      toggleTheme: () => setMode(resolvedTheme === 'dark' ? 'light' : 'dark'),
+      toggleTheme: () => setMode(preferredTheme === 'dark' ? 'light' : 'dark'),
     }),
-    [mode, resolvedTheme],
+    [mode, preferredTheme, resolvedTheme],
   );
 
   return <ThemeContext.Provider value={value}>{children}</ThemeContext.Provider>;

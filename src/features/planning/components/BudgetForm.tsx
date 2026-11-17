@@ -10,6 +10,7 @@ interface BudgetFormProps {
   pending: boolean;
   submitLabel: string;
   onCancel: () => void;
+  readOnly?: boolean;
 }
 
 export function BudgetForm({
@@ -20,6 +21,7 @@ export function BudgetForm({
   pending,
   submitLabel,
   onCancel,
+  readOnly = false,
 }: BudgetFormProps) {
   const field =
     (key: keyof BudgetFormValue) =>
@@ -28,7 +30,7 @@ export function BudgetForm({
 
   return (
     <form className="planning-form planning-sectioned-form" onSubmit={onSubmit}>
-      <fieldset className="planning-form-section">
+      <fieldset className="planning-form-section" disabled={readOnly}>
         <legend>Identificação do orçamento</legend>
         <div className="planning-form-grid planning-form-grid--identity">
           <label className="planning-field--wide">
@@ -55,7 +57,7 @@ export function BudgetForm({
         </div>
       </fieldset>
 
-      <fieldset className="planning-form-section">
+      <fieldset className="planning-form-section" disabled={readOnly}>
         <legend>Dados da obra</legend>
         <div className="planning-form-grid">
           <label className="planning-field--full">
@@ -96,7 +98,7 @@ export function BudgetForm({
         </div>
       </fieldset>
 
-      <fieldset className="planning-form-section">
+      <fieldset className="planning-form-section" disabled={readOnly}>
         <legend>Condições comerciais</legend>
         <div className="planning-form-grid">
           <label>
@@ -138,9 +140,11 @@ export function BudgetForm({
         <button type="button" onClick={onCancel} disabled={pending}>
           Cancelar
         </button>
-        <button className="primary-button" disabled={pending}>
-          {pending ? 'A guardar...' : submitLabel}
-        </button>
+        {!readOnly ? (
+          <button className="primary-button" disabled={pending}>
+            {pending ? 'A guardar...' : submitLabel}
+          </button>
+        ) : null}
       </div>
     </form>
   );
